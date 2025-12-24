@@ -5,13 +5,23 @@ interface ResultRowProps {
   label: string;
   value: string;
   suffix?: string;
+  highlight?: boolean;
 }
 
-function ResultRow({ label, value, suffix = '₪' }: ResultRowProps) {
+function ResultRow({ label, value, suffix = '₪', highlight = false }: ResultRowProps) {
   return (
-    <div className="flex justify-between items-center py-2.5 border-b border-dashed border-border/40 last:border-b-0">
-      <span className="text-muted-foreground font-medium text-sm">{label}</span>
-      <span className="font-semibold text-base bg-card px-4 py-1.5 rounded-lg min-w-[130px] text-center shadow-soft border border-border/30">
+    <div className={cn(
+      "flex justify-between items-center py-2.5 border-b border-dashed border-border/40 last:border-b-0",
+      highlight && "bg-accent/10 -mx-2 px-2 rounded-lg border-none"
+    )}>
+      <span className={cn(
+        "text-muted-foreground font-medium text-sm",
+        highlight && "text-foreground font-semibold"
+      )}>{label}</span>
+      <span className={cn(
+        "font-semibold text-base bg-card px-4 py-1.5 rounded-lg min-w-[130px] text-center shadow-soft border border-border/30",
+        highlight && "bg-accent text-accent-foreground border-accent"
+      )}>
         {value} {suffix}
       </span>
     </div>

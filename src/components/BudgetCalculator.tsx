@@ -3,7 +3,7 @@ import {
   User, Home, Coins, Calculator, Tag, Calendar as CalendarIcon, 
   Wallet, UserCircle, Phone, Mail, Banknote, Building, 
   TrendingUp, Percent, Clock, Receipt, Scale, Users, 
-  FileText, Briefcase, Settings, Lock, Gift, CheckCircle2
+  FileText, Briefcase, Settings, Lock, Gift, CheckCircle2, BarChart3
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HeroHeader } from './HeroHeader';
@@ -11,6 +11,7 @@ import { FormSection } from './FormSection';
 import { FormInput } from './FormInput';
 import { ResultsGroup, ResultRow } from './ResultsCard';
 import { AmortizationTable } from './AmortizationTable';
+import { LoanCharts } from './LoanCharts';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -370,9 +371,19 @@ export function BudgetCalculator() {
                 <ResultRow label={t.res_acq} value={formatNumber(results.closingCosts)} />
                 <ResultRow label={t.res_totalInt} value={formatNumber(results.totalInterest)} />
                 <ResultRow label={t.res_totalCost} value={formatNumber(results.totalCost)} />
+                <ResultRow 
+                  label={t.res_shekelRatio} 
+                  value={(results.totalCost / results.loanAmount).toFixed(2)} 
+                  highlight 
+                />
               </ResultsGroup>
             </div>
           </FormSection>
+        )}
+
+        {/* Charts */}
+        {results && amortization.length > 0 && (
+          <LoanCharts amortization={amortization} loanAmount={results.loanAmount} />
         )}
 
         {/* Amortization Table */}

@@ -41,6 +41,7 @@ export interface Translations {
   res_acq: string;
   res_totalInt: string;
   res_totalCost: string;
+  res_shekelRatio: string;
   toggleShow: string;
   toggleHide: string;
   titleAmort: string;
@@ -54,6 +55,16 @@ export interface Translations {
   percent: string;
   fixed: string;
   downloadCSV: string;
+  // Charts
+  chartBalanceTitle: string;
+  chartBalanceDesc: string;
+  chartPaymentTitle: string;
+  chartPaymentDesc: string;
+  chartYear: string;
+  chartYears: string;
+  chartBalance: string;
+  chartPrincipal: string;
+  chartInterest: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -98,6 +109,7 @@ export const translations: Record<Language, Translations> = {
     res_acq: "סך הוצאות נלוות",
     res_totalInt: "סך תשלומי ריבית",
     res_totalCost: "עלות כוללת",
+    res_shekelRatio: "יחס שקל לשקל",
     toggleShow: "הצג לוח סילוקין",
     toggleHide: "הסתר לוח סילוקין",
     titleAmort: "לוח סילוקין",
@@ -110,7 +122,16 @@ export const translations: Record<Language, Translations> = {
     currency: "₪",
     percent: "%",
     fixed: "₪",
-    downloadCSV: "הורד CSV"
+    downloadCSV: "הורד CSV",
+    chartBalanceTitle: "יתרת קרן לאורך זמן",
+    chartBalanceDesc: "גרף המראה כיצד החוב יורד עם כל תשלום חודשי",
+    chartPaymentTitle: "פירוט תשלומים שנתי",
+    chartPaymentDesc: "כמה מכל תשלום הולך לריבית וכמה לקרן",
+    chartYear: "שנה",
+    chartYears: "שנים",
+    chartBalance: "יתרת חוב",
+    chartPrincipal: "קרן",
+    chartInterest: "ריבית"
   },
   en: {
     dir: 'ltr',
@@ -153,6 +174,7 @@ export const translations: Record<Language, Translations> = {
     res_acq: "Total Closing Costs",
     res_totalInt: "Total Interest Paid",
     res_totalCost: "Total Cost (Principal+Int)",
+    res_shekelRatio: "Shekel-to-Shekel Ratio",
     toggleShow: "Show Amortization",
     toggleHide: "Hide Amortization",
     titleAmort: "Amortization Table",
@@ -165,7 +187,16 @@ export const translations: Record<Language, Translations> = {
     currency: "₪",
     percent: "%",
     fixed: "₪",
-    downloadCSV: "Download CSV"
+    downloadCSV: "Download CSV",
+    chartBalanceTitle: "Loan Balance Over Time",
+    chartBalanceDesc: "See how your debt decreases with each monthly payment",
+    chartPaymentTitle: "Annual Payment Breakdown",
+    chartPaymentDesc: "How much of each payment goes to interest vs principal",
+    chartYear: "Year",
+    chartYears: "Years",
+    chartBalance: "Remaining Balance",
+    chartPrincipal: "Principal",
+    chartInterest: "Interest"
   },
   fr: {
     dir: 'ltr',
@@ -208,6 +239,7 @@ export const translations: Record<Language, Translations> = {
     res_acq: "Total Frais Annexes",
     res_totalInt: "Total Intérêts",
     res_totalCost: "Coût Total (Prêt+Intérêts)",
+    res_shekelRatio: "Ratio Shekel pour Shekel",
     toggleShow: "Afficher l'amortissement",
     toggleHide: "Masquer l'amortissement",
     titleAmort: "Tableau d'amortissement",
@@ -220,6 +252,15 @@ export const translations: Record<Language, Translations> = {
     currency: "₪",
     percent: "%",
     fixed: "₪",
-    downloadCSV: "Télécharger CSV"
+    downloadCSV: "Télécharger CSV",
+    chartBalanceTitle: "Solde du Prêt dans le Temps",
+    chartBalanceDesc: "Voyez comment votre dette diminue avec chaque mensualité",
+    chartPaymentTitle: "Répartition Annuelle des Paiements",
+    chartPaymentDesc: "Quelle part de chaque paiement va aux intérêts vs au capital",
+    chartYear: "Année",
+    chartYears: "Années",
+    chartBalance: "Solde Restant",
+    chartPrincipal: "Capital",
+    chartInterest: "Intérêts"
   }
 };
