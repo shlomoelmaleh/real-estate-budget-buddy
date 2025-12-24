@@ -356,61 +356,148 @@ export function BudgetCalculator() {
         {results && (
           <div id="report-content" className="space-y-6">
             {/* Input Summary for Report - ONLY visible in print/PDF, hidden online */}
-            <div className="hidden print:block space-y-4">
-              <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-primary">{t.mainTitle}</h1>
-                <p className="text-muted-foreground">{new Date().toLocaleDateString()}</p>
-                {fullName && <p className="font-medium mt-2">{fullName}</p>}
+            <div className="hidden print:block space-y-5 pdf-section">
+              {/* Professional PDF Header */}
+              <div className="bg-gradient-to-r from-primary via-primary-dark to-primary rounded-2xl p-8 text-center text-white shadow-lg">
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <Building className="w-7 h-7" />
+                  </div>
+                  <h1 className="text-3xl font-bold tracking-tight">{t.mainTitle}</h1>
+                </div>
+                <p className="text-white/80 text-sm">{new Date().toLocaleDateString()}</p>
+                {fullName && (
+                  <div className="mt-4 inline-block bg-white/10 px-6 py-2 rounded-full">
+                    <p className="font-semibold text-lg">{fullName}</p>
+                  </div>
+                )}
               </div>
               
               {/* Basic Information Summary - Print/PDF only */}
-              <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
-                <h3 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5" /> {t.titleBase}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-primary rounded-xl p-6 shadow-md">
+                <h3 className="text-xl font-bold text-primary mb-5 flex items-center gap-3 pb-3 border-b border-primary/20">
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <User className="w-5 h-5 text-primary" />
+                  </div>
+                  {t.titleBase}
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                  {fullName && <div><span className="text-muted-foreground">{t.fullName}:</span> <span className="font-medium ml-2">{fullName}</span></div>}
-                  {phone && <div><span className="text-muted-foreground">{t.phone}:</span> <span className="font-medium ml-2">{phone}</span></div>}
-                  {email && <div><span className="text-muted-foreground">{t.email}:</span> <span className="font-medium ml-2">{email}</span></div>}
-                  <div><span className="text-muted-foreground">{t.equity}:</span> <span className="font-medium ml-2">{equity} ₪</span></div>
-                  <div><span className="text-muted-foreground">{t.ltv}:</span> <span className="font-medium ml-2">{ltv}%</span></div>
-                  <div><span className="text-muted-foreground">{t.netIncome}:</span> <span className="font-medium ml-2">{netIncome} ₪</span></div>
-                  <div><span className="text-muted-foreground">{t.ratio}:</span> <span className="font-medium ml-2">{ratio}%</span></div>
-                  <div><span className="text-muted-foreground">{t.age}:</span> <span className="font-medium ml-2">{age}</span></div>
-                  <div><span className="text-muted-foreground">{t.maxAge}:</span> <span className="font-medium ml-2">{maxAge}</span></div>
-                  <div><span className="text-muted-foreground">{t.interest}:</span> <span className="font-medium ml-2">{interest}%</span></div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {fullName && (
+                    <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                      <span className="text-xs text-muted-foreground block mb-1">{t.fullName}</span>
+                      <span className="font-semibold text-foreground">{fullName}</span>
+                    </div>
+                  )}
+                  {phone && (
+                    <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                      <span className="text-xs text-muted-foreground block mb-1">{t.phone}</span>
+                      <span className="font-semibold text-foreground">{phone}</span>
+                    </div>
+                  )}
+                  {email && (
+                    <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                      <span className="text-xs text-muted-foreground block mb-1">{t.email}</span>
+                      <span className="font-semibold text-foreground">{email}</span>
+                    </div>
+                  )}
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.equity}</span>
+                    <span className="font-semibold text-foreground">{equity} ₪</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.ltv}</span>
+                    <span className="font-semibold text-foreground">{ltv}%</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.netIncome}</span>
+                    <span className="font-semibold text-foreground">{netIncome} ₪</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.ratio}</span>
+                    <span className="font-semibold text-foreground">{ratio}%</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.age}</span>
+                    <span className="font-semibold text-foreground">{age}</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.maxAge}</span>
+                    <span className="font-semibold text-foreground">{maxAge}</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.interest}</span>
+                    <span className="font-semibold text-foreground">{interest}%</span>
+                  </div>
                 </div>
               </div>
 
               {/* Rental Investment Summary - Print/PDF only */}
-              <div className="bg-secondary/5 border border-secondary/20 rounded-xl p-5">
-                <h3 className="text-lg font-semibold text-secondary mb-4 flex items-center gap-2">
-                  <Home className="w-5 h-5" /> {t.titleRent}
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border-l-4 border-secondary rounded-xl p-6 shadow-md">
+                <h3 className="text-xl font-bold text-secondary mb-5 flex items-center gap-3 pb-3 border-b border-secondary/20">
+                  <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                    <Home className="w-5 h-5 text-secondary" />
+                  </div>
+                  {t.titleRent}
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                  <div><span className="text-muted-foreground">{t.isRented}:</span> <span className="font-medium ml-2">{isRented ? '✓' : '✗'}</span></div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.isRented}</span>
+                    <span className={cn("font-semibold", isRented ? "text-secondary" : "text-muted-foreground")}>{isRented ? '✓ ' + t.isRented : '✗'}</span>
+                  </div>
                   {isRented && (
                     <>
-                      <div><span className="text-muted-foreground">{t.yield}:</span> <span className="font-medium ml-2">{rentalYield}%</span></div>
-                      <div><span className="text-muted-foreground">{t.rentRecog}:</span> <span className="font-medium ml-2">{rentRecognition}%</span></div>
+                      <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                        <span className="text-xs text-muted-foreground block mb-1">{t.yield}</span>
+                        <span className="font-semibold text-foreground">{rentalYield}%</span>
+                      </div>
+                      <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                        <span className="text-xs text-muted-foreground block mb-1">{t.rentRecog}</span>
+                        <span className="font-semibold text-foreground">{rentRecognition}%</span>
+                      </div>
                     </>
                   )}
-                  {budgetCap && <div><span className="text-muted-foreground">{t.budgetCap}:</span> <span className="font-medium ml-2">{budgetCap} ₪</span></div>}
+                  {budgetCap && (
+                    <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                      <span className="text-xs text-muted-foreground block mb-1">{t.budgetCap}</span>
+                      <span className="font-semibold text-foreground">{budgetCap} ₪</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Expenses Summary - Print/PDF only */}
-              <div className="bg-accent/5 border border-accent/20 rounded-xl p-5">
-                <h3 className="text-lg font-semibold text-accent mb-4 flex items-center gap-2">
-                  <Coins className="w-5 h-5" /> {t.titleExpenses}
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 border-accent rounded-xl p-6 shadow-md">
+                <h3 className="text-xl font-bold text-accent mb-5 flex items-center gap-3 pb-3 border-b border-accent/20">
+                  <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                    <Coins className="w-5 h-5 text-accent" />
+                  </div>
+                  {t.titleExpenses}
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                  <div><span className="text-muted-foreground">{t.purchaseTax}:</span> <span className="font-medium ml-2">{purchaseTaxMode === 'percent' ? `${purchaseTaxPercent}%` : `${purchaseTaxFixed} ₪`}</span></div>
-                  <div><span className="text-muted-foreground">{t.lawyer}:</span> <span className="font-medium ml-2">{lawyerPct}%</span></div>
-                  <div><span className="text-muted-foreground">{t.broker}:</span> <span className="font-medium ml-2">{brokerPct}%</span></div>
-                  <div><span className="text-muted-foreground">{t.vat}:</span> <span className="font-medium ml-2">{vatPct}%</span></div>
-                  <div><span className="text-muted-foreground">{t.advisor}:</span> <span className="font-medium ml-2">{advisorFee} ₪</span></div>
-                  <div><span className="text-muted-foreground">{t.other}:</span> <span className="font-medium ml-2">{otherFee} ₪</span></div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.purchaseTax}</span>
+                    <span className="font-semibold text-foreground">{purchaseTaxMode === 'percent' ? `${purchaseTaxPercent}%` : `${purchaseTaxFixed} ₪`}</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.lawyer}</span>
+                    <span className="font-semibold text-foreground">{lawyerPct}%</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.broker}</span>
+                    <span className="font-semibold text-foreground">{brokerPct}%</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.vat}</span>
+                    <span className="font-semibold text-foreground">{vatPct}%</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.advisor}</span>
+                    <span className="font-semibold text-foreground">{advisorFee} ₪</span>
+                  </div>
+                  <div className="bg-white/70 rounded-lg p-3 shadow-sm">
+                    <span className="text-xs text-muted-foreground block mb-1">{t.other}</span>
+                    <span className="font-semibold text-foreground">{otherFee} ₪</span>
+                  </div>
                 </div>
               </div>
             </div>

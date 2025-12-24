@@ -225,155 +225,239 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
   const t = texts[language];
   const dir = language === 'he' ? 'rtl' : 'ltr';
 
+  // Force RTL inline styles for Hebrew
+  const isRTL = language === 'he';
+  const alignStart = isRTL ? 'right' : 'left';
+  const alignEnd = isRTL ? 'left' : 'right';
+
   const html = `
     <!DOCTYPE html>
-    <html dir="${dir}" lang="${language}">
+    <html dir="${dir}" lang="${language}" style="direction: ${dir};">
     <head>
       <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <!--[if mso]>
+      <style type="text/css">
+        body, table, td {direction: ${dir}; text-align: ${alignStart};}
+      </style>
+      <![endif]-->
       <style>
+        * {
+          direction: ${dir} !important;
+        }
         body {
-          font-family: Arial, sans-serif;
-          line-height: 1.6;
-          color: #333;
+          font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+          line-height: 1.7;
+          color: #1e293b;
           max-width: 700px;
           margin: 0 auto;
-          padding: 20px;
-          background: #f8fafc;
-          direction: ${dir};
-          text-align: ${language === 'he' ? 'right' : 'left'};
+          padding: 25px;
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%);
+          direction: ${dir} !important;
+          text-align: ${alignStart} !important;
         }
         .header {
-          background: linear-gradient(135deg, #1e40af, #0ea5e9);
+          background: linear-gradient(135deg, #1e40af 0%, #0891b2 50%, #059669 100%);
           color: white;
-          padding: 25px;
-          border-radius: 12px;
+          padding: 35px 25px;
+          border-radius: 16px;
           text-align: center;
           margin-bottom: 25px;
+          box-shadow: 0 10px 40px rgba(30, 64, 175, 0.3);
         }
         .header h1 {
           margin: 0;
-          font-size: 24px;
+          font-size: 28px;
+          font-weight: 700;
+          letter-spacing: -0.5px;
         }
         .header p {
-          margin: 5px 0 0;
+          margin: 8px 0 0;
           opacity: 0.9;
+          font-size: 14px;
+        }
+        .intro-section {
+          background: white;
+          padding: 20px 25px;
+          border-radius: 12px;
+          margin-bottom: 20px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+          text-align: ${alignStart} !important;
+          direction: ${dir} !important;
+        }
+        .intro-section p {
+          margin: 8px 0;
+          text-align: ${alignStart} !important;
+          direction: ${dir} !important;
         }
         .section {
           background: white;
-          padding: 20px;
-          border-radius: 10px;
-          margin-bottom: 15px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          text-align: ${language === 'he' ? 'right' : 'left'};
+          padding: 22px;
+          border-radius: 14px;
+          margin-bottom: 18px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          border-${alignStart}: 5px solid #3b82f6;
+          text-align: ${alignStart} !important;
+          direction: ${dir} !important;
         }
         .section-title {
-          font-size: 16px;
-          font-weight: 600;
+          font-size: 17px;
+          font-weight: 700;
           color: #1e40af;
-          margin-bottom: 15px;
-          padding-bottom: 10px;
+          margin-bottom: 18px;
+          padding-bottom: 12px;
           border-bottom: 2px solid #e2e8f0;
-          text-align: ${language === 'he' ? 'right' : 'left'};
-        }
-        .grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+          text-align: ${alignStart} !important;
+          direction: ${dir} !important;
+          display: flex;
+          align-items: center;
           gap: 10px;
+          ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
         .row {
-          display: flex;
-          flex-direction: ${language === 'he' ? 'row-reverse' : 'row'};
-          justify-content: space-between;
-          align-items: center;
-          padding: 10px 0;
+          display: table;
+          width: 100%;
+          padding: 12px 0;
           border-bottom: 1px solid #f1f5f9;
-          gap: 20px;
+          direction: ${dir} !important;
         }
         .row:last-child {
           border-bottom: none;
         }
         .label {
+          display: table-cell;
+          width: 55%;
           color: #64748b;
           font-size: 14px;
-          flex-shrink: 0;
-          text-align: ${language === 'he' ? 'right' : 'left'};
+          text-align: ${alignStart} !important;
+          padding-${alignEnd}: 20px;
+          vertical-align: middle;
+          direction: ${dir} !important;
         }
         .value {
+          display: table-cell;
+          width: 45%;
           font-weight: 600;
           color: #0f172a;
-          font-size: 14px;
-          text-align: ${language === 'he' ? 'left' : 'right'};
+          font-size: 15px;
+          text-align: ${alignEnd} !important;
+          vertical-align: middle;
+          direction: ${dir} !important;
+        }
+        .section-rental {
+          border-${alignStart}-color: #10b981;
+        }
+        .section-rental .section-title {
+          color: #047857;
+        }
+        .section-expenses {
+          border-${alignStart}-color: #f59e0b;
+        }
+        .section-expenses .section-title {
+          color: #b45309;
         }
         .results-section {
-          background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-          border: 1px solid #86efac;
+          background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+          border: 2px solid #34d399;
+          border-${alignStart}: 6px solid #10b981;
+        }
+        .results-section .section-title {
+          color: #047857;
         }
         .highlight {
-          background: linear-gradient(135deg, #fef3c7, #fde68a);
-          padding: 15px;
-          border-radius: 8px;
-          margin-top: 15px;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          padding: 18px;
+          border-radius: 10px;
+          margin-top: 18px;
+          border: 2px solid #f59e0b;
+          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
         }
         .highlight .row {
           border: none;
+          padding: 8px 0;
+        }
+        .highlight .label {
+          font-size: 16px;
+          font-weight: 600;
+          color: #92400e;
         }
         .highlight .value {
-          font-size: 20px;
+          font-size: 24px;
+          font-weight: 700;
           color: #d97706;
         }
         .amortization-summary {
-          background: #f8fafc;
-          padding: 15px;
-          border-radius: 8px;
-          margin-top: 10px;
+          background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+          padding: 18px;
+          border-radius: 10px;
+          margin-top: 12px;
         }
         .amortization-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
+          display: table;
+          width: 100%;
+        }
+        .amortization-row {
+          display: table-row;
         }
         .amortization-item {
+          display: table-cell;
           text-align: center;
-          padding: 10px;
+          padding: 12px 8px;
           background: white;
-          border-radius: 6px;
+          border-radius: 8px;
+          margin: 5px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+          width: 25%;
         }
         .amortization-item .title {
-          font-size: 12px;
+          font-size: 11px;
           color: #64748b;
-          margin-bottom: 5px;
+          margin-bottom: 6px;
         }
         .amortization-item .amount {
-          font-weight: 600;
+          font-weight: 700;
           color: #0f172a;
+          font-size: 14px;
         }
         .footer {
           text-align: center;
-          margin-top: 25px;
-          color: #94a3b8;
-          font-size: 12px;
+          margin-top: 30px;
+          padding: 20px;
+          color: #64748b;
+          font-size: 13px;
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        .footer p {
+          margin: 5px 0;
         }
         .note {
-          background: #fff7ed;
-          border: 1px solid #fed7aa;
-          padding: 12px;
-          border-radius: 8px;
-          margin-top: 15px;
-          font-size: 12px;
+          background: linear-gradient(135deg, #fff7ed, #ffedd5);
+          border: 2px solid #fb923c;
+          padding: 15px 18px;
+          border-radius: 10px;
+          margin-top: 20px;
+          font-size: 13px;
           color: #9a3412;
-          text-align: ${language === 'he' ? 'right' : 'left'};
+          text-align: ${alignStart} !important;
+          direction: ${dir} !important;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          ${isRTL ? 'flex-direction: row-reverse;' : ''}
         }
       </style>
     </head>
-    <body>
+    <body style="direction: ${dir}; text-align: ${alignStart};">
       <div class="header">
-        <h1>Property Budget Pro</h1>
-        <p>${new Date().toLocaleDateString()}</p>
+        <h1>🏠 Property Budget Pro</h1>
+        <p>📅 ${new Date().toLocaleDateString()}</p>
       </div>
 
-      <div class="section">
-        <p>${t.greeting}</p>
-        <p>${t.intro}</p>
+      <div class="intro-section">
+        <p style="font-size: 16px; font-weight: 500;">${t.greeting}</p>
+        <p style="color: #64748b;">${t.intro}</p>
       </div>
 
       <!-- Basic Information -->
@@ -428,7 +512,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       </div>
 
       <!-- Rental Information -->
-      <div class="section">
+      <div class="section section-rental">
         <div class="section-title">🏠 ${t.rentalInfo}</div>
         <div class="row">
           <span class="label">${t.isRented}</span>
@@ -453,7 +537,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       </div>
 
       <!-- Expenses -->
-      <div class="section">
+      <div class="section section-expenses">
         <div class="section-title">💰 ${t.expensesInfo}</div>
         <div class="row">
           <span class="label">${t.purchaseTax}</span>
