@@ -1,7 +1,12 @@
 import { useState, useMemo } from 'react';
-import { User, Home, Coins, Calculator, Tag, Calendar as CalendarIcon, Percent, DollarSign, Building2, TrendingUp, Wallet } from 'lucide-react';
+import { 
+  User, Home, Coins, Calculator, Tag, Calendar as CalendarIcon, 
+  Wallet, UserCircle, Phone, Mail, PiggyBank, Building, 
+  TrendingUp, Percent, Clock, Receipt, Scale, Users, 
+  FileText, Briefcase, Settings, Lock, Gift, CheckCircle2
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { HeroHeader } from './HeroHeader';
 import { FormSection } from './FormSection';
 import { FormInput } from './FormInput';
 import { ResultsGroup, ResultRow } from './ResultsCard';
@@ -96,43 +101,34 @@ export function BudgetCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <header className="text-center space-y-6">
-          <LanguageSwitcher />
-          <div className="space-y-3">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary/10 mb-4 animate-float">
-              <Building2 className="w-10 h-10 text-primary" />
-            </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground">
-              {t.mainTitle}
-            </h1>
-          </div>
-        </header>
-
+    <div className="min-h-screen bg-background">
+      {/* Hero Header */}
+      <HeroHeader />
+      
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 pb-12 space-y-8">
         {/* Form */}
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           {/* Basic Information */}
-          <FormSection icon={<User className="w-6 h-6 text-primary" />} title={t.titleBase} variant="primary">
+          <FormSection icon={<User className="w-5 h-5 text-primary" />} title={t.titleBase} variant="primary">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <FormInput
                 label={t.fullName}
-                icon="👤"
+                icon={<UserCircle className="w-4 h-4" />}
                 value={fullName}
                 onChange={setFullName}
                 type="text"
               />
               <FormInput
                 label={t.phone}
-                icon="📱"
+                icon={<Phone className="w-4 h-4" />}
                 value={phone}
                 onChange={setPhone}
                 type="tel"
               />
               <FormInput
                 label={t.email}
-                icon="✉️"
+                icon={<Mail className="w-4 h-4" />}
                 value={email}
                 onChange={setEmail}
                 type="email"
@@ -140,7 +136,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.equity}
-                icon="💰"
+                icon={<PiggyBank className="w-4 h-4" />}
                 suffix="₪"
                 value={equity}
                 onChange={setEquity}
@@ -148,7 +144,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.ltv}
-                icon="🏦"
+                icon={<Building className="w-4 h-4" />}
                 suffix="%"
                 value={ltv}
                 onChange={setLtv}
@@ -156,7 +152,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.netIncome}
-                icon="📈"
+                icon={<TrendingUp className="w-4 h-4" />}
                 suffix="₪"
                 value={netIncome}
                 onChange={setNetIncome}
@@ -164,7 +160,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.ratio}
-                icon="📊"
+                icon={<Percent className="w-4 h-4" />}
                 suffix="%"
                 value={ratio}
                 onChange={setRatio}
@@ -172,21 +168,21 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.age}
-                icon="🎂"
+                icon={<User className="w-4 h-4" />}
                 value={age}
                 onChange={setAge}
                 formatNumber
               />
               <FormInput
                 label={t.maxAge}
-                icon="⏳"
+                icon={<Clock className="w-4 h-4" />}
                 value={maxAge}
                 onChange={setMaxAge}
                 formatNumber
               />
               <FormInput
                 label={t.interest}
-                icon="📉"
+                icon={<Percent className="w-4 h-4" />}
                 suffix="%"
                 value={interest}
                 onChange={setInterest}
@@ -198,7 +194,7 @@ export function BudgetCalculator() {
           </FormSection>
 
           {/* Rent & Investment */}
-          <FormSection icon={<Home className="w-6 h-6 text-secondary" />} title={t.titleRent} variant="secondary">
+          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titleRent} variant="secondary">
             <div className="space-y-5">
               <div className="flex items-center gap-3">
                 <Checkbox
@@ -216,7 +212,7 @@ export function BudgetCalculator() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-slide-in">
                   <FormInput
                     label={t.yield}
-                    icon="🎁"
+                    icon={<Gift className="w-4 h-4" />}
                     suffix="%"
                     value={rentalYield}
                     onChange={setRentalYield}
@@ -225,7 +221,7 @@ export function BudgetCalculator() {
                   />
                   <FormInput
                     label={t.rentRecog}
-                    icon="✔️"
+                    icon={<CheckCircle2 className="w-4 h-4" />}
                     suffix="%"
                     value={rentRecognition}
                     onChange={setRentRecognition}
@@ -236,7 +232,7 @@ export function BudgetCalculator() {
 
               <FormInput
                 label={t.budgetCap}
-                icon="🔒"
+                icon={<Lock className="w-4 h-4" />}
                 suffix="₪"
                 value={budgetCap}
                 onChange={setBudgetCap}
@@ -246,11 +242,11 @@ export function BudgetCalculator() {
           </FormSection>
 
           {/* Expenses */}
-          <FormSection icon={<Coins className="w-6 h-6 text-accent" />} title={t.titleExpenses} variant="accent">
+          <FormSection icon={<Coins className="w-5 h-5 text-accent" />} title={t.titleExpenses} variant="accent">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-3 md:col-span-2">
                 <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <span className="text-lg">📜</span>
+                  <Receipt className="w-4 h-4 text-primary/70" />
                   {t.purchaseTax}
                 </Label>
                 <RadioGroup
@@ -290,7 +286,7 @@ export function BudgetCalculator() {
 
               <FormInput
                 label={t.lawyer}
-                icon="⚖️"
+                icon={<Scale className="w-4 h-4" />}
                 suffix="%"
                 value={lawyerPct}
                 onChange={setLawyerPct}
@@ -299,7 +295,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.broker}
-                icon="🤝"
+                icon={<Users className="w-4 h-4" />}
                 suffix="%"
                 value={brokerPct}
                 onChange={setBrokerPct}
@@ -308,7 +304,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.vat}
-                icon="🏛️"
+                icon={<FileText className="w-4 h-4" />}
                 suffix="%"
                 value={vatPct}
                 onChange={setVatPct}
@@ -316,7 +312,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.advisor}
-                icon="📋"
+                icon={<Briefcase className="w-4 h-4" />}
                 suffix="₪"
                 value={advisorFee}
                 onChange={setAdvisorFee}
@@ -324,7 +320,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.other}
-                icon="🛠️"
+                icon={<Settings className="w-4 h-4" />}
                 suffix="₪"
                 value={otherFee}
                 onChange={setOtherFee}
@@ -334,15 +330,15 @@ export function BudgetCalculator() {
           </FormSection>
 
           {/* Calculate Button */}
-          <div className="flex justify-center">
+          <div className="flex justify-center pt-4">
             <Button
               type="button"
               onClick={handleCalculate}
               size="lg"
               className={cn(
-                "px-12 py-6 text-lg font-bold rounded-full",
+                "px-12 py-6 text-lg font-semibold rounded-xl",
                 "bg-gradient-to-r from-primary to-primary-dark",
-                "hover:shadow-glow hover:scale-105",
+                "hover:shadow-elevated hover:scale-[1.02]",
                 "transition-all duration-300",
                 "gap-3"
               )}
@@ -355,21 +351,21 @@ export function BudgetCalculator() {
 
         {/* Results */}
         {results && (
-          <FormSection icon={<TrendingUp className="w-6 h-6 text-secondary" />} title={t.titleResults} variant="secondary">
+          <FormSection icon={<TrendingUp className="w-5 h-5 text-secondary" />} title={t.titleResults} variant="secondary">
             <div className="space-y-5">
-              <ResultsGroup icon={<Tag className="text-primary" />} title={t.res_group1} variant="primary">
+              <ResultsGroup icon={<Tag className="w-5 h-5 text-primary" />} title={t.res_group1} variant="primary">
                 <ResultRow label={t.res_pMax} value={formatNumber(results.maxPropertyValue)} />
                 <ResultRow label={t.res_loan} value={formatNumber(results.loanAmount)} />
                 <ResultRow label={t.res_ltv} value={results.actualLTV.toFixed(1)} suffix="%" />
               </ResultsGroup>
 
-              <ResultsGroup icon={<CalendarIcon className="text-secondary" />} title={t.res_group2} variant="secondary">
+              <ResultsGroup icon={<CalendarIcon className="w-5 h-5 text-secondary" />} title={t.res_group2} variant="secondary">
                 <ResultRow label={t.res_pay} value={formatNumber(results.monthlyPayment)} />
                 <ResultRow label={t.res_rent} value={formatNumber(results.rentIncome)} />
                 <ResultRow label={t.res_netOut} value={formatNumber(results.netPayment)} />
               </ResultsGroup>
 
-              <ResultsGroup icon={<Wallet className="text-accent" />} title={t.res_group3} variant="accent">
+              <ResultsGroup icon={<Wallet className="w-5 h-5 text-accent" />} title={t.res_group3} variant="accent">
                 <ResultRow label={t.res_acq} value={formatNumber(results.closingCosts)} />
                 <ResultRow label={t.res_totalInt} value={formatNumber(results.totalInterest)} />
                 <ResultRow label={t.res_totalCost} value={formatNumber(results.totalCost)} />
@@ -382,10 +378,15 @@ export function BudgetCalculator() {
         {results && <AmortizationTable rows={amortization} />}
 
         {/* Footer */}
-        <footer className="text-center text-sm text-muted-foreground pb-8">
-          <p>© {new Date().getFullYear()} Property Budget Calculator</p>
+        <footer className="text-center text-sm text-muted-foreground pt-8 pb-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="h-px w-8 bg-border" />
+            <span className="text-xs uppercase tracking-wider">Property Budget Pro</span>
+            <div className="h-px w-8 bg-border" />
+          </div>
+          <p>© {new Date().getFullYear()} All rights reserved</p>
         </footer>
-      </div>
+      </main>
     </div>
   );
 }
