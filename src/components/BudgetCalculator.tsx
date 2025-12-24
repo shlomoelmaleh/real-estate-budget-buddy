@@ -250,20 +250,22 @@ export function BudgetCalculator() {
                     <Receipt className="w-4 h-4 text-primary/70" />
                     {t.purchaseTax}
                   </Label>
-                  <RadioGroup
-                    value={purchaseTaxMode}
-                    onValueChange={(value) => setPurchaseTaxMode(value as 'percent' | 'fixed')}
-                    className="flex gap-6"
-                  >
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="percent" id="taxPercent" />
-                      <Label htmlFor="taxPercent" className="cursor-pointer font-medium">{t.percent}</Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <RadioGroupItem value="fixed" id="taxFixed" />
-                      <Label htmlFor="taxFixed" className="cursor-pointer font-medium">{t.fixed}</Label>
-                    </div>
-                  </RadioGroup>
+                  <div className={cn("flex", t.dir === 'rtl' ? "justify-start" : "justify-start")}>
+                    <RadioGroup
+                      value={purchaseTaxMode}
+                      onValueChange={(value) => setPurchaseTaxMode(value as 'percent' | 'fixed')}
+                      className="flex gap-6"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="percent" id="taxPercent" />
+                        <Label htmlFor="taxPercent" className="cursor-pointer font-medium">{t.percent}</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="fixed" id="taxFixed" />
+                        <Label htmlFor="taxFixed" className="cursor-pointer font-medium">{t.fixed}</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
                 </div>
                 {purchaseTaxMode === 'percent' ? (
                   <FormInput
