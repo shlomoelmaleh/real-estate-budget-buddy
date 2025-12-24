@@ -333,7 +333,7 @@ export function BudgetCalculator() {
           </FormSection>
 
           {/* Calculate Button */}
-          <div className="flex justify-center pt-4">
+          <div className="flex flex-col items-center pt-4 gap-4">
             <Button
               type="button"
               onClick={handleCalculate}
@@ -349,6 +349,11 @@ export function BudgetCalculator() {
               <Calculator className="w-5 h-5" />
               {t.calcBtn}
             </Button>
+            
+            {/* Disclaimer */}
+            <p className="text-xs text-muted-foreground text-center max-w-xl leading-relaxed">
+              {t.disclaimer}
+            </p>
           </div>
         </form>
 
