@@ -12,6 +12,7 @@ import { FormInput } from './FormInput';
 import { ResultsGroup, ResultRow } from './ResultsCard';
 import { AmortizationTable } from './AmortizationTable';
 import { LoanCharts } from './LoanCharts';
+import { ReportActions } from './ReportActions';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -353,32 +354,44 @@ export function BudgetCalculator() {
 
         {/* Results */}
         {results && (
-          <FormSection icon={<TrendingUp className="w-5 h-5 text-secondary" />} title={t.titleResults} variant="secondary">
-            <div className="space-y-5">
-              <ResultsGroup icon={<Tag className="w-5 h-5 text-primary" />} title={t.res_group1} variant="primary">
-                <ResultRow label={t.res_pMax} value={formatNumber(results.maxPropertyValue)} />
-                <ResultRow label={t.res_loan} value={formatNumber(results.loanAmount)} />
-                <ResultRow label={t.res_ltv} value={results.actualLTV.toFixed(1)} suffix="%" />
-              </ResultsGroup>
+          <div id="report-content">
+            <FormSection icon={<TrendingUp className="w-5 h-5 text-secondary" />} title={t.titleResults} variant="secondary">
+              <div className="space-y-5">
+                <ResultsGroup icon={<Tag className="w-5 h-5 text-primary" />} title={t.res_group1} variant="primary">
+                  <ResultRow label={t.res_pMax} value={formatNumber(results.maxPropertyValue)} />
+                  <ResultRow label={t.res_loan} value={formatNumber(results.loanAmount)} />
+                  <ResultRow label={t.res_ltv} value={results.actualLTV.toFixed(1)} suffix="%" />
+                </ResultsGroup>
 
-              <ResultsGroup icon={<CalendarIcon className="w-5 h-5 text-secondary" />} title={t.res_group2} variant="secondary">
-                <ResultRow label={t.res_pay} value={formatNumber(results.monthlyPayment)} />
-                <ResultRow label={t.res_rent} value={formatNumber(results.rentIncome)} />
-                <ResultRow label={t.res_netOut} value={formatNumber(results.netPayment)} />
-              </ResultsGroup>
+                <ResultsGroup icon={<CalendarIcon className="w-5 h-5 text-secondary" />} title={t.res_group2} variant="secondary">
+                  <ResultRow label={t.res_pay} value={formatNumber(results.monthlyPayment)} />
+                  <ResultRow label={t.res_rent} value={formatNumber(results.rentIncome)} />
+                  <ResultRow label={t.res_netOut} value={formatNumber(results.netPayment)} />
+                </ResultsGroup>
 
-              <ResultsGroup icon={<Wallet className="w-5 h-5 text-accent" />} title={t.res_group3} variant="accent">
-                <ResultRow label={t.res_acq} value={formatNumber(results.closingCosts)} />
-                <ResultRow label={t.res_totalInt} value={formatNumber(results.totalInterest)} />
-                <ResultRow label={t.res_totalCost} value={formatNumber(results.totalCost)} />
-                <ResultRow 
-                  label={t.res_shekelRatio} 
-                  value={(results.totalCost / results.loanAmount).toFixed(2)} 
-                  highlight 
-                />
-              </ResultsGroup>
+                <ResultsGroup icon={<Wallet className="w-5 h-5 text-accent" />} title={t.res_group3} variant="accent">
+                  <ResultRow label={t.res_acq} value={formatNumber(results.closingCosts)} />
+                  <ResultRow label={t.res_totalInt} value={formatNumber(results.totalInterest)} />
+                  <ResultRow label={t.res_totalCost} value={formatNumber(results.totalCost)} />
+                  <ResultRow 
+                    label={t.res_shekelRatio} 
+                    value={(results.totalCost / results.loanAmount).toFixed(2)} 
+                    highlight 
+                  />
+                </ResultsGroup>
+              </div>
+            </FormSection>
+
+            {/* Report Actions */}
+            <div className="mt-6">
+              <ReportActions 
+                results={results} 
+                amortization={amortization}
+                clientName={fullName}
+                clientEmail={email}
+              />
             </div>
-          </FormSection>
+          </div>
         )}
 
         {/* Charts */}

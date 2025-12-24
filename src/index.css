@@ -236,3 +236,75 @@ input[type="number"] {
 ::-webkit-scrollbar-thumb {
   @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors;
 }
+
+/* Print styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px !important;
+  }
+
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Hide header, navigation, and form sections */
+  header,
+  nav,
+  form,
+  footer,
+  .language-switcher,
+  button[type="button"],
+  .recharts-responsive-container {
+    display: none !important;
+  }
+
+  /* Show only results */
+  #report-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+    margin: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+
+  /* Clean up cards for print */
+  .card,
+  [class*="card"] {
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure readable colors */
+  * {
+    color: black !important;
+    background: white !important;
+  }
+
+  /* Keep some styling for headings */
+  h1, h2, h3, h4, h5, h6 {
+    color: #1f2937 !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Table styling for print */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border: 1px solid #d1d5db !important;
+    padding: 8px !important;
+    text-align: right !important;
+  }
+
+  th {
+    background: #f3f4f6 !important;
+  }
+}
