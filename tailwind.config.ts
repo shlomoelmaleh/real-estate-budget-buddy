@@ -14,8 +14,21 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Heebo', 'sans-serif'],
-        display: ['Playfair Display', 'serif'],
+        sans: ['Inter', 'Heebo', 'sans-serif'],
+        display: ['Cormorant Garamond', 'serif'],
+        body: ['Inter', 'Heebo', 'sans-serif'],
+      },
+      fontSize: {
+        'xs': ['0.8rem', { lineHeight: '1.2rem' }],
+        'sm': ['0.925rem', { lineHeight: '1.4rem' }],
+        'base': ['1.05rem', { lineHeight: '1.65rem' }],
+        'lg': ['1.175rem', { lineHeight: '1.8rem' }],
+        'xl': ['1.3rem', { lineHeight: '1.9rem' }],
+        '2xl': ['1.6rem', { lineHeight: '2.1rem' }],
+        '3xl': ['2rem', { lineHeight: '2.4rem' }],
+        '4xl': ['2.5rem', { lineHeight: '2.8rem' }],
+        '5xl': ['3.25rem', { lineHeight: '1.1' }],
+        '6xl': ['4rem', { lineHeight: '1.1' }],
       },
       colors: {
         border: "hsl(var(--border))",
