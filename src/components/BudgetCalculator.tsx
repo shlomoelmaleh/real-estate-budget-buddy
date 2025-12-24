@@ -543,6 +543,13 @@ export function BudgetCalculator() {
             {/* Amortization Table */}
             <AmortizationTable rows={amortization} />
 
+            {/* Disclaimer for PDF/Print */}
+            <div className="hidden print:block mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-800 text-center">
+                ⚠️ {t.disclaimer}
+              </p>
+            </div>
+
             {/* Report Actions */}
             <div className="mt-6">
               <ReportActions 
