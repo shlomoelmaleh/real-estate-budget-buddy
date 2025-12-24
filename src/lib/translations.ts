@@ -157,7 +157,7 @@ export const translations: Record<Language, Translations> = {
     disclaimer: "הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.",
     advisorName: "שלמה אלמליח",
     advisorPhone: "054-9997711",
-    advisorEmail: "shlomo@example.com"
+    advisorEmail: "shlomo.elmaleh@gmail.com"
   },
   en: {
     dir: 'ltr',
@@ -234,7 +234,7 @@ export const translations: Record<Language, Translations> = {
     disclaimer: "This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.",
     advisorName: "Shlomo Elmaleh",
     advisorPhone: "+972-054-9997711",
-    advisorEmail: "shlomo@example.com"
+    advisorEmail: "shlomo.elmaleh@gmail.com"
   },
   fr: {
     dir: 'ltr',
@@ -311,6 +311,6 @@ export const translations: Record<Language, Translations> = {
     disclaimer: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
     advisorName: "Shlomo Elmaleh",
     advisorPhone: "+972-054-9997711",
-    advisorEmail: "shlomo@example.com"
+    advisorEmail: "shlomo.elmaleh@gmail.com"
   }
 };
