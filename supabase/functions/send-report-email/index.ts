@@ -315,33 +315,30 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
         .row {
-          display: table;
+          display: flex;
           width: 100%;
           padding: 12px 0;
           border-bottom: 1px solid #f1f5f9;
           direction: ${dir} !important;
+          align-items: center;
+          gap: 15px;
+          ${isRTL ? 'flex-direction: row-reverse;' : ''}
         }
         .row:last-child {
           border-bottom: none;
         }
         .label {
-          display: table-cell;
-          width: 55%;
           color: #64748b;
           font-size: 14px;
           text-align: ${alignStart} !important;
-          padding-${alignEnd}: 20px;
-          vertical-align: middle;
           direction: ${dir} !important;
+          flex-shrink: 0;
         }
         .value {
-          display: table-cell;
-          width: 45%;
           font-weight: 600;
           color: #0f172a;
           font-size: 15px;
-          text-align: ${alignEnd} !important;
-          vertical-align: middle;
+          text-align: ${alignStart} !important;
           direction: ${dir} !important;
         }
         .section-rental {
