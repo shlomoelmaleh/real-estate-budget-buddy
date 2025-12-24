@@ -1,11 +1,11 @@
-import { InputHTMLAttributes, useState, useEffect } from 'react';
+import { InputHTMLAttributes, useState, useEffect, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;
-  icon?: string;
+  icon?: ReactNode;
   suffix?: string;
   formatNumber?: boolean;
   allowDecimals?: boolean;
@@ -60,7 +60,7 @@ export function FormInput({
   return (
     <div className={cn("space-y-2", className)}>
       <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        {icon && <span className="text-lg">{icon}</span>}
+        {icon && <span className="w-4 h-4 text-primary/70">{icon}</span>}
         {label}
         {suffix && <span className="text-xs text-muted-foreground/70">({suffix})</span>}
       </Label>
@@ -69,8 +69,8 @@ export function FormInput({
         value={displayValue}
         onChange={handleChange}
         className={cn(
-          "h-12 px-4 rounded-xl border-2 border-border/50",
-          "bg-card/50 backdrop-blur-sm",
+          "h-12 px-4 rounded-lg border border-border/60",
+          "bg-card/80 backdrop-blur-sm",
           "focus:border-primary focus:ring-2 focus:ring-primary/20",
           "transition-all duration-200",
           "text-base font-medium"
