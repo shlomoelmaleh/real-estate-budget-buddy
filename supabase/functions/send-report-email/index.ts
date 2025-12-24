@@ -116,7 +116,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       principal: 'קרן',
       interestLabel: 'ריבית',
       footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
-      note: 'הערה: דוח זה מהווה הערכה בלבד ואינו מחייב'
+      note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.'
     },
     en: {
       subject: 'Property Budget Calculator - Complete Report',
@@ -167,7 +167,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       principal: 'Principal',
       interestLabel: 'Interest',
       footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
-      note: 'Note: This report is an estimate only and is not binding'
+      note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.'
     },
     fr: {
       subject: 'Simulateur Budget Immobilier - Rapport Complet',
@@ -218,7 +218,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       principal: 'Capital',
       interestLabel: 'Intérêts',
       footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
-      note: "Note: Ce rapport est une estimation et n'est pas contractuel"
+      note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur."
     }
   };
 
