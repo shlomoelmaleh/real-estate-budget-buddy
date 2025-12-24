@@ -464,7 +464,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           <div style="text-align: ${alignStart}; ${isRTL ? 'direction: rtl;' : ''}">
             <p style="font-weight: 700; font-size: 18px; margin: 0 0 5px 0;">${t.advisorName}</p>
             <p style="font-size: 14px; opacity: 0.9; margin: 3px 0;">📞 ${t.advisorPhone}</p>
-            <p style="font-size: 14px; opacity: 0.9; margin: 3px 0;">✉️ ${t.advisorEmail}</p>
+            <p style="font-size: 14px; opacity: 0.9; margin: 3px 0;">✉️ <a href="mailto:${t.advisorEmail}" style="color: white; text-decoration: underline;">${t.advisorEmail}</a></p>
           </div>
           <p style="opacity: 0.9; font-size: 14px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
         </div>
