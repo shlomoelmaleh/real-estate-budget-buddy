@@ -11,6 +11,7 @@ const corsHeaders = {
 interface ReportEmailRequest {
   recipientEmail: string;
   recipientName: string;
+  recipientPhone: string;
   language: 'he' | 'en' | 'fr';
   inputs: {
     equity: string;
@@ -58,7 +59,7 @@ function formatNumber(num: number): string {
 }
 
 function getEmailContent(data: ReportEmailRequest): { subject: string; html: string } {
-  const { language, recipientName, inputs, results, amortizationSummary } = data;
+  const { language, recipientName, recipientPhone, recipientEmail, inputs, results, amortizationSummary } = data;
   
   const texts = {
     he: {
@@ -67,6 +68,9 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       intro: 'להלן סיכום מלא של החישוב שביצעת:',
       // Input sections
       basicInfo: 'נתוני בסיס',
+      clientName: 'שם הלקוח',
+      clientPhone: 'טלפון',
+      clientEmail: 'אימייל',
       equity: 'הון עצמי',
       ltv: 'מימון מקסימלי',
       netIncome: 'הכנסה פנויה',
@@ -119,6 +123,9 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       greeting: `Hello ${recipientName},`,
       intro: 'Here is the complete summary of your calculation:',
       basicInfo: 'Basic Information',
+      clientName: 'Client Name',
+      clientPhone: 'Phone',
+      clientEmail: 'Email',
       equity: 'Equity',
       ltv: 'Max LTV',
       netIncome: 'Net Income',
@@ -167,6 +174,9 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       greeting: `Bonjour ${recipientName},`,
       intro: 'Voici le résumé complet de votre calcul:',
       basicInfo: 'Informations de Base',
+      clientName: 'Nom du Client',
+      clientPhone: 'Téléphone',
+      clientEmail: 'Email',
       equity: 'Apport Personnel',
       ltv: 'Financement Max',
       netIncome: 'Revenu Net',
@@ -269,8 +279,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         .row {
           display: flex;
           justify-content: space-between;
-          padding: 8px 0;
+          align-items: center;
+          padding: 10px 0;
           border-bottom: 1px solid #f1f5f9;
+          gap: 20px;
         }
         .row:last-child {
           border-bottom: none;
@@ -278,11 +290,14 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         .label {
           color: #64748b;
           font-size: 14px;
+          flex-shrink: 0;
         }
         .value {
           font-weight: 600;
           color: #0f172a;
           font-size: 14px;
+          text-align: ${language === 'he' ? 'left' : 'right'};
+          margin-${language === 'he' ? 'right' : 'left'}: 20px;
         }
         .results-section {
           background: linear-gradient(135deg, #f0fdf4, #dcfce7);
@@ -358,21 +373,39 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       <!-- Basic Information -->
       <div class="section">
         <div class="section-title">📋 ${t.basicInfo}</div>
+        ${recipientName ? `
+        <div class="row">
+          <span class="label">${t.clientName}</span>
+          <span class="value">${recipientName}</span>
+        </div>
+        ` : ''}
+        ${recipientPhone ? `
+        <div class="row">
+          <span class="label">${t.clientPhone}</span>
+          <span class="value">${recipientPhone}</span>
+        </div>
+        ` : ''}
+        ${recipientEmail ? `
+        <div class="row">
+          <span class="label">${t.clientEmail}</span>
+          <span class="value">${recipientEmail}</span>
+        </div>
+        ` : ''}
         <div class="row">
           <span class="label">${t.equity}</span>
-          <span class="value">₪${inputs.equity}</span>
+          <span class="value">₪ ${inputs.equity}</span>
         </div>
         <div class="row">
           <span class="label">${t.ltv}</span>
-          <span class="value">${inputs.ltv}%</span>
+          <span class="value">${inputs.ltv} %</span>
         </div>
         <div class="row">
           <span class="label">${t.netIncome}</span>
-          <span class="value">₪${inputs.netIncome}</span>
+          <span class="value">₪ ${inputs.netIncome}</span>
         </div>
         <div class="row">
           <span class="label">${t.ratio}</span>
-          <span class="value">${inputs.ratio}%</span>
+          <span class="value">${inputs.ratio} %</span>
         </div>
         <div class="row">
           <span class="label">${t.age}</span>
@@ -384,7 +417,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
         <div class="row">
           <span class="label">${t.interest}</span>
-          <span class="value">${inputs.interest}%</span>
+          <span class="value">${inputs.interest} %</span>
         </div>
       </div>
 
@@ -398,17 +431,17 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         ${inputs.isRented ? `
         <div class="row">
           <span class="label">${t.rentalYield}</span>
-          <span class="value">${inputs.rentalYield}%</span>
+          <span class="value">${inputs.rentalYield} %</span>
         </div>
         <div class="row">
           <span class="label">${t.rentRecognition}</span>
-          <span class="value">${inputs.rentRecognition}%</span>
+          <span class="value">${inputs.rentRecognition} %</span>
         </div>
         ` : ''}
         ${inputs.budgetCap ? `
         <div class="row">
           <span class="label">${t.budgetCap}</span>
-          <span class="value">₪${inputs.budgetCap}</span>
+          <span class="value">₪ ${inputs.budgetCap}</span>
         </div>
         ` : ''}
       </div>
@@ -418,27 +451,27 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         <div class="section-title">💰 ${t.expensesInfo}</div>
         <div class="row">
           <span class="label">${t.purchaseTax}</span>
-          <span class="value">${inputs.purchaseTaxMode === 'percent' ? inputs.purchaseTaxPercent + '%' : '₪' + inputs.purchaseTaxFixed}</span>
+          <span class="value">${inputs.purchaseTaxMode === 'percent' ? inputs.purchaseTaxPercent + ' %' : '₪ ' + inputs.purchaseTaxFixed}</span>
         </div>
         <div class="row">
           <span class="label">${t.lawyer}</span>
-          <span class="value">${inputs.lawyerPct}%</span>
+          <span class="value">${inputs.lawyerPct} %</span>
         </div>
         <div class="row">
           <span class="label">${t.broker}</span>
-          <span class="value">${inputs.brokerPct}%</span>
+          <span class="value">${inputs.brokerPct} %</span>
         </div>
         <div class="row">
           <span class="label">${t.vat}</span>
-          <span class="value">${inputs.vatPct}%</span>
+          <span class="value">${inputs.vatPct} %</span>
         </div>
         <div class="row">
           <span class="label">${t.advisor}</span>
-          <span class="value">₪${inputs.advisorFee}</span>
+          <span class="value">₪ ${inputs.advisorFee}</span>
         </div>
         <div class="row">
           <span class="label">${t.other}</span>
-          <span class="value">₪${inputs.otherFee}</span>
+          <span class="value">₪ ${inputs.otherFee}</span>
         </div>
       </div>
 
@@ -447,15 +480,15 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         <div class="section-title">📊 ${t.resultsTitle}</div>
         <div class="row">
           <span class="label">${t.maxProperty}</span>
-          <span class="value">₪${formatNumber(results.maxPropertyValue)}</span>
+          <span class="value">₪ ${formatNumber(results.maxPropertyValue)}</span>
         </div>
         <div class="row">
           <span class="label">${t.loanAmount}</span>
-          <span class="value">₪${formatNumber(results.loanAmount)}</span>
+          <span class="value">₪ ${formatNumber(results.loanAmount)}</span>
         </div>
         <div class="row">
           <span class="label">${t.actualLTV}</span>
-          <span class="value">${results.actualLTV.toFixed(1)}%</span>
+          <span class="value">${results.actualLTV.toFixed(1)} %</span>
         </div>
         <div class="row">
           <span class="label">${t.loanTerm}</span>
@@ -463,27 +496,27 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
         <div class="row">
           <span class="label">${t.monthlyPayment}</span>
-          <span class="value">₪${formatNumber(results.monthlyPayment)}</span>
+          <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
         </div>
         <div class="row">
           <span class="label">${t.rentIncome}</span>
-          <span class="value">₪${formatNumber(results.rentIncome)}</span>
+          <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
         </div>
         <div class="row">
           <span class="label">${t.netPayment}</span>
-          <span class="value">₪${formatNumber(results.netPayment)}</span>
+          <span class="value">₪ ${formatNumber(results.netPayment)}</span>
         </div>
         <div class="row">
           <span class="label">${t.closingCosts}</span>
-          <span class="value">₪${formatNumber(results.closingCosts)}</span>
+          <span class="value">₪ ${formatNumber(results.closingCosts)}</span>
         </div>
         <div class="row">
           <span class="label">${t.totalInterest}</span>
-          <span class="value">₪${formatNumber(results.totalInterest)}</span>
+          <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
         </div>
         <div class="row">
           <span class="label">${t.totalCost}</span>
-          <span class="value">₪${formatNumber(results.totalCost)}</span>
+          <span class="value">₪ ${formatNumber(results.totalCost)}</span>
         </div>
         
         <div class="highlight">
@@ -505,19 +538,19 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           <div class="amortization-grid">
             <div class="amortization-item">
               <div class="title">${t.firstPayment} - ${t.principal}</div>
-              <div class="amount">₪${formatNumber(amortizationSummary.firstPayment.principal)}</div>
+              <div class="amount">₪ ${formatNumber(amortizationSummary.firstPayment.principal)}</div>
             </div>
             <div class="amortization-item">
               <div class="title">${t.firstPayment} - ${t.interestLabel}</div>
-              <div class="amount">₪${formatNumber(amortizationSummary.firstPayment.interest)}</div>
+              <div class="amount">₪ ${formatNumber(amortizationSummary.firstPayment.interest)}</div>
             </div>
             <div class="amortization-item">
               <div class="title">${t.lastPayment} - ${t.principal}</div>
-              <div class="amount">₪${formatNumber(amortizationSummary.lastPayment.principal)}</div>
+              <div class="amount">₪ ${formatNumber(amortizationSummary.lastPayment.principal)}</div>
             </div>
             <div class="amortization-item">
               <div class="title">${t.lastPayment} - ${t.interestLabel}</div>
-              <div class="amount">₪${formatNumber(amortizationSummary.lastPayment.interest)}</div>
+              <div class="amount">₪ ${formatNumber(amortizationSummary.lastPayment.interest)}</div>
             </div>
           </div>
         </div>

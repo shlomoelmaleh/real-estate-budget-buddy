@@ -12,6 +12,7 @@ interface ReportActionsProps {
   results: CalculatorResults;
   amortization: AmortizationRow[];
   clientName: string;
+  clientPhone: string;
   clientEmail: string;
   inputs: {
     equity: string;
@@ -36,7 +37,7 @@ interface ReportActionsProps {
   };
 }
 
-export function ReportActions({ results, amortization, clientName, clientEmail, inputs }: ReportActionsProps) {
+export function ReportActions({ results, amortization, clientName, clientPhone, clientEmail, inputs }: ReportActionsProps) {
   const { t, language } = useLanguage();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -122,6 +123,7 @@ export function ReportActions({ results, amortization, clientName, clientEmail, 
         body: {
           recipientEmail: clientEmail,
           recipientName: clientName || 'Client',
+          recipientPhone: clientPhone,
           language,
           inputs,
           results: {
