@@ -363,19 +363,42 @@ export function BudgetCalculator() {
             {/* Input Summary for Report - ONLY visible in print/PDF, hidden online */}
             <div className="hidden print:block space-y-5 pdf-section">
               {/* Professional PDF Header */}
-              <div className="bg-gradient-to-r from-primary via-primary-dark to-primary rounded-2xl p-8 text-center text-white shadow-lg">
-                <div className="flex items-center justify-center gap-3 mb-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <Building className="w-7 h-7" />
+              <div className="bg-gradient-to-r from-primary via-primary-dark to-primary rounded-2xl p-8 text-white shadow-lg">
+                {/* Advisor Contact Box */}
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/20">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                      <UserCircle className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg">{t.advisorName}</p>
+                      <div className="flex items-center gap-4 text-sm text-white/80">
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-4 h-4" /> {t.advisorPhone}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Mail className="w-4 h-4" /> {t.advisorEmail}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <h1 className="text-3xl font-bold tracking-tight">{t.mainTitle}</h1>
+                  <p className="text-white/80 text-sm">{new Date().toLocaleDateString()}</p>
                 </div>
-                <p className="text-white/80 text-sm">{new Date().toLocaleDateString()}</p>
-                {fullName && (
-                  <div className="mt-4 inline-block bg-white/10 px-6 py-2 rounded-full">
-                    <p className="font-semibold text-lg">{fullName}</p>
+                
+                {/* Title */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-3 mb-3">
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                      <Building className="w-7 h-7" />
+                    </div>
+                    <h1 className="text-3xl font-bold tracking-tight">{t.mainTitle}</h1>
                   </div>
-                )}
+                  {fullName && (
+                    <div className="mt-4 inline-block bg-white/10 px-6 py-2 rounded-full">
+                      <p className="font-semibold text-lg">{fullName}</p>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Basic Information Summary - Print/PDF only */}
@@ -586,12 +609,26 @@ export function BudgetCalculator() {
 
         {/* Footer */}
         <footer className="text-center text-sm text-muted-foreground pt-8 pb-4">
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-2 mb-4">
             <div className="h-px w-8 bg-border" />
             <span className="text-xs uppercase tracking-wider">Property Budget Pro</span>
             <div className="h-px w-8 bg-border" />
           </div>
-          <p>© {new Date().getFullYear()} All rights reserved</p>
+          
+          {/* Advisor Contact - Elegant footer */}
+          <div className="flex flex-col items-center gap-2 mb-4 text-muted-foreground">
+            <p className="font-medium text-foreground/80">{t.advisorName}</p>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1">
+                <Phone className="w-3 h-3" /> {t.advisorPhone}
+              </span>
+              <span className="flex items-center gap-1">
+                <Mail className="w-3 h-3" /> {t.advisorEmail}
+              </span>
+            </div>
+          </div>
+          
+          <p className="text-xs">© {new Date().getFullYear()} All rights reserved</p>
         </footer>
       </main>
     </div>
