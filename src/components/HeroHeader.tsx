@@ -16,11 +16,11 @@ export function HeroHeader() {
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/75 to-background/95" />
       
-      <div className="relative z-10 text-center py-10 px-4 space-y-6">
+      <div className="relative z-10 text-center py-10 px-4 space-y-8">
         <LanguageSwitcher />
         
         {/* Title Section */}
-        <div className="space-y-3">
+        <div className="space-y-3 pt-4">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground tracking-tight drop-shadow-sm">
             {t.mainTitle}
           </h1>
