@@ -270,7 +270,6 @@ export function BudgetCalculator() {
                 {purchaseTaxMode === 'percent' ? (
                   <FormInput
                     label=""
-                    suffix="%"
                     value={purchaseTaxPercent}
                     onChange={setPurchaseTaxPercent}
                     allowDecimals
@@ -279,7 +278,6 @@ export function BudgetCalculator() {
                 ) : (
                   <FormInput
                     label=""
-                    suffix="₪"
                     value={purchaseTaxFixed}
                     onChange={setPurchaseTaxFixed}
                     formatNumber
