@@ -116,7 +116,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       principal: 'קרן',
       interestLabel: 'ריבית',
       footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
-      note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.'
+      note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.',
+      advisorName: 'שלמה אלמליח',
+      advisorPhone: '054-9997711',
+      advisorEmail: 'shlomo@example.com'
     },
     en: {
       subject: 'Property Budget Calculator - Complete Report',
@@ -167,7 +170,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       principal: 'Principal',
       interestLabel: 'Interest',
       footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
-      note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.'
+      note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.',
+      advisorName: 'Shlomo Elmaleh',
+      advisorPhone: '+972-054-9997711',
+      advisorEmail: 'shlomo@example.com'
     },
     fr: {
       subject: 'Simulateur Budget Immobilier - Rapport Complet',
@@ -218,7 +224,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       principal: 'Capital',
       interestLabel: 'Intérêts',
       footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
-      note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur."
+      note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
+      advisorName: 'Shlomo Elmaleh',
+      advisorPhone: '+972-054-9997711',
+      advisorEmail: 'shlomo@example.com'
     }
   };
 
@@ -451,8 +460,15 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
     </head>
     <body style="direction: ${dir}; text-align: ${alignStart};">
       <div class="header">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); ${isRTL ? 'flex-direction: row-reverse;' : ''}">
+          <div style="text-align: ${alignStart}; ${isRTL ? 'direction: rtl;' : ''}">
+            <p style="font-weight: 700; font-size: 18px; margin: 0 0 5px 0;">${t.advisorName}</p>
+            <p style="font-size: 14px; opacity: 0.9; margin: 3px 0;">📞 ${t.advisorPhone}</p>
+            <p style="font-size: 14px; opacity: 0.9; margin: 3px 0;">✉️ ${t.advisorEmail}</p>
+          </div>
+          <p style="opacity: 0.9; font-size: 14px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
+        </div>
         <h1>🏠 Property Budget Pro</h1>
-        <p>📅 ${new Date().toLocaleDateString()}</p>
       </div>
 
       <div class="intro-section">

@@ -75,6 +75,10 @@ export interface Translations {
   emailError: string;
   emailRequired: string;
   disclaimer: string;
+  // Advisor contact
+  advisorName: string;
+  advisorPhone: string;
+  advisorEmail: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -150,7 +154,10 @@ export const translations: Record<Language, Translations> = {
     emailSuccess: "הדוח נשלח בהצלחה",
     emailError: "שגיאה בשליחת הדוח",
     emailRequired: "נא להזין כתובת אימייל",
-    disclaimer: "הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד."
+    disclaimer: "הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.",
+    advisorName: "שלמה אלמליח",
+    advisorPhone: "054-9997711",
+    advisorEmail: "shlomo@example.com"
   },
   en: {
     dir: 'ltr',
@@ -224,7 +231,10 @@ export const translations: Record<Language, Translations> = {
     emailSuccess: "Report sent successfully",
     emailError: "Error sending report",
     emailRequired: "Please enter an email address",
-    disclaimer: "This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval."
+    disclaimer: "This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.",
+    advisorName: "Shlomo Elmaleh",
+    advisorPhone: "+972-054-9997711",
+    advisorEmail: "shlomo@example.com"
   },
   fr: {
     dir: 'ltr',
@@ -298,6 +308,9 @@ export const translations: Record<Language, Translations> = {
     emailSuccess: "Rapport envoyé avec succès",
     emailError: "Erreur lors de l'envoi",
     emailRequired: "Veuillez entrer une adresse email",
-    disclaimer: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur."
+    disclaimer: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
+    advisorName: "Shlomo Elmaleh",
+    advisorPhone: "+972-054-9997711",
+    advisorEmail: "shlomo@example.com"
   }
 };
