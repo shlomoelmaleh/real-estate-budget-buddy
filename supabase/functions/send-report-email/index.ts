@@ -227,7 +227,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
 
   const html = `
     <!DOCTYPE html>
-    <html dir="${dir}">
+    <html dir="${dir}" lang="${language}">
     <head>
       <meta charset="UTF-8">
       <style>
@@ -239,6 +239,8 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           margin: 0 auto;
           padding: 20px;
           background: #f8fafc;
+          direction: ${dir};
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         .header {
           background: linear-gradient(135deg, #1e40af, #0ea5e9);
@@ -262,6 +264,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           border-radius: 10px;
           margin-bottom: 15px;
           box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         .section-title {
           font-size: 16px;
@@ -270,6 +273,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           margin-bottom: 15px;
           padding-bottom: 10px;
           border-bottom: 2px solid #e2e8f0;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         .grid {
           display: grid;
@@ -278,6 +282,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         }
         .row {
           display: flex;
+          flex-direction: ${language === 'he' ? 'row-reverse' : 'row'};
           justify-content: space-between;
           align-items: center;
           padding: 10px 0;
@@ -291,13 +296,13 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           color: #64748b;
           font-size: 14px;
           flex-shrink: 0;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
         .value {
           font-weight: 600;
           color: #0f172a;
           font-size: 14px;
           text-align: ${language === 'he' ? 'left' : 'right'};
-          margin-${language === 'he' ? 'right' : 'left'}: 20px;
         }
         .results-section {
           background: linear-gradient(135deg, #f0fdf4, #dcfce7);
@@ -356,6 +361,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           margin-top: 15px;
           font-size: 12px;
           color: #9a3412;
+          text-align: ${language === 'he' ? 'right' : 'left'};
         }
       </style>
     </head>

@@ -52,8 +52,16 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
         return;
       }
 
-      // Temporarily show the report content for PDF generation
-      const originalStyle = reportContent.style.cssText;
+      // Temporarily show the hidden print-only sections for PDF generation
+      const hiddenSections = reportContent.querySelectorAll('.hidden.print\\:block');
+      const originalStyles: string[] = [];
+      hiddenSections.forEach((section, index) => {
+        originalStyles[index] = (section as HTMLElement).style.cssText;
+        (section as HTMLElement).style.cssText = 'display: block !important;';
+      });
+      
+      // Wait for DOM to update
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const canvas = await html2canvas(reportContent, {
         scale: 2,
@@ -64,7 +72,10 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
         windowHeight: reportContent.scrollHeight,
       });
 
-      reportContent.style.cssText = originalStyle;
+      // Restore original styles
+      hiddenSections.forEach((section, index) => {
+        (section as HTMLElement).style.cssText = originalStyles[index];
+      });
 
       const imgWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
