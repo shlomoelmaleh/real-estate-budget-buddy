@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { 
   User, Home, Coins, Calculator, Tag, Calendar as CalendarIcon, 
-  Wallet, UserCircle, Phone, Mail, PiggyBank, Building, 
+  Wallet, UserCircle, Phone, Mail, Banknote, Building, 
   TrendingUp, Percent, Clock, Receipt, Scale, Users, 
   FileText, Briefcase, Settings, Lock, Gift, CheckCircle2
 } from 'lucide-react';
@@ -136,7 +136,7 @@ export function BudgetCalculator() {
               />
               <FormInput
                 label={t.equity}
-                icon={<PiggyBank className="w-4 h-4" />}
+                icon={<Banknote className="w-4 h-4" />}
                 suffix="₪"
                 value={equity}
                 onChange={setEquity}
