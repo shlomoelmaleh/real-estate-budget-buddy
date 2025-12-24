@@ -3,6 +3,7 @@ export type Language = 'he' | 'en' | 'fr';
 export interface Translations {
   dir: 'rtl' | 'ltr';
   mainTitle: string;
+  subtitle: string;
   titleBase: string;
   fullName: string;
   phone: string;
@@ -52,12 +53,14 @@ export interface Translations {
   currency: string;
   percent: string;
   fixed: string;
+  downloadCSV: string;
 }
 
 export const translations: Record<Language, Translations> = {
   he: {
     dir: 'rtl',
     mainTitle: "מחשבון תקציב רכישת נכס",
+    subtitle: "כלי מקצועי לתכנון רכישת נדל״ן",
     titleBase: "נתוני בסיס",
     fullName: "שם מלא",
     phone: "טלפון",
@@ -106,11 +109,13 @@ export const translations: Record<Language, Translations> = {
     th_close: "סגירה",
     currency: "₪",
     percent: "%",
-    fixed: "₪"
+    fixed: "₪",
+    downloadCSV: "הורד CSV"
   },
   en: {
     dir: 'ltr',
     mainTitle: "Property Budget Calculator",
+    subtitle: "Professional real estate acquisition planning tool",
     titleBase: "Basic Information",
     fullName: "Full Name",
     phone: "Phone",
@@ -159,11 +164,13 @@ export const translations: Record<Language, Translations> = {
     th_close: "Closing",
     currency: "₪",
     percent: "%",
-    fixed: "₪"
+    fixed: "₪",
+    downloadCSV: "Download CSV"
   },
   fr: {
     dir: 'ltr',
     mainTitle: "Simulateur Budget Immobilier",
+    subtitle: "Outil professionnel de planification d'acquisition immobilière",
     titleBase: "Informations de Base",
     fullName: "Nom Complet",
     phone: "Téléphone",
@@ -212,6 +219,7 @@ export const translations: Record<Language, Translations> = {
     th_close: "Fin",
     currency: "₪",
     percent: "%",
-    fixed: "₪"
+    fixed: "₪",
+    downloadCSV: "Télécharger CSV"
   }
 };
