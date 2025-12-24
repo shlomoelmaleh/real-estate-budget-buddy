@@ -65,6 +65,15 @@ export interface Translations {
   chartBalance: string;
   chartPrincipal: string;
   chartInterest: string;
+  // Report actions
+  downloadPDF: string;
+  printReport: string;
+  sendEmail: string;
+  pdfSuccess: string;
+  pdfError: string;
+  emailSuccess: string;
+  emailError: string;
+  emailRequired: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -131,7 +140,15 @@ export const translations: Record<Language, Translations> = {
     chartYears: "שנים",
     chartBalance: "יתרת חוב",
     chartPrincipal: "קרן",
-    chartInterest: "ריבית"
+    chartInterest: "ריבית",
+    downloadPDF: "הורד PDF",
+    printReport: "הדפס",
+    sendEmail: "שלח לאימייל",
+    pdfSuccess: "הדוח הורד בהצלחה",
+    pdfError: "שגיאה בהורדת הדוח",
+    emailSuccess: "הדוח נשלח בהצלחה",
+    emailError: "שגיאה בשליחת הדוח",
+    emailRequired: "נא להזין כתובת אימייל"
   },
   en: {
     dir: 'ltr',
@@ -196,7 +213,15 @@ export const translations: Record<Language, Translations> = {
     chartYears: "Years",
     chartBalance: "Remaining Balance",
     chartPrincipal: "Principal",
-    chartInterest: "Interest"
+    chartInterest: "Interest",
+    downloadPDF: "Download PDF",
+    printReport: "Print",
+    sendEmail: "Send Email",
+    pdfSuccess: "Report downloaded successfully",
+    pdfError: "Error downloading report",
+    emailSuccess: "Report sent successfully",
+    emailError: "Error sending report",
+    emailRequired: "Please enter an email address"
   },
   fr: {
     dir: 'ltr',
@@ -261,6 +286,14 @@ export const translations: Record<Language, Translations> = {
     chartYears: "Années",
     chartBalance: "Solde Restant",
     chartPrincipal: "Capital",
-    chartInterest: "Intérêts"
+    chartInterest: "Intérêts",
+    downloadPDF: "Télécharger PDF",
+    printReport: "Imprimer",
+    sendEmail: "Envoyer par Email",
+    pdfSuccess: "Rapport téléchargé avec succès",
+    pdfError: "Erreur lors du téléchargement",
+    emailSuccess: "Rapport envoyé avec succès",
+    emailError: "Erreur lors de l'envoi",
+    emailRequired: "Veuillez entrer une adresse email"
   }
 };
