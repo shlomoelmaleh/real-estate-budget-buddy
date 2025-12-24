@@ -244,44 +244,48 @@ export function BudgetCalculator() {
           {/* Expenses */}
           <FormSection icon={<Coins className="w-5 h-5 text-accent" />} title={t.titleExpenses} variant="accent">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-3 md:col-span-2">
-                <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Receipt className="w-4 h-4 text-primary/70" />
-                  {t.purchaseTax}
-                </Label>
-                <RadioGroup
-                  value={purchaseTaxMode}
-                  onValueChange={(value) => setPurchaseTaxMode(value as 'percent' | 'fixed')}
-                  className="flex gap-4"
-                  dir="ltr"
-                >
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="percent" id="taxPercent" />
-                    <Label htmlFor="taxPercent" className="cursor-pointer">%</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="fixed" id="taxFixed" />
-                    <Label htmlFor="taxFixed" className="cursor-pointer">₪</Label>
-                  </div>
-                </RadioGroup>
-                {purchaseTaxMode === 'percent' ? (
-                  <FormInput
-                    label=""
-                    suffix="%"
-                    value={purchaseTaxPercent}
-                    onChange={setPurchaseTaxPercent}
-                    allowDecimals
-                    formatNumber
-                  />
-                ) : (
-                  <FormInput
-                    label=""
-                    suffix="₪"
-                    value={purchaseTaxFixed}
-                    onChange={setPurchaseTaxFixed}
-                    formatNumber
-                  />
-                )}
+              <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                <div className="space-y-2 sm:w-auto">
+                  <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Receipt className="w-4 h-4 text-primary/70" />
+                    {t.purchaseTax}
+                  </Label>
+                  <RadioGroup
+                    value={purchaseTaxMode}
+                    onValueChange={(value) => setPurchaseTaxMode(value as 'percent' | 'fixed')}
+                    className="flex gap-4"
+                    dir="ltr"
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="percent" id="taxPercent" />
+                      <Label htmlFor="taxPercent" className="cursor-pointer">%</Label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem value="fixed" id="taxFixed" />
+                      <Label htmlFor="taxFixed" className="cursor-pointer">₪</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                <div className="flex-1 max-w-[200px]">
+                  {purchaseTaxMode === 'percent' ? (
+                    <FormInput
+                      label=""
+                      suffix="%"
+                      value={purchaseTaxPercent}
+                      onChange={setPurchaseTaxPercent}
+                      allowDecimals
+                      formatNumber
+                    />
+                  ) : (
+                    <FormInput
+                      label=""
+                      suffix="₪"
+                      value={purchaseTaxFixed}
+                      onChange={setPurchaseTaxFixed}
+                      formatNumber
+                    />
+                  )}
+                </div>
               </div>
 
               <FormInput
