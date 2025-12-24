@@ -12,6 +12,27 @@ interface ReportEmailRequest {
   recipientEmail: string;
   recipientName: string;
   language: 'he' | 'en' | 'fr';
+  inputs: {
+    equity: string;
+    ltv: string;
+    netIncome: string;
+    ratio: string;
+    age: string;
+    maxAge: string;
+    interest: string;
+    isRented: boolean;
+    rentalYield: string;
+    rentRecognition: string;
+    budgetCap: string;
+    purchaseTaxMode: 'percent' | 'fixed';
+    purchaseTaxPercent: string;
+    purchaseTaxFixed: string;
+    lawyerPct: string;
+    brokerPct: string;
+    vatPct: string;
+    advisorFee: string;
+    otherFee: string;
+  };
   results: {
     maxPropertyValue: number;
     loanAmount: number;
@@ -25,6 +46,11 @@ interface ReportEmailRequest {
     loanTermYears: number;
     shekelRatio: number;
   };
+  amortizationSummary: {
+    totalMonths: number;
+    firstPayment: { principal: number; interest: number };
+    lastPayment: { principal: number; interest: number };
+  };
 }
 
 function formatNumber(num: number): string {
@@ -32,13 +58,40 @@ function formatNumber(num: number): string {
 }
 
 function getEmailContent(data: ReportEmailRequest): { subject: string; html: string } {
-  const { language, recipientName, results } = data;
+  const { language, recipientName, inputs, results, amortizationSummary } = data;
   
   const texts = {
     he: {
       subject: 'דוח מחשבון תקציב רכישת נכס',
       greeting: `שלום ${recipientName},`,
-      intro: 'להלן סיכום החישוב שביצעת:',
+      intro: 'להלן סיכום מלא של החישוב שביצעת:',
+      // Input sections
+      basicInfo: 'נתוני בסיס',
+      equity: 'הון עצמי',
+      ltv: 'מימון מקסימלי',
+      netIncome: 'הכנסה פנויה',
+      ratio: 'יחס החזר',
+      age: 'גיל לווה',
+      maxAge: 'פריסה מקסימלית (גיל)',
+      interest: 'ריבית שנתית',
+      // Rental
+      rentalInfo: 'שכירות והשקעה',
+      isRented: 'נכס להשקעה',
+      rentalYield: 'תשואת שכירות',
+      rentRecognition: 'הכרה בבנק',
+      budgetCap: 'תקרת החזר חודשי',
+      yes: 'כן',
+      no: 'לא',
+      // Expenses
+      expensesInfo: 'הוצאות נלוות',
+      purchaseTax: 'מס רכישה',
+      lawyer: 'עו"ד',
+      broker: 'תיווך',
+      vat: 'מע"מ',
+      advisor: 'יועץ משכנתא',
+      other: 'שונות',
+      // Results
+      resultsTitle: 'תוצאות החישוב',
       maxProperty: 'שווי נכס מקסימלי',
       loanAmount: 'סכום משכנתא',
       actualLTV: 'אחוז מימון בפועל',
@@ -51,12 +104,43 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       shekelRatio: 'יחס שקל לשקל',
       loanTerm: 'תקופת המשכנתא',
       years: 'שנים',
-      footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן'
+      // Amortization
+      amortizationInfo: 'סיכום לוח סילוקין',
+      totalMonths: 'סה"כ חודשים',
+      firstPayment: 'תשלום ראשון',
+      lastPayment: 'תשלום אחרון',
+      principal: 'קרן',
+      interestLabel: 'ריבית',
+      footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
+      note: 'הערה: דוח זה מהווה הערכה בלבד ואינו מחייב'
     },
     en: {
-      subject: 'Property Budget Calculator Report',
+      subject: 'Property Budget Calculator - Complete Report',
       greeting: `Hello ${recipientName},`,
-      intro: 'Here is a summary of your calculation:',
+      intro: 'Here is the complete summary of your calculation:',
+      basicInfo: 'Basic Information',
+      equity: 'Equity',
+      ltv: 'Max LTV',
+      netIncome: 'Net Income',
+      ratio: 'Repayment Ratio',
+      age: 'Borrower Age',
+      maxAge: 'Max Age (End of loan)',
+      interest: 'Annual Interest',
+      rentalInfo: 'Rent & Investment',
+      isRented: 'Investment Property',
+      rentalYield: 'Rental Yield',
+      rentRecognition: 'Bank Recognition',
+      budgetCap: 'Monthly Payment Cap',
+      yes: 'Yes',
+      no: 'No',
+      expensesInfo: 'Closing Costs',
+      purchaseTax: 'Purchase Tax',
+      lawyer: 'Lawyer',
+      broker: 'Broker',
+      vat: 'VAT',
+      advisor: 'Mortgage Advisor',
+      other: 'Other Costs',
+      resultsTitle: 'Calculation Results',
       maxProperty: 'Max Property Value',
       loanAmount: 'Loan Amount',
       actualLTV: 'Actual LTV',
@@ -69,12 +153,42 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       shekelRatio: 'Shekel-to-Shekel Ratio',
       loanTerm: 'Loan Term',
       years: 'years',
-      footer: 'Property Budget Pro - Professional Real Estate Planning Tool'
+      amortizationInfo: 'Amortization Summary',
+      totalMonths: 'Total Months',
+      firstPayment: 'First Payment',
+      lastPayment: 'Last Payment',
+      principal: 'Principal',
+      interestLabel: 'Interest',
+      footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
+      note: 'Note: This report is an estimate only and is not binding'
     },
     fr: {
-      subject: 'Rapport du Simulateur Budget Immobilier',
+      subject: 'Simulateur Budget Immobilier - Rapport Complet',
       greeting: `Bonjour ${recipientName},`,
-      intro: 'Voici le résumé de votre calcul:',
+      intro: 'Voici le résumé complet de votre calcul:',
+      basicInfo: 'Informations de Base',
+      equity: 'Apport Personnel',
+      ltv: 'Financement Max',
+      netIncome: 'Revenu Net',
+      ratio: "Taux d'endettement",
+      age: "Âge de l'emprunteur",
+      maxAge: 'Âge max fin de prêt',
+      interest: "Taux d'intérêt annuel",
+      rentalInfo: 'Investissement Locatif',
+      isRented: 'Bien destiné à la location',
+      rentalYield: 'Rendement Locatif',
+      rentRecognition: 'Reconnaissance Banque',
+      budgetCap: 'Plafond Mensualité',
+      yes: 'Oui',
+      no: 'Non',
+      expensesInfo: 'Frais Annexes',
+      purchaseTax: "Taxe d'acquisition",
+      lawyer: 'Avocat',
+      broker: "Frais d'agence",
+      vat: 'TVA',
+      advisor: 'Courtier',
+      other: 'Divers',
+      resultsTitle: 'Résultats du Calcul',
       maxProperty: 'Valeur Max du Bien',
       loanAmount: 'Montant du Prêt',
       actualLTV: 'LTV Actuel',
@@ -87,7 +201,14 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       shekelRatio: 'Ratio Shekel pour Shekel',
       loanTerm: 'Durée du Prêt',
       years: 'ans',
-      footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière'
+      amortizationInfo: "Résumé du Tableau d'Amortissement",
+      totalMonths: 'Total Mois',
+      firstPayment: 'Premier Paiement',
+      lastPayment: 'Dernier Paiement',
+      principal: 'Capital',
+      interestLabel: 'Intérêts',
+      footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
+      note: "Note: Ce rapport est une estimation et n'est pas contractuel"
     }
   };
 
@@ -104,39 +225,68 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           font-family: Arial, sans-serif;
           line-height: 1.6;
           color: #333;
-          max-width: 600px;
+          max-width: 700px;
           margin: 0 auto;
           padding: 20px;
+          background: #f8fafc;
         }
         .header {
-          background: linear-gradient(135deg, #0ea5e9, #2563eb);
+          background: linear-gradient(135deg, #1e40af, #0ea5e9);
           color: white;
-          padding: 20px;
-          border-radius: 10px;
+          padding: 25px;
+          border-radius: 12px;
           text-align: center;
-          margin-bottom: 20px;
+          margin-bottom: 25px;
         }
-        .content {
-          background: #f8fafc;
+        .header h1 {
+          margin: 0;
+          font-size: 24px;
+        }
+        .header p {
+          margin: 5px 0 0;
+          opacity: 0.9;
+        }
+        .section {
+          background: white;
           padding: 20px;
           border-radius: 10px;
+          margin-bottom: 15px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1e40af;
+          margin-bottom: 15px;
+          padding-bottom: 10px;
+          border-bottom: 2px solid #e2e8f0;
+        }
+        .grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
         }
         .row {
           display: flex;
           justify-content: space-between;
-          padding: 10px 0;
-          border-bottom: 1px solid #e2e8f0;
+          padding: 8px 0;
+          border-bottom: 1px solid #f1f5f9;
         }
         .row:last-child {
           border-bottom: none;
         }
         .label {
-          font-weight: 500;
           color: #64748b;
+          font-size: 14px;
         }
         .value {
           font-weight: 600;
           color: #0f172a;
+          font-size: 14px;
+        }
+        .results-section {
+          background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+          border: 1px solid #86efac;
         }
         .highlight {
           background: linear-gradient(135deg, #fef3c7, #fde68a);
@@ -144,22 +294,157 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           border-radius: 8px;
           margin-top: 15px;
         }
+        .highlight .row {
+          border: none;
+        }
+        .highlight .value {
+          font-size: 20px;
+          color: #d97706;
+        }
+        .amortization-summary {
+          background: #f8fafc;
+          padding: 15px;
+          border-radius: 8px;
+          margin-top: 10px;
+        }
+        .amortization-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+        .amortization-item {
+          text-align: center;
+          padding: 10px;
+          background: white;
+          border-radius: 6px;
+        }
+        .amortization-item .title {
+          font-size: 12px;
+          color: #64748b;
+          margin-bottom: 5px;
+        }
+        .amortization-item .amount {
+          font-weight: 600;
+          color: #0f172a;
+        }
         .footer {
           text-align: center;
-          margin-top: 20px;
+          margin-top: 25px;
           color: #94a3b8;
           font-size: 12px;
+        }
+        .note {
+          background: #fff7ed;
+          border: 1px solid #fed7aa;
+          padding: 12px;
+          border-radius: 8px;
+          margin-top: 15px;
+          font-size: 12px;
+          color: #9a3412;
         }
       </style>
     </head>
     <body>
       <div class="header">
         <h1>Property Budget Pro</h1>
+        <p>${new Date().toLocaleDateString()}</p>
       </div>
-      <div class="content">
+
+      <div class="section">
         <p>${t.greeting}</p>
         <p>${t.intro}</p>
-        
+      </div>
+
+      <!-- Basic Information -->
+      <div class="section">
+        <div class="section-title">📋 ${t.basicInfo}</div>
+        <div class="row">
+          <span class="label">${t.equity}</span>
+          <span class="value">₪${inputs.equity}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.ltv}</span>
+          <span class="value">${inputs.ltv}%</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.netIncome}</span>
+          <span class="value">₪${inputs.netIncome}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.ratio}</span>
+          <span class="value">${inputs.ratio}%</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.age}</span>
+          <span class="value">${inputs.age}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.maxAge}</span>
+          <span class="value">${inputs.maxAge}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.interest}</span>
+          <span class="value">${inputs.interest}%</span>
+        </div>
+      </div>
+
+      <!-- Rental Information -->
+      <div class="section">
+        <div class="section-title">🏠 ${t.rentalInfo}</div>
+        <div class="row">
+          <span class="label">${t.isRented}</span>
+          <span class="value">${inputs.isRented ? t.yes : t.no}</span>
+        </div>
+        ${inputs.isRented ? `
+        <div class="row">
+          <span class="label">${t.rentalYield}</span>
+          <span class="value">${inputs.rentalYield}%</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.rentRecognition}</span>
+          <span class="value">${inputs.rentRecognition}%</span>
+        </div>
+        ` : ''}
+        ${inputs.budgetCap ? `
+        <div class="row">
+          <span class="label">${t.budgetCap}</span>
+          <span class="value">₪${inputs.budgetCap}</span>
+        </div>
+        ` : ''}
+      </div>
+
+      <!-- Expenses -->
+      <div class="section">
+        <div class="section-title">💰 ${t.expensesInfo}</div>
+        <div class="row">
+          <span class="label">${t.purchaseTax}</span>
+          <span class="value">${inputs.purchaseTaxMode === 'percent' ? inputs.purchaseTaxPercent + '%' : '₪' + inputs.purchaseTaxFixed}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.lawyer}</span>
+          <span class="value">${inputs.lawyerPct}%</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.broker}</span>
+          <span class="value">${inputs.brokerPct}%</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.vat}</span>
+          <span class="value">${inputs.vatPct}%</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.advisor}</span>
+          <span class="value">₪${inputs.advisorFee}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.other}</span>
+          <span class="value">₪${inputs.otherFee}</span>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="section results-section">
+        <div class="section-title">📊 ${t.resultsTitle}</div>
         <div class="row">
           <span class="label">${t.maxProperty}</span>
           <span class="value">₪${formatNumber(results.maxPropertyValue)}</span>
@@ -202,12 +487,46 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
         
         <div class="highlight">
-          <div class="row" style="border: none;">
-            <span class="label" style="font-size: 16px;">${t.shekelRatio}</span>
-            <span class="value" style="font-size: 18px; color: #d97706;">${results.shekelRatio.toFixed(2)}</span>
+          <div class="row">
+            <span class="label" style="font-size: 16px; font-weight: 600;">${t.shekelRatio}</span>
+            <span class="value">${results.shekelRatio.toFixed(2)}</span>
           </div>
         </div>
       </div>
+
+      <!-- Amortization Summary -->
+      <div class="section">
+        <div class="section-title">📅 ${t.amortizationInfo}</div>
+        <div class="row">
+          <span class="label">${t.totalMonths}</span>
+          <span class="value">${amortizationSummary.totalMonths}</span>
+        </div>
+        <div class="amortization-summary">
+          <div class="amortization-grid">
+            <div class="amortization-item">
+              <div class="title">${t.firstPayment} - ${t.principal}</div>
+              <div class="amount">₪${formatNumber(amortizationSummary.firstPayment.principal)}</div>
+            </div>
+            <div class="amortization-item">
+              <div class="title">${t.firstPayment} - ${t.interestLabel}</div>
+              <div class="amount">₪${formatNumber(amortizationSummary.firstPayment.interest)}</div>
+            </div>
+            <div class="amortization-item">
+              <div class="title">${t.lastPayment} - ${t.principal}</div>
+              <div class="amount">₪${formatNumber(amortizationSummary.lastPayment.principal)}</div>
+            </div>
+            <div class="amortization-item">
+              <div class="title">${t.lastPayment} - ${t.interestLabel}</div>
+              <div class="amount">₪${formatNumber(amortizationSummary.lastPayment.interest)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        ⚠️ ${t.note}
+      </div>
+
       <div class="footer">
         <p>${t.footer}</p>
         <p>© ${new Date().getFullYear()}</p>

@@ -13,9 +13,30 @@ interface ReportActionsProps {
   amortization: AmortizationRow[];
   clientName: string;
   clientEmail: string;
+  inputs: {
+    equity: string;
+    ltv: string;
+    netIncome: string;
+    ratio: string;
+    age: string;
+    maxAge: string;
+    interest: string;
+    isRented: boolean;
+    rentalYield: string;
+    rentRecognition: string;
+    budgetCap: string;
+    purchaseTaxMode: 'percent' | 'fixed';
+    purchaseTaxPercent: string;
+    purchaseTaxFixed: string;
+    lawyerPct: string;
+    brokerPct: string;
+    vatPct: string;
+    advisorFee: string;
+    otherFee: string;
+  };
 }
 
-export function ReportActions({ results, amortization, clientName, clientEmail }: ReportActionsProps) {
+export function ReportActions({ results, amortization, clientName, clientEmail, inputs }: ReportActionsProps) {
   const { t, language } = useLanguage();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -30,12 +51,19 @@ export function ReportActions({ results, amortization, clientName, clientEmail }
         return;
       }
 
+      // Temporarily show the report content for PDF generation
+      const originalStyle = reportContent.style.cssText;
+      
       const canvas = await html2canvas(reportContent, {
         scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
+        windowWidth: reportContent.scrollWidth,
+        windowHeight: reportContent.scrollHeight,
       });
+
+      reportContent.style.cssText = originalStyle;
 
       const imgWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
@@ -80,11 +108,22 @@ export function ReportActions({ results, amortization, clientName, clientEmail }
     setIsSendingEmail(true);
     
     try {
+      const amortizationSummary = {
+        totalMonths: amortization.length,
+        firstPayment: amortization.length > 0 
+          ? { principal: amortization[0].principal, interest: amortization[0].interest }
+          : { principal: 0, interest: 0 },
+        lastPayment: amortization.length > 0 
+          ? { principal: amortization[amortization.length - 1].principal, interest: amortization[amortization.length - 1].interest }
+          : { principal: 0, interest: 0 },
+      };
+
       const { data, error } = await supabase.functions.invoke('send-report-email', {
         body: {
           recipientEmail: clientEmail,
           recipientName: clientName || 'Client',
           language,
+          inputs,
           results: {
             maxPropertyValue: results.maxPropertyValue,
             loanAmount: results.loanAmount,
@@ -98,6 +137,7 @@ export function ReportActions({ results, amortization, clientName, clientEmail }
             loanTermYears: results.loanTermYears,
             shekelRatio: results.totalCost / results.loanAmount,
           },
+          amortizationSummary,
         },
       });
 

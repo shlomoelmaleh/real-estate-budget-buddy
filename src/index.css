@@ -242,33 +242,48 @@ input[type="number"] {
   body {
     background: white !important;
     color: black !important;
-    font-size: 12px !important;
+    font-size: 11px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  .print\\:hidden {
+  .print\:hidden {
     display: none !important;
   }
 
-  /* Hide header, navigation, and form sections */
+  .print\:block,
+  .print-only {
+    display: block !important;
+  }
+
+  /* Hide header, navigation, form, and action buttons */
   header,
   nav,
   form,
   footer,
   .language-switcher,
-  button[type="button"],
-  .recharts-responsive-container {
+  button {
     display: none !important;
   }
 
-  /* Show only results */
+  /* Show full report content */
   #report-content {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 20px !important;
+    padding: 15px !important;
     margin: 0 !important;
     background: white !important;
     box-shadow: none !important;
+  }
+
+  /* Show charts in print */
+  #report-content .recharts-responsive-container,
+  #report-content .recharts-wrapper,
+  #report-content svg {
+    display: block !important;
+    max-width: 100% !important;
+    height: auto !important;
   }
 
   /* Clean up cards for print */
@@ -278,12 +293,12 @@ input[type="number"] {
     border: 1px solid #e5e7eb !important;
     break-inside: avoid;
     page-break-inside: avoid;
+    margin-bottom: 10px !important;
   }
 
-  /* Ensure readable colors */
-  * {
+  /* Readable colors */
+  #report-content * {
     color: black !important;
-    background: white !important;
   }
 
   /* Keep some styling for headings */
@@ -296,15 +311,36 @@ input[type="number"] {
   table {
     width: 100% !important;
     border-collapse: collapse !important;
+    font-size: 9px !important;
   }
 
   th, td {
     border: 1px solid #d1d5db !important;
-    padding: 8px !important;
+    padding: 4px 6px !important;
     text-align: right !important;
   }
 
   th {
     background: #f3f4f6 !important;
+    font-weight: 600 !important;
+  }
+
+  /* Page breaks */
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  /* Ensure amortization table is visible */
+  #report-content table {
+    display: table !important;
+  }
+
+  /* Section spacing */
+  #report-content > div {
+    margin-bottom: 15px !important;
   }
 }
