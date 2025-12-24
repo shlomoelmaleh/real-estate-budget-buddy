@@ -352,9 +352,61 @@ export function BudgetCalculator() {
           </div>
         </form>
 
-        {/* Results */}
+        {/* Full Report Content - includes all sections for PDF/Print/Email */}
         {results && (
-          <div id="report-content">
+          <div id="report-content" className="space-y-6">
+            {/* Input Summary for Report */}
+            <div className="print-only hidden print:block space-y-4 mb-6">
+              <div className="text-center mb-6">
+                <h1 className="text-2xl font-bold text-primary">{t.mainTitle}</h1>
+                <p className="text-muted-foreground">{new Date().toLocaleDateString()}</p>
+                {fullName && <p className="font-medium mt-2">{fullName}</p>}
+              </div>
+            </div>
+
+            {/* Basic Information Summary */}
+            <FormSection icon={<User className="w-5 h-5 text-primary" />} title={t.titleBase} variant="primary">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                {fullName && <div><span className="text-muted-foreground">{t.fullName}:</span> <span className="font-medium">{fullName}</span></div>}
+                {phone && <div><span className="text-muted-foreground">{t.phone}:</span> <span className="font-medium">{phone}</span></div>}
+                {email && <div><span className="text-muted-foreground">{t.email}:</span> <span className="font-medium">{email}</span></div>}
+                <div><span className="text-muted-foreground">{t.equity}:</span> <span className="font-medium">{equity} ₪</span></div>
+                <div><span className="text-muted-foreground">{t.ltv}:</span> <span className="font-medium">{ltv}%</span></div>
+                <div><span className="text-muted-foreground">{t.netIncome}:</span> <span className="font-medium">{netIncome} ₪</span></div>
+                <div><span className="text-muted-foreground">{t.ratio}:</span> <span className="font-medium">{ratio}%</span></div>
+                <div><span className="text-muted-foreground">{t.age}:</span> <span className="font-medium">{age}</span></div>
+                <div><span className="text-muted-foreground">{t.maxAge}:</span> <span className="font-medium">{maxAge}</span></div>
+                <div><span className="text-muted-foreground">{t.interest}:</span> <span className="font-medium">{interest}%</span></div>
+              </div>
+            </FormSection>
+
+            {/* Rental Investment Summary */}
+            <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titleRent} variant="secondary">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div><span className="text-muted-foreground">{t.isRented}:</span> <span className="font-medium">{isRented ? '✓' : '✗'}</span></div>
+                {isRented && (
+                  <>
+                    <div><span className="text-muted-foreground">{t.yield}:</span> <span className="font-medium">{rentalYield}%</span></div>
+                    <div><span className="text-muted-foreground">{t.rentRecog}:</span> <span className="font-medium">{rentRecognition}%</span></div>
+                  </>
+                )}
+                {budgetCap && <div><span className="text-muted-foreground">{t.budgetCap}:</span> <span className="font-medium">{budgetCap} ₪</span></div>}
+              </div>
+            </FormSection>
+
+            {/* Expenses Summary */}
+            <FormSection icon={<Coins className="w-5 h-5 text-accent" />} title={t.titleExpenses} variant="accent">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div><span className="text-muted-foreground">{t.purchaseTax}:</span> <span className="font-medium">{purchaseTaxMode === 'percent' ? `${purchaseTaxPercent}%` : `${purchaseTaxFixed} ₪`}</span></div>
+                <div><span className="text-muted-foreground">{t.lawyer}:</span> <span className="font-medium">{lawyerPct}%</span></div>
+                <div><span className="text-muted-foreground">{t.broker}:</span> <span className="font-medium">{brokerPct}%</span></div>
+                <div><span className="text-muted-foreground">{t.vat}:</span> <span className="font-medium">{vatPct}%</span></div>
+                <div><span className="text-muted-foreground">{t.advisor}:</span> <span className="font-medium">{advisorFee} ₪</span></div>
+                <div><span className="text-muted-foreground">{t.other}:</span> <span className="font-medium">{otherFee} ₪</span></div>
+              </div>
+            </FormSection>
+
+            {/* Results */}
             <FormSection icon={<TrendingUp className="w-5 h-5 text-secondary" />} title={t.titleResults} variant="secondary">
               <div className="space-y-5">
                 <ResultsGroup icon={<Tag className="w-5 h-5 text-primary" />} title={t.res_group1} variant="primary">
@@ -382,6 +434,14 @@ export function BudgetCalculator() {
               </div>
             </FormSection>
 
+            {/* Charts */}
+            {amortization.length > 0 && (
+              <LoanCharts amortization={amortization} loanAmount={results.loanAmount} />
+            )}
+
+            {/* Amortization Table */}
+            <AmortizationTable rows={amortization} />
+
             {/* Report Actions */}
             <div className="mt-6">
               <ReportActions 
@@ -389,18 +449,31 @@ export function BudgetCalculator() {
                 amortization={amortization}
                 clientName={fullName}
                 clientEmail={email}
+                inputs={{
+                  equity,
+                  ltv,
+                  netIncome,
+                  ratio,
+                  age,
+                  maxAge,
+                  interest,
+                  isRented,
+                  rentalYield,
+                  rentRecognition,
+                  budgetCap,
+                  purchaseTaxMode,
+                  purchaseTaxPercent,
+                  purchaseTaxFixed,
+                  lawyerPct,
+                  brokerPct,
+                  vatPct,
+                  advisorFee,
+                  otherFee,
+                }}
               />
             </div>
           </div>
         )}
-
-        {/* Charts */}
-        {results && amortization.length > 0 && (
-          <LoanCharts amortization={amortization} loanAmount={results.loanAmount} />
-        )}
-
-        {/* Amortization Table */}
-        {results && <AmortizationTable rows={amortization} />}
 
         {/* Footer */}
         <footer className="text-center text-sm text-muted-foreground pt-8 pb-4">
