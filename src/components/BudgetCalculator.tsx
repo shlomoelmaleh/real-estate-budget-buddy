@@ -373,9 +373,9 @@ export function BudgetCalculator() {
                     <div>
                       <p className="font-bold text-lg">{t.advisorName}</p>
                       <div className="flex items-center gap-4 text-sm text-white/80">
-                        <span className="flex items-center gap-1">
+                        <a href="https://wa.me/972549997711" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
                           <Phone className="w-4 h-4" /> {t.advisorPhone}
-                        </span>
+                        </a>
                         <a href={`mailto:${t.advisorEmail}`} className="flex items-center gap-1 hover:text-white transition-colors">
                           <Mail className="w-4 h-4" /> {t.advisorEmail}
                         </a>
@@ -619,9 +619,9 @@ export function BudgetCalculator() {
           <div className="flex flex-col items-center gap-2 mb-4 text-muted-foreground">
             <p className="font-medium text-foreground/80">{t.advisorName}</p>
             <div className="flex items-center gap-4 text-xs">
-              <span className="flex items-center gap-1">
+              <a href="https://wa.me/972549997711" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
                 <Phone className="w-3 h-3" /> {t.advisorPhone}
-              </span>
+              </a>
               <a href={`mailto:${t.advisorEmail}`} className="flex items-center gap-1 hover:text-foreground transition-colors">
                 <Mail className="w-3 h-3" /> {t.advisorEmail}
               </a>
