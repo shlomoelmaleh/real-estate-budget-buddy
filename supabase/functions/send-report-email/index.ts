@@ -825,6 +825,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const data: ReportEmailRequest = await req.json();
     console.log("Received request for email to:", data.recipientEmail);
+    console.log("Chart data received - yearlyBalanceData:", data.yearlyBalanceData?.length || 0, "items");
+    console.log("Chart data received - paymentBreakdownData:", data.paymentBreakdownData?.length || 0, "items");
 
     const { subject, html } = getEmailContent(data);
 
