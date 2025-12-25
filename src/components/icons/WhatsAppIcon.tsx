@@ -1,12 +1,12 @@
-import { forwardRef } from "react";
+import React, { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface WhatsAppIconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
 
-export const WhatsAppIcon = forwardRef<SVGSVGElement, WhatsAppIconProps>(
-  ({ className, size = 16, ...props }, ref) => {
+const WhatsAppIconComponent = forwardRef<SVGSVGElement, WhatsAppIconProps>(
+  function WhatsAppIcon({ className, size = 16, ...props }, ref) {
     return (
       <svg
         ref={ref}
@@ -24,4 +24,4 @@ export const WhatsAppIcon = forwardRef<SVGSVGElement, WhatsAppIconProps>(
   }
 );
 
-WhatsAppIcon.displayName = "WhatsAppIcon";
+export { WhatsAppIconComponent as WhatsAppIcon };
