@@ -87,6 +87,9 @@ export interface Translations {
   isIsraeliCitizen: string;
   yes: string;
   no: string;
+  titlePersonal: string;
+  titlePropertyStatus: string;
+  titleFinancial: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -172,7 +175,10 @@ export const translations: Record<Language, Translations> = {
     isFirstProperty: "נכס ראשון בישראל?",
     isIsraeliCitizen: "בעל אזרחות ישראלית?",
     yes: "כן",
-    no: "לא"
+    no: "לא",
+    titlePersonal: "פרטים אישיים",
+    titlePropertyStatus: "מצב נכס",
+    titleFinancial: "נתונים פיננסיים"
   },
   en: {
     dir: 'ltr',
@@ -256,7 +262,10 @@ export const translations: Record<Language, Translations> = {
     isFirstProperty: "First property in Israel?",
     isIsraeliCitizen: "Israeli citizenship?",
     yes: "Yes",
-    no: "No"
+    no: "No",
+    titlePersonal: "Personal Information",
+    titlePropertyStatus: "Property Status",
+    titleFinancial: "Financial Information"
   },
   fr: {
     dir: 'ltr',
@@ -340,6 +349,9 @@ export const translations: Record<Language, Translations> = {
     isFirstProperty: "Votre premier bien en Israël ?",
     isIsraeliCitizen: "Avez-vous la nationalité israélienne ?",
     yes: "Oui",
-    no: "Non"
+    no: "Non",
+    titlePersonal: "Informations Personnelles",
+    titlePropertyStatus: "Situation Immobilière",
+    titleFinancial: "Données Financières"
   }
 };
