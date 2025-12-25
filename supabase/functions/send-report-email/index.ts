@@ -487,35 +487,49 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           gap: 10px;
           ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
-        .chart-bar-container {
-          margin-bottom: 12px;
+        .vertical-chart {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-around;
+          height: 180px;
+          padding: 10px 5px 0 5px;
+          border-bottom: 2px solid #e2e8f0;
+          margin-bottom: 8px;
+          gap: 4px;
         }
-        .chart-bar-label {
-          font-size: 12px;
+        .vertical-bar-group {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex: 1;
+          max-width: 40px;
+        }
+        .vertical-bar {
+          width: 100%;
+          border-radius: 4px 4px 0 0;
+          min-height: 4px;
+        }
+        .vertical-bar-balance {
+          background: linear-gradient(180deg, #3b82f6, #60a5fa);
+        }
+        .vertical-bar-stacked {
+          display: flex;
+          flex-direction: column-reverse;
+          width: 100%;
+        }
+        .vertical-bar-principal {
+          background: linear-gradient(180deg, #10b981, #34d399);
+          border-radius: 0 0 0 0;
+        }
+        .vertical-bar-interest {
+          background: linear-gradient(180deg, #f59e0b, #fbbf24);
+          border-radius: 4px 4px 0 0;
+        }
+        .vertical-bar-label {
+          font-size: 10px;
           color: #64748b;
-          margin-bottom: 4px;
-          display: flex;
-          justify-content: space-between;
-        }
-        .chart-bar-wrapper {
-          height: 24px;
-          background: #f1f5f9;
-          border-radius: 4px;
-          overflow: hidden;
-          display: flex;
-        }
-        .chart-bar-fill {
-          height: 100%;
-          transition: width 0.3s;
-        }
-        .chart-bar-balance {
-          background: linear-gradient(90deg, #3b82f6, #60a5fa);
-        }
-        .chart-bar-principal {
-          background: linear-gradient(90deg, #10b981, #34d399);
-        }
-        .chart-bar-interest {
-          background: linear-gradient(90deg, #f59e0b, #fbbf24);
+          margin-top: 6px;
+          text-align: center;
         }
         .chart-legend {
           display: flex;
@@ -713,58 +727,62 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
       </div>
 
-      <!-- Chart: Loan Balance Over Time -->
+      <!-- Chart: Loan Balance Over Time (Vertical) -->
       ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
       <div class="chart-section">
         <div class="chart-title">📉 ${t.chartBalanceTitle}</div>
-        ${(() => {
-          const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
-          return yearlyBalanceData.map(d => `
-            <div class="chart-bar-container">
-              <div class="chart-bar-label">
-                <span>${t.chartYear} ${d.year}</span>
-                <span>₪ ${formatNumber(d.balance)}</span>
-              </div>
-              <div class="chart-bar-wrapper">
-                <div class="chart-bar-fill chart-bar-balance" style="width: ${(d.balance / maxBalance * 100).toFixed(1)}%;"></div>
-              </div>
-            </div>
-          `).join('');
-        })()}
+        <div class="vertical-chart">
+          ${(() => {
+            const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
+            return yearlyBalanceData.map(d => {
+              const heightPct = (d.balance / maxBalance * 100).toFixed(1);
+              return `
+                <div class="vertical-bar-group">
+                  <div class="vertical-bar vertical-bar-balance" style="height: ${heightPct}%;"></div>
+                  <div class="vertical-bar-label">${d.year}</div>
+                </div>
+              `;
+            }).join('');
+          })()}
+        </div>
+        <div class="chart-legend">
+          <div class="chart-legend-item">
+            <div class="chart-legend-color" style="background: linear-gradient(180deg, #3b82f6, #60a5fa);"></div>
+            <span>${t.chartBalanceTitle}</span>
+          </div>
+        </div>
       </div>
       ` : ''}
 
-      <!-- Chart: Payment Breakdown by Year -->
+      <!-- Chart: Payment Breakdown by Year (Vertical Stacked) -->
       ${paymentBreakdownData && paymentBreakdownData.length > 0 ? `
       <div class="chart-section">
         <div class="chart-title">📊 ${t.chartPaymentTitle}</div>
-        ${(() => {
-          const maxPayment = Math.max(...paymentBreakdownData.map(d => d.principal + d.interest));
-          return paymentBreakdownData.map(d => {
-            const total = d.principal + d.interest;
-            const principalPct = (d.principal / maxPayment * 100).toFixed(1);
-            const interestPct = (d.interest / maxPayment * 100).toFixed(1);
-            return `
-              <div class="chart-bar-container">
-                <div class="chart-bar-label">
-                  <span>${t.chartYear} ${d.year}</span>
-                  <span>₪ ${formatNumber(total)}</span>
+        <div class="vertical-chart">
+          ${(() => {
+            const maxPayment = Math.max(...paymentBreakdownData.map(d => d.principal + d.interest));
+            return paymentBreakdownData.map(d => {
+              const principalPct = (d.principal / maxPayment * 100).toFixed(1);
+              const interestPct = (d.interest / maxPayment * 100).toFixed(1);
+              return `
+                <div class="vertical-bar-group">
+                  <div class="vertical-bar-stacked" style="height: ${parseFloat(principalPct) + parseFloat(interestPct)}%;">
+                    <div class="vertical-bar vertical-bar-principal" style="height: ${(d.principal / (d.principal + d.interest) * 100).toFixed(1)}%;"></div>
+                    <div class="vertical-bar vertical-bar-interest" style="height: ${(d.interest / (d.principal + d.interest) * 100).toFixed(1)}%;"></div>
+                  </div>
+                  <div class="vertical-bar-label">${d.year}</div>
                 </div>
-                <div class="chart-bar-wrapper">
-                  <div class="chart-bar-fill chart-bar-principal" style="width: ${principalPct}%;"></div>
-                  <div class="chart-bar-fill chart-bar-interest" style="width: ${interestPct}%;"></div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        })()}
+              `;
+            }).join('');
+          })()}
+        </div>
         <div class="chart-legend">
           <div class="chart-legend-item">
-            <div class="chart-legend-color" style="background: linear-gradient(90deg, #10b981, #34d399);"></div>
+            <div class="chart-legend-color" style="background: linear-gradient(180deg, #10b981, #34d399);"></div>
             <span>${t.principal}</span>
           </div>
           <div class="chart-legend-item">
-            <div class="chart-legend-color" style="background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+            <div class="chart-legend-color" style="background: linear-gradient(180deg, #f59e0b, #fbbf24);"></div>
             <span>${t.interestLabel}</span>
           </div>
         </div>
