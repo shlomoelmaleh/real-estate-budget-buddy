@@ -487,39 +487,45 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           gap: 10px;
           ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
+
+        /* Email-safe vertical bars (pixel heights; avoids % height bugs in email clients) */
         .vertical-chart {
           display: flex;
           align-items: flex-end;
-          justify-content: space-around;
-          height: 180px;
-          padding: 10px 5px 0 5px;
+          justify-content: space-between;
+          height: 190px;
+          padding: 10px 4px 0 4px;
           border-bottom: 2px solid #e2e8f0;
           margin-bottom: 8px;
-          gap: 4px;
+          gap: 6px;
         }
         .vertical-bar-group {
           display: flex;
           flex-direction: column;
           align-items: center;
+          justify-content: flex-end;
+          height: 100%;
           flex: 1;
-          max-width: 40px;
+          min-width: 18px;
+          max-width: 34px;
         }
         .vertical-bar {
           width: 100%;
           border-radius: 4px 4px 0 0;
-          min-height: 4px;
+          display: block;
         }
         .vertical-bar-balance {
           background: linear-gradient(180deg, #3b82f6, #60a5fa);
         }
         .vertical-bar-stacked {
-          display: flex;
-          flex-direction: column-reverse;
           width: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
         }
         .vertical-bar-principal {
           background: linear-gradient(180deg, #10b981, #34d399);
-          border-radius: 0 0 0 0;
+          border-radius: 0;
         }
         .vertical-bar-interest {
           background: linear-gradient(180deg, #f59e0b, #fbbf24);
@@ -530,7 +536,11 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           color: #64748b;
           margin-top: 6px;
           text-align: center;
+          line-height: 1;
+          direction: ltr !important;
+          unicode-bidi: bidi-override;
         }
+
         .chart-legend {
           display: flex;
           gap: 20px;
@@ -727,50 +737,49 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
       </div>
 
-      <!-- Chart: Loan Balance Over Time (Vertical) -->
+      <!-- Chart: Loan Balance Over Time (Vertical / email-safe) -->
       ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
       <div class="chart-section">
         <div class="chart-title">📉 ${t.chartBalanceTitle}</div>
         <div class="vertical-chart">
           ${(() => {
+            const CHART_H = 160;
             const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
             return yearlyBalanceData.map(d => {
-              const heightPct = (d.balance / maxBalance * 100).toFixed(1);
+              const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
               return `
                 <div class="vertical-bar-group">
-                  <div class="vertical-bar vertical-bar-balance" style="height: ${heightPct}%;"></div>
-                  <div class="vertical-bar-label">${d.year}</div>
+                  <div class="vertical-bar vertical-bar-balance" style="height: ${barH}px;"></div>
+                  <div class="vertical-bar-label" dir="ltr">${d.year}</div>
                 </div>
               `;
             }).join('');
           })()}
         </div>
-        <div class="chart-legend">
-          <div class="chart-legend-item">
-            <div class="chart-legend-color" style="background: linear-gradient(180deg, #3b82f6, #60a5fa);"></div>
-            <span>${t.chartBalanceTitle}</span>
-          </div>
-        </div>
       </div>
       ` : ''}
 
-      <!-- Chart: Payment Breakdown by Year (Vertical Stacked) -->
+      <!-- Chart: Payment Breakdown by Year (Vertical stacked / email-safe) -->
       ${paymentBreakdownData && paymentBreakdownData.length > 0 ? `
       <div class="chart-section">
         <div class="chart-title">📊 ${t.chartPaymentTitle}</div>
         <div class="vertical-chart">
           ${(() => {
-            const maxPayment = Math.max(...paymentBreakdownData.map(d => d.principal + d.interest));
+            const CHART_H = 160;
+            const maxTotal = Math.max(...paymentBreakdownData.map(d => d.principal + d.interest));
             return paymentBreakdownData.map(d => {
-              const principalPct = (d.principal / maxPayment * 100).toFixed(1);
-              const interestPct = (d.interest / maxPayment * 100).toFixed(1);
+              const total = d.principal + d.interest;
+              const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
+              const principalH = Math.max(1, Math.round((d.principal / total) * totalH));
+              const interestH = Math.max(1, totalH - principalH);
+
               return `
                 <div class="vertical-bar-group">
-                  <div class="vertical-bar-stacked" style="height: ${parseFloat(principalPct) + parseFloat(interestPct)}%;">
-                    <div class="vertical-bar vertical-bar-principal" style="height: ${(d.principal / (d.principal + d.interest) * 100).toFixed(1)}%;"></div>
-                    <div class="vertical-bar vertical-bar-interest" style="height: ${(d.interest / (d.principal + d.interest) * 100).toFixed(1)}%;"></div>
+                  <div class="vertical-bar-stacked" style="height: ${totalH}px;">
+                    <div class="vertical-bar vertical-bar-principal" style="height: ${principalH}px;"></div>
+                    <div class="vertical-bar vertical-bar-interest" style="height: ${interestH}px;"></div>
                   </div>
-                  <div class="vertical-bar-label">${d.year}</div>
+                  <div class="vertical-bar-label" dir="ltr">${d.year}</div>
                 </div>
               `;
             }).join('');
