@@ -31,7 +31,7 @@ export function BudgetCalculator() {
   const [email, setEmail] = useState('');
   const [equity, setEquity] = useState('1,000,000');
   const [netIncome, setNetIncome] = useState('');
-  const [ratio, setRatio] = useState('33');
+  // ratio is hidden - using default value
   const [age, setAge] = useState('');
   
   // New fields for LTV calculation
@@ -41,6 +41,7 @@ export function BudgetCalculator() {
   // Hidden defaults
   const maxAge = '80';
   const interest = '5.0';
+  const ratio = '33';
 
   // Rent & Investment
   const [isRented, setIsRented] = useState(false);
@@ -74,7 +75,7 @@ export function BudgetCalculator() {
     if (!email.trim()) errors.email = true;
     if (!equity.trim() || equity === '0') errors.equity = true;
     if (!netIncome.trim() || netIncome === '0') errors.netIncome = true;
-    if (!ratio.trim() || ratio === '0') errors.ratio = true;
+    // ratio is hidden - no validation needed
     if (!age.trim() || age === '0') errors.age = true;
     if (isFirstProperty === null) errors.isFirstProperty = true;
     if (isIsraeliCitizen === null) errors.isIsraeliCitizen = true;
@@ -334,16 +335,7 @@ export function BudgetCalculator() {
                 required
                 hasError={validationErrors.netIncome}
               />
-              <FormInput
-                label={t.ratio}
-                icon={<Percent className="w-4 h-4" />}
-                suffix="%"
-                value={ratio}
-                onChange={setRatio}
-                formatNumber
-                required
-                hasError={validationErrors.ratio}
-              />
+              {/* ratio is hidden - using default 33% */}
               <FormInput
                 label={t.age}
                 icon={<User className="w-4 h-4" />}
