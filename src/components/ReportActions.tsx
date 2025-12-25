@@ -130,6 +130,35 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
           : { principal: 0, interest: 0 },
       };
 
+      // Generate yearly balance data for chart
+      const yearlyBalanceData: { year: number; balance: number }[] = [];
+      for (let i = 0; i < amortization.length; i++) {
+        if ((i + 1) % 12 === 0 || i === amortization.length - 1) {
+          yearlyBalanceData.push({
+            year: Math.ceil((i + 1) / 12),
+            balance: amortization[i].closing,
+          });
+        }
+      }
+
+      // Generate payment breakdown by year
+      const paymentBreakdownData: { year: number; interest: number; principal: number }[] = [];
+      for (let yearIndex = 0; yearIndex < Math.ceil(amortization.length / 12); yearIndex++) {
+        const startMonth = yearIndex * 12;
+        const endMonth = Math.min(startMonth + 12, amortization.length);
+        let yearlyInterest = 0;
+        let yearlyPrincipal = 0;
+        for (let i = startMonth; i < endMonth; i++) {
+          yearlyInterest += amortization[i].interest;
+          yearlyPrincipal += amortization[i].principal;
+        }
+        paymentBreakdownData.push({
+          year: yearIndex + 1,
+          interest: yearlyInterest,
+          principal: yearlyPrincipal,
+        });
+      }
+
       const { data, error } = await supabase.functions.invoke('send-report-email', {
         body: {
           recipientEmail: clientEmail,
@@ -151,6 +180,8 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
             shekelRatio: results.totalCost / results.loanAmount,
           },
           amortizationSummary,
+          yearlyBalanceData,
+          paymentBreakdownData,
         },
       });
 
