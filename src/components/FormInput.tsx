@@ -11,6 +11,8 @@ interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   allowDecimals?: boolean;
   value: string;
   onChange: (value: string) => void;
+  required?: boolean;
+  hasError?: boolean;
 }
 
 export function FormInput({
@@ -22,6 +24,8 @@ export function FormInput({
   value,
   onChange,
   className,
+  required = false,
+  hasError = false,
   ...props
 }: FormInputProps) {
   const [displayValue, setDisplayValue] = useState(value);
@@ -62,6 +66,7 @@ export function FormInput({
       <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
         {icon && <span className="w-4 h-4 text-primary/70">{icon}</span>}
         {label}
+        {required && <span className="text-destructive">*</span>}
         {suffix && <span className="text-xs text-muted-foreground/70">({suffix})</span>}
       </Label>
       <Input
@@ -69,11 +74,14 @@ export function FormInput({
         value={displayValue}
         onChange={handleChange}
         className={cn(
-          "h-12 px-4 rounded-lg border border-border/60",
+          "h-12 px-4 rounded-lg border",
           "bg-card/80 backdrop-blur-sm",
           "focus:border-primary focus:ring-2 focus:ring-primary/20",
           "transition-all duration-200",
-          "text-base font-medium"
+          "text-base font-medium",
+          hasError 
+            ? "border-destructive focus:border-destructive focus:ring-destructive/20" 
+            : "border-border/60"
         )}
       />
     </div>
