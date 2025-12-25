@@ -52,6 +52,8 @@ interface ReportEmailRequest {
     firstPayment: { principal: number; interest: number };
     lastPayment: { principal: number; interest: number };
   };
+  yearlyBalanceData?: { year: number; balance: number }[];
+  paymentBreakdownData?: { year: number; interest: number; principal: number }[];
 }
 
 function formatNumber(num: number): string {
@@ -59,7 +61,7 @@ function formatNumber(num: number): string {
 }
 
 function getEmailContent(data: ReportEmailRequest): { subject: string; html: string } {
-  const { language, recipientName, recipientPhone, recipientEmail, inputs, results, amortizationSummary } = data;
+  const { language, recipientName, recipientPhone, recipientEmail, inputs, results, amortizationSummary, yearlyBalanceData, paymentBreakdownData } = data;
   
   const texts = {
     he: {
@@ -115,6 +117,9 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       lastPayment: 'תשלום אחרון',
       principal: 'קרן',
       interestLabel: 'ריבית',
+      chartBalanceTitle: 'יתרת הלוואה לאורך זמן',
+      chartPaymentTitle: 'פירוט תשלומים שנתי',
+      chartYear: 'שנה',
       footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
       note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.',
       advisorName: 'שלמה אלמליח',
@@ -169,6 +174,9 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       lastPayment: 'Last Payment',
       principal: 'Principal',
       interestLabel: 'Interest',
+      chartBalanceTitle: 'Loan Balance Over Time',
+      chartPaymentTitle: 'Annual Payment Breakdown',
+      chartYear: 'Year',
       footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
       note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.',
       advisorName: 'Shlomo Elmaleh',
@@ -223,6 +231,9 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       lastPayment: 'Dernier Paiement',
       principal: 'Capital',
       interestLabel: 'Intérêts',
+      chartBalanceTitle: 'Solde du Prêt dans le Temps',
+      chartPaymentTitle: 'Répartition Annuelle des Paiements',
+      chartYear: 'Année',
       footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
       note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
       advisorName: 'Shlomo Elmaleh',
@@ -456,6 +467,75 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           gap: 10px;
           ${isRTL ? 'flex-direction: row-reverse;' : ''}
         }
+        .chart-section {
+          background: white;
+          padding: 22px;
+          border-radius: 14px;
+          margin-bottom: 18px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+          border-${alignStart}: 5px solid #3b82f6;
+        }
+        .chart-title {
+          font-size: 17px;
+          font-weight: 700;
+          color: #1e40af;
+          margin-bottom: 18px;
+          padding-bottom: 12px;
+          border-bottom: 2px solid #e2e8f0;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
+        }
+        .chart-bar-container {
+          margin-bottom: 12px;
+        }
+        .chart-bar-label {
+          font-size: 12px;
+          color: #64748b;
+          margin-bottom: 4px;
+          display: flex;
+          justify-content: space-between;
+        }
+        .chart-bar-wrapper {
+          height: 24px;
+          background: #f1f5f9;
+          border-radius: 4px;
+          overflow: hidden;
+          display: flex;
+        }
+        .chart-bar-fill {
+          height: 100%;
+          transition: width 0.3s;
+        }
+        .chart-bar-balance {
+          background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+        .chart-bar-principal {
+          background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        .chart-bar-interest {
+          background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+        .chart-legend {
+          display: flex;
+          gap: 20px;
+          margin-top: 15px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .chart-legend-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: #64748b;
+        }
+        .chart-legend-color {
+          width: 14px;
+          height: 14px;
+          border-radius: 3px;
+        }
       </style>
     </head>
     <body style="direction: ${dir}; text-align: ${alignStart};">
@@ -632,6 +712,64 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           </div>
         </div>
       </div>
+
+      <!-- Chart: Loan Balance Over Time -->
+      ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
+      <div class="chart-section">
+        <div class="chart-title">📉 ${t.chartBalanceTitle}</div>
+        ${(() => {
+          const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
+          return yearlyBalanceData.map(d => `
+            <div class="chart-bar-container">
+              <div class="chart-bar-label">
+                <span>${t.chartYear} ${d.year}</span>
+                <span>₪ ${formatNumber(d.balance)}</span>
+              </div>
+              <div class="chart-bar-wrapper">
+                <div class="chart-bar-fill chart-bar-balance" style="width: ${(d.balance / maxBalance * 100).toFixed(1)}%;"></div>
+              </div>
+            </div>
+          `).join('');
+        })()}
+      </div>
+      ` : ''}
+
+      <!-- Chart: Payment Breakdown by Year -->
+      ${paymentBreakdownData && paymentBreakdownData.length > 0 ? `
+      <div class="chart-section">
+        <div class="chart-title">📊 ${t.chartPaymentTitle}</div>
+        ${(() => {
+          const maxPayment = Math.max(...paymentBreakdownData.map(d => d.principal + d.interest));
+          return paymentBreakdownData.map(d => {
+            const total = d.principal + d.interest;
+            const principalPct = (d.principal / maxPayment * 100).toFixed(1);
+            const interestPct = (d.interest / maxPayment * 100).toFixed(1);
+            return `
+              <div class="chart-bar-container">
+                <div class="chart-bar-label">
+                  <span>${t.chartYear} ${d.year}</span>
+                  <span>₪ ${formatNumber(total)}</span>
+                </div>
+                <div class="chart-bar-wrapper">
+                  <div class="chart-bar-fill chart-bar-principal" style="width: ${principalPct}%;"></div>
+                  <div class="chart-bar-fill chart-bar-interest" style="width: ${interestPct}%;"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        })()}
+        <div class="chart-legend">
+          <div class="chart-legend-item">
+            <div class="chart-legend-color" style="background: linear-gradient(90deg, #10b981, #34d399);"></div>
+            <span>${t.principal}</span>
+          </div>
+          <div class="chart-legend-item">
+            <div class="chart-legend-color" style="background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+            <span>${t.interestLabel}</span>
+          </div>
+        </div>
+      </div>
+      ` : ''}
 
       <!-- Amortization Summary -->
       <div class="section">
