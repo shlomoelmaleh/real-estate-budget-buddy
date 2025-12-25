@@ -83,6 +83,10 @@ export interface Translations {
   confirmationTitle: string;
   confirmationMessage: string;
   requiredField: string;
+  isFirstProperty: string;
+  isIsraeliCitizen: string;
+  yes: string;
+  no: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -164,7 +168,11 @@ export const translations: Record<Language, Translations> = {
     advisorEmail: "shlomo.elmaleh@gmail.com",
     confirmationTitle: "תודה רבה!",
     confirmationMessage: "הדוח נשלח לכתובת האימייל שלך. נציג יצור איתך קשר בהקדם.",
-    requiredField: "שדה חובה"
+    requiredField: "שדה חובה",
+    isFirstProperty: "נכס ראשון בישראל?",
+    isIsraeliCitizen: "בעל אזרחות ישראלית?",
+    yes: "כן",
+    no: "לא"
   },
   en: {
     dir: 'ltr',
@@ -244,7 +252,11 @@ export const translations: Record<Language, Translations> = {
     advisorEmail: "shlomo.elmaleh@gmail.com",
     confirmationTitle: "Thank You!",
     confirmationMessage: "The report has been sent to your email. A representative will contact you shortly.",
-    requiredField: "Required field"
+    requiredField: "Required field",
+    isFirstProperty: "First property in Israel?",
+    isIsraeliCitizen: "Israeli citizenship?",
+    yes: "Yes",
+    no: "No"
   },
   fr: {
     dir: 'ltr',
@@ -324,6 +336,10 @@ export const translations: Record<Language, Translations> = {
     advisorEmail: "shlomo.elmaleh@gmail.com",
     confirmationTitle: "Merci !",
     confirmationMessage: "Le rapport a été envoyé à votre adresse email. Un conseiller vous contactera prochainement.",
-    requiredField: "Champ obligatoire"
+    requiredField: "Champ obligatoire",
+    isFirstProperty: "Votre premier bien en Israël ?",
+    isIsraeliCitizen: "Avez-vous la nationalité israélienne ?",
+    yes: "Oui",
+    no: "Non"
   }
 };

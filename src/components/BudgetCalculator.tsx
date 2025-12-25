@@ -30,12 +30,17 @@ export function BudgetCalculator() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [equity, setEquity] = useState('1,000,000');
-  const [ltv, setLtv] = useState('75');
   const [netIncome, setNetIncome] = useState('');
   const [ratio, setRatio] = useState('33');
   const [age, setAge] = useState('');
-  const [maxAge, setMaxAge] = useState('85');
-  const [interest, setInterest] = useState('5.0');
+  
+  // New fields for LTV calculation
+  const [isFirstProperty, setIsFirstProperty] = useState<boolean | null>(null);
+  const [isIsraeliCitizen, setIsIsraeliCitizen] = useState<boolean | null>(null);
+  
+  // Hidden defaults
+  const maxAge = '80';
+  const interest = '5.0';
 
   // Rent & Investment
   const [isRented, setIsRented] = useState(false);
@@ -68,15 +73,21 @@ export function BudgetCalculator() {
     if (!phone.trim()) errors.phone = true;
     if (!email.trim()) errors.email = true;
     if (!equity.trim() || equity === '0') errors.equity = true;
-    if (!ltv.trim() || ltv === '0') errors.ltv = true;
     if (!netIncome.trim() || netIncome === '0') errors.netIncome = true;
     if (!ratio.trim() || ratio === '0') errors.ratio = true;
     if (!age.trim() || age === '0') errors.age = true;
-    if (!maxAge.trim() || maxAge === '0') errors.maxAge = true;
-    if (!interest.trim() || interest === '0') errors.interest = true;
+    if (isFirstProperty === null) errors.isFirstProperty = true;
+    if (isIsraeliCitizen === null) errors.isIsraeliCitizen = true;
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  // Calculate LTV based on first property and citizenship
+  const calculateLTV = (): number => {
+    if (!isFirstProperty) return 50;
+    if (isIsraeliCitizen) return 75;
+    return 50;
   };
 
   const handleCalculate = async () => {
@@ -87,9 +98,11 @@ export function BudgetCalculator() {
 
     setIsSubmitting(true);
 
+    const calculatedLTV = calculateLTV();
+
     const inputs = {
       equity: parseFormattedNumber(equity),
-      ltv: parseFormattedNumber(ltv),
+      ltv: calculatedLTV,
       netIncome: parseFormattedNumber(netIncome),
       ratio: parseFormattedNumber(ratio),
       age: parseFormattedNumber(age),
@@ -141,7 +154,9 @@ export function BudgetCalculator() {
             language: t.dir === 'rtl' ? 'he' : 'fr',
             inputs: {
               equity,
-              ltv,
+              ltv: calculatedLTV.toString(),
+              isFirstProperty,
+              isIsraeliCitizen,
               netIncome,
               ratio,
               age,
@@ -240,16 +255,75 @@ export function BudgetCalculator() {
                 required
                 hasError={validationErrors.equity}
               />
-              <FormInput
-                label={t.ltv}
-                icon={<Building className="w-4 h-4" />}
-                suffix="%"
-                value={ltv}
-                onChange={setLtv}
-                formatNumber
-                required
-                hasError={validationErrors.ltv}
-              />
+              
+              {/* First Property Question */}
+              <div className={cn("space-y-2", validationErrors.isFirstProperty && "ring-2 ring-destructive rounded-lg p-3")}>
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  <Home className="w-4 h-4" />
+                  {t.isFirstProperty} <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsFirstProperty(true)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg border transition-all",
+                      isFirstProperty === true
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.yes}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsFirstProperty(false)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg border transition-all",
+                      isFirstProperty === false
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.no}
+                  </button>
+                </div>
+              </div>
+
+              {/* Israeli Citizenship Question */}
+              <div className={cn("space-y-2", validationErrors.isIsraeliCitizen && "ring-2 ring-destructive rounded-lg p-3")}>
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  {t.isIsraeliCitizen} <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliCitizen(true)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg border transition-all",
+                      isIsraeliCitizen === true
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.yes}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliCitizen(false)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg border transition-all",
+                      isIsraeliCitizen === false
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.no}
+                  </button>
+                </div>
+              </div>
+
               <FormInput
                 label={t.netIncome}
                 icon={<TrendingUp className="w-4 h-4" />}
@@ -278,27 +352,6 @@ export function BudgetCalculator() {
                 formatNumber
                 required
                 hasError={validationErrors.age}
-              />
-              <FormInput
-                label={t.maxAge}
-                icon={<Clock className="w-4 h-4" />}
-                value={maxAge}
-                onChange={setMaxAge}
-                formatNumber
-                required
-                hasError={validationErrors.maxAge}
-              />
-              <FormInput
-                label={t.interest}
-                icon={<Percent className="w-4 h-4" />}
-                suffix="%"
-                value={interest}
-                onChange={setInterest}
-                allowDecimals
-                formatNumber
-                className="md:col-span-2"
-                required
-                hasError={validationErrors.interest}
               />
             </div>
           </FormSection>
