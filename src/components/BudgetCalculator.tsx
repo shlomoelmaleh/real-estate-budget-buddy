@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   User, Home, Calculator, 
   UserCircle, Phone, Mail, Banknote, Building, 
-  TrendingUp, Percent, Clock, Lock, CheckCircle2
+  TrendingUp, Percent, Clock, Lock, CheckCircle2, Flag, Wallet
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HeroHeader } from './HeroHeader';
@@ -215,12 +215,12 @@ export function BudgetCalculator() {
       <main className="max-w-4xl mx-auto px-4 pb-12 space-y-8">
         {/* Form */}
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-          {/* Basic Information */}
-          <FormSection icon={<User className="w-5 h-5 text-primary" />} title={t.titleBase} variant="primary">
+          {/* Personal Information */}
+          <FormSection icon={<UserCircle className="w-5 h-5 text-primary" />} title={t.titlePersonal} variant="primary">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <FormInput
                 label={t.fullName}
-                icon={<UserCircle className="w-4 h-4" />}
+                icon={<User className="w-4 h-4" />}
                 value={fullName}
                 onChange={setFullName}
                 type="text"
@@ -242,21 +242,24 @@ export function BudgetCalculator() {
                 value={email}
                 onChange={setEmail}
                 type="email"
-                className="md:col-span-2"
                 required
                 hasError={validationErrors.email}
               />
               <FormInput
-                label={t.equity}
-                icon={<Banknote className="w-4 h-4" />}
-                suffix="₪"
-                value={equity}
-                onChange={setEquity}
+                label={t.age}
+                icon={<Clock className="w-4 h-4" />}
+                value={age}
+                onChange={setAge}
                 formatNumber
                 required
-                hasError={validationErrors.equity}
+                hasError={validationErrors.age}
               />
-              
+            </div>
+          </FormSection>
+
+          {/* Property Status */}
+          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titlePropertyStatus} variant="secondary">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* First Property Question */}
               <div className={cn("space-y-2", validationErrors.isFirstProperty && "ring-2 ring-destructive rounded-lg p-3")}>
                 <Label className="text-sm font-medium flex items-center gap-1">
@@ -294,7 +297,7 @@ export function BudgetCalculator() {
               {/* Israeli Citizenship Question */}
               <div className={cn("space-y-2", validationErrors.isIsraeliCitizen && "ring-2 ring-destructive rounded-lg p-3")}>
                 <Label className="text-sm font-medium flex items-center gap-1">
-                  <User className="w-4 h-4" />
+                  <Flag className="w-4 h-4" />
                   {t.isIsraeliCitizen} <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex gap-4">
@@ -324,7 +327,22 @@ export function BudgetCalculator() {
                   </button>
                 </div>
               </div>
+            </div>
+          </FormSection>
 
+          {/* Financial Information */}
+          <FormSection icon={<Wallet className="w-5 h-5 text-accent" />} title={t.titleFinancial} variant="accent">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <FormInput
+                label={t.equity}
+                icon={<Banknote className="w-4 h-4" />}
+                suffix="₪"
+                value={equity}
+                onChange={setEquity}
+                formatNumber
+                required
+                hasError={validationErrors.equity}
+              />
               <FormInput
                 label={t.netIncome}
                 icon={<TrendingUp className="w-4 h-4" />}
@@ -334,16 +352,6 @@ export function BudgetCalculator() {
                 formatNumber
                 required
                 hasError={validationErrors.netIncome}
-              />
-              {/* ratio is hidden - using default 33% */}
-              <FormInput
-                label={t.age}
-                icon={<User className="w-4 h-4" />}
-                value={age}
-                onChange={setAge}
-                formatNumber
-                required
-                hasError={validationErrors.age}
               />
             </div>
           </FormSection>
