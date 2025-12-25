@@ -138,13 +138,49 @@ export function BudgetCalculator() {
       try {
         const amortizationSummary = {
           totalMonths: amortRows.length,
-          firstPayment: amortRows.length > 0 
-            ? { principal: amortRows[0].principal, interest: amortRows[0].interest }
-            : { principal: 0, interest: 0 },
-          lastPayment: amortRows.length > 0 
-            ? { principal: amortRows[amortRows.length - 1].principal, interest: amortRows[amortRows.length - 1].interest }
-            : { principal: 0, interest: 0 },
+          firstPayment:
+            amortRows.length > 0
+              ? { principal: amortRows[0].principal, interest: amortRows[0].interest }
+              : { principal: 0, interest: 0 },
+          lastPayment:
+            amortRows.length > 0
+              ? {
+                  principal: amortRows[amortRows.length - 1].principal,
+                  interest: amortRows[amortRows.length - 1].interest,
+                }
+              : { principal: 0, interest: 0 },
         };
+
+        // Chart data: Loan balance by year
+        const yearlyBalanceData: { year: number; balance: number }[] = [];
+        for (let i = 0; i < amortRows.length; i++) {
+          if ((i + 1) % 12 === 0 || i === amortRows.length - 1) {
+            yearlyBalanceData.push({
+              year: Math.ceil((i + 1) / 12),
+              balance: amortRows[i].closing,
+            });
+          }
+        }
+
+        // Chart data: Annual interest vs principal
+        const paymentBreakdownData: { year: number; interest: number; principal: number }[] = [];
+        for (let yearIndex = 0; yearIndex < Math.ceil(amortRows.length / 12); yearIndex++) {
+          const startMonth = yearIndex * 12;
+          const endMonth = Math.min(startMonth + 12, amortRows.length);
+
+          let yearlyInterest = 0;
+          let yearlyPrincipal = 0;
+          for (let i = startMonth; i < endMonth; i++) {
+            yearlyInterest += amortRows[i].interest;
+            yearlyPrincipal += amortRows[i].principal;
+          }
+
+          paymentBreakdownData.push({
+            year: yearIndex + 1,
+            interest: yearlyInterest,
+            principal: yearlyPrincipal,
+          });
+        }
 
         const { supabase } = await import('@/integrations/supabase/client');
         const { error } = await supabase.functions.invoke('send-report-email', {
@@ -190,6 +226,8 @@ export function BudgetCalculator() {
               shekelRatio: calcResults.totalCost / calcResults.loanAmount,
             },
             amortizationSummary,
+            yearlyBalanceData,
+            paymentBreakdownData,
           },
         });
 
