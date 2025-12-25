@@ -488,54 +488,49 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
 
-        /* Email-safe vertical bars (pixel heights; avoids % height bugs in email clients) */
-        .vertical-chart {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
+        /* Email-safe vertical charts: use TABLE layout (works in Gmail/Outlook). */
+        .vchart {
+          width: 100%;
           height: 190px;
-          padding: 10px 4px 0 4px;
+          table-layout: fixed;
+          border-collapse: collapse;
           border-bottom: 2px solid #e2e8f0;
+          direction: ltr !important; /* prevents RTL reversing years order */
+          unicode-bidi: bidi-override;
           margin-bottom: 8px;
-          gap: 6px;
         }
-        .vertical-bar-group {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: flex-end;
-          height: 100%;
-          flex: 1;
-          min-width: 18px;
-          max-width: 34px;
+        .vchart td {
+          vertical-align: bottom;
+          text-align: center;
+          padding: 0 3px;
         }
-        .vertical-bar {
+        .vbar {
           width: 100%;
           border-radius: 4px 4px 0 0;
           display: block;
+          margin: 0 auto;
         }
-        .vertical-bar-balance {
+        .vbar-balance {
           background: linear-gradient(180deg, #3b82f6, #60a5fa);
         }
-        .vertical-bar-stacked {
+        .vstack {
           width: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-        }
-        .vertical-bar-principal {
-          background: linear-gradient(180deg, #10b981, #34d399);
-          border-radius: 0;
-        }
-        .vertical-bar-interest {
-          background: linear-gradient(180deg, #f59e0b, #fbbf24);
+          display: block;
           border-radius: 4px 4px 0 0;
+          overflow: hidden;
         }
-        .vertical-bar-label {
+        .vbar-principal {
+          background: linear-gradient(180deg, #10b981, #34d399);
+          display: block;
+        }
+        .vbar-interest {
+          background: linear-gradient(180deg, #f59e0b, #fbbf24);
+          display: block;
+        }
+        .vlabel {
           font-size: 10px;
           color: #64748b;
           margin-top: 6px;
-          text-align: center;
           line-height: 1;
           direction: ltr !important;
           unicode-bidi: bidi-override;
@@ -737,54 +732,71 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
       </div>
 
-      <!-- Chart: Loan Balance Over Time (Vertical / email-safe) -->
+      <!-- Chart: Loan Balance Over Time (Vertical / email-safe table) -->
       ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
       <div class="chart-section">
         <div class="chart-title">📉 ${t.chartBalanceTitle}</div>
-        <div class="vertical-chart">
-          ${(() => {
-            const CHART_H = 160;
-            const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
-            return yearlyBalanceData.map(d => {
-              const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
-              return `
-                <div class="vertical-bar-group">
-                  <div class="vertical-bar vertical-bar-balance" style="height: ${barH}px;"></div>
-                  <div class="vertical-bar-label" dir="ltr">${d.year}</div>
-                </div>
-              `;
-            }).join('');
-          })()}
-        </div>
+        ${(() => {
+          const CHART_H = 160;
+          const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
+          return `
+            <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                ${yearlyBalanceData
+                  .slice()
+                  .sort((a, b) => a.year - b.year)
+                  .map(d => {
+                    const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
+                    return `
+                      <td>
+                        <div class="vbar vbar-balance" style="height: ${barH}px;"></div>
+                        <div class="vlabel" dir="ltr">${d.year}</div>
+                      </td>
+                    `;
+                  })
+                  .join('')}
+              </tr>
+            </table>
+          `;
+        })()}
       </div>
       ` : ''}
 
-      <!-- Chart: Payment Breakdown by Year (Vertical stacked / email-safe) -->
+      <!-- Chart: Payment Breakdown by Year (Vertical stacked / email-safe table) -->
       ${paymentBreakdownData && paymentBreakdownData.length > 0 ? `
       <div class="chart-section">
         <div class="chart-title">📊 ${t.chartPaymentTitle}</div>
-        <div class="vertical-chart">
-          ${(() => {
-            const CHART_H = 160;
-            const maxTotal = Math.max(...paymentBreakdownData.map(d => d.principal + d.interest));
-            return paymentBreakdownData.map(d => {
-              const total = d.principal + d.interest;
-              const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
-              const principalH = Math.max(1, Math.round((d.principal / total) * totalH));
-              const interestH = Math.max(1, totalH - principalH);
+        ${(() => {
+          const CHART_H = 160;
+          const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
+          const maxTotal = Math.max(...rows.map(d => d.principal + d.interest));
 
-              return `
-                <div class="vertical-bar-group">
-                  <div class="vertical-bar-stacked" style="height: ${totalH}px;">
-                    <div class="vertical-bar vertical-bar-principal" style="height: ${principalH}px;"></div>
-                    <div class="vertical-bar vertical-bar-interest" style="height: ${interestH}px;"></div>
-                  </div>
-                  <div class="vertical-bar-label" dir="ltr">${d.year}</div>
-                </div>
-              `;
-            }).join('');
-          })()}
-        </div>
+          return `
+            <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                ${rows
+                  .map(d => {
+                    const total = d.principal + d.interest;
+                    const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
+                    const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
+                    const principalH = Math.max(1, totalH - interestH);
+
+                    // Interest should be on TOP, principal at the bottom (more intuitive)
+                    return `
+                      <td>
+                        <div class="vstack" style="height: ${totalH}px;">
+                          <div class="vbar vbar-interest" style="height: ${interestH}px;"></div>
+                          <div class="vbar vbar-principal" style="height: ${principalH}px;"></div>
+                        </div>
+                        <div class="vlabel" dir="ltr">${d.year}</div>
+                      </td>
+                    `;
+                  })
+                  .join('')}
+              </tr>
+            </table>
+          `;
+        })()}
         <div class="chart-legend">
           <div class="chart-legend-item">
             <div class="chart-legend-color" style="background: linear-gradient(180deg, #10b981, #34d399);"></div>
