@@ -965,8 +965,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { subject, html } = getEmailContent(data);
 
-    // Send email to client with advisor in BCC
-    const res = await fetch("https://api.resend.com/emails", {
+    // Try to send to client from verified domain
+    // If the domain isn't verified yet, fallback to advisor-only so the app doesn't break.
+    const primaryRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -981,18 +982,77 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    if (!res.ok) {
-      const error = await res.text();
-      throw new Error(error);
+    if (!primaryRes.ok) {
+      const errorText = await primaryRes.text();
+      console.error("Primary email send failed:", primaryRes.status, errorText);
+
+      const isDomainNotVerified =
+        primaryRes.status === 403 &&
+        errorText.toLowerCase().includes("domain is not verified");
+
+      if (!isDomainNotVerified) {
+        throw new Error(errorText);
+      }
+
+      // Fallback: send to advisor only using Resend test sender
+      const fallbackRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: "Property Budget Pro <onboarding@resend.dev>",
+          to: [ADVISOR_EMAIL],
+          subject: `🔔 Nouvelle simulation - ${data.recipientName} (${data.recipientEmail})`,
+          html,
+        }),
+      });
+
+      if (!fallbackRes.ok) {
+        const fallbackError = await fallbackRes.text();
+        console.error(
+          "Fallback advisor-only email send failed:",
+          fallbackRes.status,
+          fallbackError
+        );
+        throw new Error(fallbackError);
+      }
+
+      const fallbackResponse = await fallbackRes.json();
+      console.log(
+        "Fallback email sent to advisor (domain not verified):",
+        fallbackResponse
+      );
+
+      return new Response(
+        JSON.stringify({
+          deliveredToClient: false,
+          deliveredToAdvisor: true,
+          reason: "domain_not_verified",
+          resend: fallbackResponse,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
-    const emailResponse = await res.json();
+    const emailResponse = await primaryRes.json();
     console.log("Email sent successfully to client:", data.recipientEmail, emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return new Response(
+      JSON.stringify({
+        deliveredToClient: true,
+        deliveredToAdvisor: true,
+        resend: emailResponse,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   } catch (error: any) {
     console.error("Error in send-report-email function:", error);
     return new Response(
