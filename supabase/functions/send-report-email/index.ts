@@ -16,6 +16,9 @@ interface ReportEmailRequest {
   inputs: {
     equity: string;
     ltv: string;
+    isFirstProperty: boolean;
+    isIsraeliCitizen: boolean;
+    isIsraeliTaxResident: boolean;
     netIncome: string;
     ratio: string;
     age: string;
@@ -25,9 +28,6 @@ interface ReportEmailRequest {
     rentalYield: string;
     rentRecognition: string;
     budgetCap: string;
-    purchaseTaxMode: 'percent' | 'fixed';
-    purchaseTaxPercent: string;
-    purchaseTaxFixed: string;
     lawyerPct: string;
     brokerPct: string;
     vatPct: string;
@@ -46,6 +46,8 @@ interface ReportEmailRequest {
     totalCost: number;
     loanTermYears: number;
     shekelRatio: number;
+    purchaseTax: number;
+    taxProfile: 'SINGLE_HOME' | 'INVESTOR';
   };
   amortizationSummary: {
     totalMonths: number;
@@ -90,7 +92,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       no: 'לא',
       // Expenses
       expensesInfo: 'הוצאות נלוות',
-      purchaseTax: 'מס רכישה',
+      purchaseTax: 'מס רכישה מחושב',
+      taxProfileLabel: 'סוג נכס',
+      taxProfileSingleHome: 'דירה יחידה',
+      taxProfileInvestor: 'דירה נוספת',
       lawyer: 'עו"ד',
       broker: 'תיווך',
       vat: 'מע"מ',
@@ -122,6 +127,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       chartYear: 'שנה',
       footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
       note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.',
+      taxDisclaimer: 'לתשומת לבך: חישוב מס הרכישה בסימולטור זה מבוסס על מדרגות המס הסטנדרטיות (דירה יחידה או דירה נוספת). החישוב אינו לוקח בחשבון הטבות ספציפיות כגון: עולה חדש, נכות, או תושב חוזר. גובה המס הסופי ייקבע רק על ידי עו"ד מקרקעין.',
       advisorName: 'שלמה אלמליח',
       advisorPhone: '054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com'
@@ -149,7 +155,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       yes: 'Yes',
       no: 'No',
       expensesInfo: 'Closing Costs',
-      purchaseTax: 'Purchase Tax',
+      purchaseTax: 'Calculated Purchase Tax',
+      taxProfileLabel: 'Property Type',
+      taxProfileSingleHome: 'Single Home',
+      taxProfileInvestor: 'Additional Property',
       lawyer: 'Lawyer',
       broker: 'Broker',
       vat: 'VAT',
@@ -179,6 +188,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       chartYear: 'Year',
       footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
       note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.',
+      taxDisclaimer: 'Note: The purchase tax calculation is based on standard brackets (single or additional home). It does not account for specific benefits like New Immigrant (Oleh Hadash), disability, or returning resident. The final tax amount will be determined solely by a real estate lawyer.',
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com'
@@ -206,7 +216,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       yes: 'Oui',
       no: 'Non',
       expensesInfo: 'Frais Annexes',
-      purchaseTax: "Taxe d'acquisition",
+      purchaseTax: "Taxe d'acquisition calculée",
+      taxProfileLabel: 'Type de bien',
+      taxProfileSingleHome: 'Résidence principale',
+      taxProfileInvestor: "Bien d'investissement",
       lawyer: 'Avocat',
       broker: "Frais d'agence",
       vat: 'TVA',
@@ -236,6 +249,7 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       chartYear: 'Année',
       footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
       note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
+      taxDisclaimer: "Attention : Le calcul des droits de mutation est basé sur les barèmes standards. Il ne prend pas en compte les exonérations spécifiques (Oleh Hadash, handicap, etc.). Le montant définitif de la taxe doit être vérifié par un avocat spécialisé.",
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com'
@@ -656,7 +670,11 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         <div class="section-title">💰 ${t.expensesInfo}</div>
         <div class="row">
           <span class="label">${t.purchaseTax}</span>
-          <span class="value">${inputs.purchaseTaxMode === 'percent' ? inputs.purchaseTaxPercent + ' %' : '₪ ' + inputs.purchaseTaxFixed}</span>
+          <span class="value">₪ ${formatNumber(results.purchaseTax)}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.taxProfileLabel}</span>
+          <span class="value">${results.taxProfile === 'SINGLE_HOME' ? t.taxProfileSingleHome : t.taxProfileInvestor}</span>
         </div>
         <div class="row">
           <span class="label">${t.lawyer}</span>
@@ -841,6 +859,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
 
       <div class="note">
         ⚠️ ${t.note}
+      </div>
+
+      <div class="note" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #f59e0b; margin-top: 12px;">
+        ⚠️ ${t.taxDisclaimer}
       </div>
 
       <div class="footer">
