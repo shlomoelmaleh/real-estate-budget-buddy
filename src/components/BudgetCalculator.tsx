@@ -37,6 +37,7 @@ export function BudgetCalculator() {
   // New fields for LTV calculation
   const [isFirstProperty, setIsFirstProperty] = useState<boolean | null>(null);
   const [isIsraeliCitizen, setIsIsraeliCitizen] = useState<boolean | null>(null);
+  const [isIsraeliTaxResident, setIsIsraeliTaxResident] = useState<boolean | null>(null);
   
   // Hidden defaults
   const maxAge = '80';
@@ -79,6 +80,7 @@ export function BudgetCalculator() {
     if (!age.trim() || age === '0') errors.age = true;
     if (isFirstProperty === null) errors.isFirstProperty = true;
     if (isIsraeliCitizen === null) errors.isIsraeliCitizen = true;
+    if (isIsraeliTaxResident === null) errors.isIsraeliTaxResident = true;
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -194,6 +196,7 @@ export function BudgetCalculator() {
               ltv: calculatedLTV.toString(),
               isFirstProperty,
               isIsraeliCitizen,
+              isIsraeliTaxResident,
               netIncome,
               ratio,
               age,
@@ -357,6 +360,40 @@ export function BudgetCalculator() {
                     className={cn(
                       "px-4 py-2 rounded-lg border transition-all",
                       isIsraeliCitizen === false
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.no}
+                  </button>
+                </div>
+              </div>
+
+              {/* Israeli Tax Resident Question */}
+              <div className={cn("space-y-2", validationErrors.isIsraeliTaxResident && "ring-2 ring-destructive rounded-lg p-3")}>
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  <Banknote className="w-4 h-4" />
+                  {t.isIsraeliTaxResident} <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliTaxResident(true)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg border transition-all",
+                      isIsraeliTaxResident === true
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.yes}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliTaxResident(false)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg border transition-all",
+                      isIsraeliTaxResident === false
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-background border-border hover:border-primary"
                     )}
