@@ -112,6 +112,8 @@ export function LoanCharts({ amortization, loanAmount }: LoanChartsProps) {
                 className="text-xs" 
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
                 tickFormatter={(value) => `₪${(value / 1000).toFixed(0)}K`}
+                domain={[0, 'dataMax']}
+                tickCount={5}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area 
@@ -149,6 +151,8 @@ export function LoanCharts({ amortization, loanAmount }: LoanChartsProps) {
                 className="text-xs" 
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
                 tickFormatter={(value) => `₪${(value / 1000).toFixed(0)}K`}
+                domain={[0, 'dataMax']}
+                tickCount={5}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend 
