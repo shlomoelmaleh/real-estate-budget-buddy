@@ -85,6 +85,7 @@ export interface Translations {
   requiredField: string;
   isFirstProperty: string;
   isIsraeliCitizen: string;
+  isIsraeliTaxResident: string;
   yes: string;
   no: string;
   titlePersonal: string;
@@ -174,6 +175,7 @@ export const translations: Record<Language, Translations> = {
     requiredField: "שדה חובה",
     isFirstProperty: "נכס ראשון בישראל?",
     isIsraeliCitizen: "בעל אזרחות ישראלית?",
+    isIsraeliTaxResident: "תושב לצרכי מס בישראל?",
     yes: "כן",
     no: "לא",
     titlePersonal: "פרטים אישיים",
@@ -261,6 +263,7 @@ export const translations: Record<Language, Translations> = {
     requiredField: "Required field",
     isFirstProperty: "First property in Israel?",
     isIsraeliCitizen: "Israeli citizenship?",
+    isIsraeliTaxResident: "Israeli tax resident?",
     yes: "Yes",
     no: "No",
     titlePersonal: "Personal Information",
@@ -348,6 +351,7 @@ export const translations: Record<Language, Translations> = {
     requiredField: "Champ obligatoire",
     isFirstProperty: "Votre premier bien en Israël ?",
     isIsraeliCitizen: "Avez-vous la nationalité israélienne ?",
+    isIsraeliTaxResident: "Êtes-vous résident fiscal israélien ?",
     yes: "Oui",
     no: "Non",
     titlePersonal: "Informations Personnelles",
