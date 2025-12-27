@@ -223,12 +223,26 @@ export function calculate(inputs: CalculatorInputs): CalculatorResults | null {
   const recg = isRented ? rentRecognition / 100 : 0;
 
   // Calculate max price from income constraint
-  const loanFromEquityPrice = maxPriceFromEquity * l;
-  const maxPaymentFromIncome = netIncome * r;
-  const rentBoost = recg * yld * maxPriceFromEquity / 12;
-  const effectiveMaxPayment = maxPaymentFromIncome + rentBoost;
-  const maxLoanFromIncome = effectiveMaxPayment / A;
-  const maxPriceFromIncome = maxLoanFromIncome / l;
+  // When property is rented, the recognized rental income (80% of rental) is ADDED to net income
+  // Formula: maxPayment = ratio × (netIncome + recognizedRent)
+  // Where: recognizedRent = recg × yld × P / 12
+  // So: maxPayment = r × netIncome + r × recg × yld × P / 12
+  // And: loan = P × l, payment = A × loan = A × P × l
+  // Therefore: A × P × l = r × netIncome + r × recg × yld × P / 12
+  // Solving for P: P × (A × l - r × recg × yld / 12) = r × netIncome
+  // P = (r × netIncome) / (A × l - r × recg × yld / 12)
+  
+  const incomeComponent = r * netIncome;
+  const rentAdjustmentFactor = r * recg * yld / 12;
+  const loanPaymentFactor = A * l;
+  
+  let maxPriceFromIncome: number;
+  if (loanPaymentFactor > rentAdjustmentFactor) {
+    maxPriceFromIncome = incomeComponent / (loanPaymentFactor - rentAdjustmentFactor);
+  } else {
+    // If rental income recognition would cover more than the payment, cap at equity-based max
+    maxPriceFromIncome = Infinity;
+  }
 
   // Apply budget cap if set
   let P_max = Math.min(maxPriceFromEquity, maxPriceFromIncome);
