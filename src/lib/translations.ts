@@ -96,6 +96,9 @@ export interface Translations {
   purchaseTaxCalculated: string;
   taxProfileSingleHome: string;
   taxProfileInvestor: string;
+  // Equity usage
+  equityUsed: string;
+  equityRemaining: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -190,7 +193,10 @@ export const translations: Record<Language, Translations> = {
     taxDisclaimer: "לתשומת לבך: חישוב מס הרכישה בסימולטור זה מבוסס על מדרגות המס הסטנדרטיות (דירה יחידה או דירה נוספת). החישוב אינו לוקח בחשבון הטבות ספציפיות כגון: עולה חדש, נכות, או תושב חוזר. גובה המס הסופי ייקבע רק על ידי עו\"ד מקרקעין.",
     purchaseTaxCalculated: "מס רכישה מחושב",
     taxProfileSingleHome: "דירה יחידה",
-    taxProfileInvestor: "דירה נוספת"
+    taxProfileInvestor: "דירה נוספת",
+    // Equity usage
+    equityUsed: "הון עצמי בשימוש",
+    equityRemaining: "יתרת הון עצמי"
   },
   en: {
     dir: 'ltr',
@@ -283,7 +289,10 @@ export const translations: Record<Language, Translations> = {
     taxDisclaimer: "Note: The purchase tax calculation is based on standard brackets (single or additional home). It does not account for specific benefits like New Immigrant (Oleh Hadash), disability, or returning resident. The final tax amount will be determined solely by a real estate lawyer.",
     purchaseTaxCalculated: "Calculated Purchase Tax",
     taxProfileSingleHome: "Single Home",
-    taxProfileInvestor: "Additional Property"
+    taxProfileInvestor: "Additional Property",
+    // Equity usage
+    equityUsed: "Equity Used",
+    equityRemaining: "Remaining Equity"
   },
   fr: {
     dir: 'ltr',
@@ -376,6 +385,9 @@ export const translations: Record<Language, Translations> = {
     taxDisclaimer: "Attention : Le calcul des droits de mutation est basé sur les barèmes standards. Il ne prend pas en compte les exonérations spécifiques (Oleh Hadash, handicap, etc.). Le montant définitif de la taxe doit être vérifié par un avocat spécialisé.",
     purchaseTaxCalculated: "Taxe d'acquisition calculée",
     taxProfileSingleHome: "Résidence principale",
-    taxProfileInvestor: "Bien d'investissement"
+    taxProfileInvestor: "Bien d'investissement",
+    // Equity usage
+    equityUsed: "Apport utilisé",
+    equityRemaining: "Apport restant"
   }
 };
