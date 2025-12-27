@@ -557,31 +557,12 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         }
 
         /* Email-safe vertical charts: use TABLE layout (works in Gmail/Outlook). */
-        .chart-container {
-          display: flex;
-          direction: ltr !important;
-        }
-        .y-axis {
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          padding-right: 8px;
-          padding-bottom: 22px;
-          min-width: 55px;
-          text-align: right;
-        }
-        .y-axis-label {
-          font-size: 10px;
-          color: #64748b;
-          line-height: 1;
-        }
         .vchart {
-          flex: 1;
+          width: 100%;
           height: 190px;
           table-layout: fixed;
           border-collapse: collapse;
           border-bottom: 2px solid #e2e8f0;
-          border-left: 2px solid #e2e8f0;
           direction: ltr !important; /* prevents RTL reversing years order */
           unicode-bidi: bidi-override;
           margin-bottom: 8px;
@@ -831,33 +812,24 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         ${(() => {
           const CHART_H = 160;
           const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
-          const midBalance = maxBalance / 2;
-          const formatYAxis = (val: number) => val >= 1000000 ? `${(val / 1000000).toFixed(1)}M` : `${Math.round(val / 1000)}K`;
           return `
-            <div class="chart-container">
-              <div class="y-axis">
-                <span class="y-axis-label">₪${formatYAxis(maxBalance)}</span>
-                <span class="y-axis-label">₪${formatYAxis(midBalance)}</span>
-                <span class="y-axis-label">₪0</span>
-              </div>
-              <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                  ${yearlyBalanceData
-                    .slice()
-                    .sort((a, b) => a.year - b.year)
-                    .map(d => {
-                      const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
-                      return `
-                        <td>
-                          <div class="vbar vbar-balance" style="height: ${barH}px;"></div>
-                          <div class="vlabel" dir="ltr">${d.year}</div>
-                        </td>
-                      `;
-                    })
-                    .join('')}
-                </tr>
-              </table>
-            </div>
+            <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                ${yearlyBalanceData
+                  .slice()
+                  .sort((a, b) => a.year - b.year)
+                  .map(d => {
+                    const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
+                    return `
+                      <td>
+                        <div class="vbar vbar-balance" style="height: ${barH}px;"></div>
+                        <div class="vlabel" dir="ltr">${d.year}</div>
+                      </td>
+                    `;
+                  })
+                  .join('')}
+              </tr>
+            </table>
           `;
         })()}
       </div>
@@ -871,40 +843,31 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           const CHART_H = 160;
           const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
           const maxTotal = Math.max(...rows.map(d => d.principal + d.interest));
-          const midTotal = maxTotal / 2;
-          const formatYAxis = (val: number) => val >= 1000000 ? `${(val / 1000000).toFixed(1)}M` : `${Math.round(val / 1000)}K`;
 
           return `
-            <div class="chart-container">
-              <div class="y-axis">
-                <span class="y-axis-label">₪${formatYAxis(maxTotal)}</span>
-                <span class="y-axis-label">₪${formatYAxis(midTotal)}</span>
-                <span class="y-axis-label">₪0</span>
-              </div>
-              <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                  ${rows
-                    .map(d => {
-                      const total = d.principal + d.interest;
-                      const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
-                      const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
-                      const principalH = Math.max(1, totalH - interestH);
+            <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                ${rows
+                  .map(d => {
+                    const total = d.principal + d.interest;
+                    const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
+                    const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
+                    const principalH = Math.max(1, totalH - interestH);
 
-                      // Interest should be on TOP, principal at the bottom (more intuitive)
-                      return `
-                        <td>
-                          <div class="vstack" style="height: ${totalH}px;">
-                            <div class="vbar vbar-interest" style="height: ${interestH}px;"></div>
-                            <div class="vbar vbar-principal" style="height: ${principalH}px;"></div>
-                          </div>
-                          <div class="vlabel" dir="ltr">${d.year}</div>
-                        </td>
-                      `;
-                    })
-                    .join('')}
-                </tr>
-              </table>
-            </div>
+                    // Interest should be on TOP, principal at the bottom (more intuitive)
+                    return `
+                      <td>
+                        <div class="vstack" style="height: ${totalH}px;">
+                          <div class="vbar vbar-interest" style="height: ${interestH}px;"></div>
+                          <div class="vbar vbar-principal" style="height: ${principalH}px;"></div>
+                        </div>
+                        <div class="vlabel" dir="ltr">${d.year}</div>
+                      </td>
+                    `;
+                  })
+                  .join('')}
+              </tr>
+            </table>
           `;
         })()}
         <div class="chart-legend">
