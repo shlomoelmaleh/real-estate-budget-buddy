@@ -91,6 +91,11 @@ export interface Translations {
   titlePersonal: string;
   titlePropertyStatus: string;
   titleFinancial: string;
+  // NEW: Tax disclaimer & labels
+  taxDisclaimer: string;
+  purchaseTaxCalculated: string;
+  taxProfileSingleHome: string;
+  taxProfileInvestor: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -180,7 +185,12 @@ export const translations: Record<Language, Translations> = {
     no: "לא",
     titlePersonal: "פרטים אישיים",
     titlePropertyStatus: "מצב נכס",
-    titleFinancial: "נתונים פיננסיים"
+    titleFinancial: "נתונים פיננסיים",
+    // Tax disclaimer & labels
+    taxDisclaimer: "לתשומת לבך: חישוב מס הרכישה בסימולטור זה מבוסס על מדרגות המס הסטנדרטיות (דירה יחידה או דירה נוספת). החישוב אינו לוקח בחשבון הטבות ספציפיות כגון: עולה חדש, נכות, או תושב חוזר. גובה המס הסופי ייקבע רק על ידי עו\"ד מקרקעין.",
+    purchaseTaxCalculated: "מס רכישה מחושב",
+    taxProfileSingleHome: "דירה יחידה",
+    taxProfileInvestor: "דירה נוספת"
   },
   en: {
     dir: 'ltr',
@@ -268,7 +278,12 @@ export const translations: Record<Language, Translations> = {
     no: "No",
     titlePersonal: "Personal Information",
     titlePropertyStatus: "Property Status",
-    titleFinancial: "Financial Information"
+    titleFinancial: "Financial Information",
+    // Tax disclaimer & labels
+    taxDisclaimer: "Note: The purchase tax calculation is based on standard brackets (single or additional home). It does not account for specific benefits like New Immigrant (Oleh Hadash), disability, or returning resident. The final tax amount will be determined solely by a real estate lawyer.",
+    purchaseTaxCalculated: "Calculated Purchase Tax",
+    taxProfileSingleHome: "Single Home",
+    taxProfileInvestor: "Additional Property"
   },
   fr: {
     dir: 'ltr',
@@ -356,6 +371,11 @@ export const translations: Record<Language, Translations> = {
     no: "Non",
     titlePersonal: "Informations Personnelles",
     titlePropertyStatus: "Situation Immobilière",
-    titleFinancial: "Données Financières"
+    titleFinancial: "Données Financières",
+    // Tax disclaimer & labels
+    taxDisclaimer: "Attention : Le calcul des droits de mutation est basé sur les barèmes standards. Il ne prend pas en compte les exonérations spécifiques (Oleh Hadash, handicap, etc.). Le montant définitif de la taxe doit être vérifié par un avocat spécialisé.",
+    purchaseTaxCalculated: "Taxe d'acquisition calculée",
+    taxProfileSingleHome: "Résidence principale",
+    taxProfileInvestor: "Bien d'investissement"
   }
 };

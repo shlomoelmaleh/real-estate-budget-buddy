@@ -50,10 +50,7 @@ export function BudgetCalculator() {
   const [rentRecognition, setRentRecognition] = useState('80');
   const [budgetCap, setBudgetCap] = useState('');
 
-  // Expenses
-  const [purchaseTaxMode, setPurchaseTaxMode] = useState<'percent' | 'fixed'>('percent');
-  const [purchaseTaxPercent, setPurchaseTaxPercent] = useState('8.0');
-  const [purchaseTaxFixed, setPurchaseTaxFixed] = useState('');
+  // Expenses (purchase tax is now calculated automatically)
   const [lawyerPct, setLawyerPct] = useState('1.0');
   const [brokerPct, setBrokerPct] = useState('2.0');
   const [vatPct, setVatPct] = useState('18');
@@ -115,9 +112,10 @@ export function BudgetCalculator() {
       rentalYield: parseFloat(rentalYield) || 0,
       rentRecognition: parseFormattedNumber(rentRecognition),
       budgetCap: budgetCap ? parseFormattedNumber(budgetCap) : null,
-      purchaseTaxPercent: parseFloat(purchaseTaxPercent) || 0,
-      purchaseTaxFixed: parseFormattedNumber(purchaseTaxFixed),
-      isPurchaseTaxPercent: purchaseTaxMode === 'percent',
+      // Pass property status for automatic tax calculation
+      isFirstProperty: isFirstProperty ?? false,
+      isIsraeliTaxResident: isIsraeliTaxResident ?? false,
+      // Other costs
       lawyerPct: parseFloat(lawyerPct) || 0,
       brokerPct: parseFloat(brokerPct) || 0,
       vatPct: parseFormattedNumber(vatPct),
@@ -128,6 +126,14 @@ export function BudgetCalculator() {
     const calcResults = calculate(inputs);
     
     if (calcResults) {
+      // DEV console.log for debugging
+      console.log('[DEV] Budget Calculation:', {
+        InputEquity: parseFormattedNumber(equity),
+        Profile: calcResults.taxProfile,
+        MaxPrice: calcResults.maxPropertyValue,
+        Tax: calcResults.purchaseTax
+      });
+      
       setResults(calcResults);
       const amortRows = generateAmortizationTable(
         calcResults.loanAmount,
@@ -206,9 +212,6 @@ export function BudgetCalculator() {
               rentalYield,
               rentRecognition,
               budgetCap,
-              purchaseTaxMode,
-              purchaseTaxPercent,
-              purchaseTaxFixed,
               lawyerPct,
               brokerPct,
               vatPct,
@@ -227,6 +230,8 @@ export function BudgetCalculator() {
               totalCost: calcResults.totalCost,
               loanTermYears: calcResults.loanTermYears,
               shekelRatio: calcResults.totalCost / calcResults.loanAmount,
+              purchaseTax: calcResults.purchaseTax,
+              taxProfile: calcResults.taxProfile,
             },
             amortizationSummary,
             yearlyBalanceData,
@@ -492,13 +497,25 @@ export function BudgetCalculator() {
 
         {/* Confirmation Message - Client version only shows confirmation, no results */}
         {showConfirmation && (
-          <div className="mt-8 p-8 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl shadow-lg text-center animate-fade-in">
-            <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
+          <div className="mt-8 space-y-4 animate-fade-in">
+            <div className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl shadow-lg text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-green-800 mb-3">{t.confirmationTitle}</h3>
+              <p className="text-green-700 text-lg">{t.confirmationMessage}</p>
+              <p className="mt-4 text-sm text-green-600">{email}</p>
             </div>
-            <h3 className="text-2xl font-bold text-green-800 mb-3">{t.confirmationTitle}</h3>
-            <p className="text-green-700 text-lg">{t.confirmationMessage}</p>
-            <p className="mt-4 text-sm text-green-600">{email}</p>
+            
+            {/* Tax Disclaimer */}
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <span className="text-amber-600 text-lg flex-shrink-0">⚠️</span>
+                <p className="text-sm text-amber-800 leading-relaxed">
+                  {t.taxDisclaimer}
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
