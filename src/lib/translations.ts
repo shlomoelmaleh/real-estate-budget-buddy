@@ -22,11 +22,10 @@ export interface Translations {
   budgetCap: string;
   titleExpenses: string;
   purchaseTax: string;
-  lawyer: string;
-  broker: string;
-  vat: string;
-  advisor: string;
+  lawyerLabel: string;
+  brokerLabel: string;
   other: string;
+  ttc: string;
   calcBtn: string;
   titleResults: string;
   res_group1: string;
@@ -124,11 +123,10 @@ export const translations: Record<Language, Translations> = {
     budgetCap: "תקרת החזר חודשי",
     titleExpenses: "הוצאות נלוות",
     purchaseTax: "מס רכישה",
-    lawyer: "עו\"ד",
-    broker: "תיווך",
-    vat: "מע\"מ",
-    advisor: "יועץ משכנתא",
+    lawyerLabel: "עו\"ד (1% + מע\"מ)",
+    brokerLabel: "תיווך (2% + מע\"מ)",
     other: "שונות",
+    ttc: "כולל מע\"מ",
     calcBtn: "חשב עכשיו",
     titleResults: "תוצאות",
     res_group1: "שווי ומימון",
@@ -220,11 +218,10 @@ export const translations: Record<Language, Translations> = {
     budgetCap: "Monthly Payment Cap",
     titleExpenses: "Closing Costs",
     purchaseTax: "Purchase Tax",
-    lawyer: "Lawyer",
-    broker: "Broker",
-    vat: "VAT",
-    advisor: "Mortgage Advisor",
+    lawyerLabel: "Lawyer (1% + VAT)",
+    brokerLabel: "Broker (2% + VAT)",
     other: "Other Costs",
+    ttc: "incl. VAT",
     calcBtn: "Calculate Now",
     titleResults: "Calculation Results",
     res_group1: "Value & Financing",
@@ -316,11 +313,10 @@ export const translations: Record<Language, Translations> = {
     budgetCap: "Plafond Mensualité",
     titleExpenses: "Frais Annexes",
     purchaseTax: "Taxe d'acquisition",
-    lawyer: "Avocat",
-    broker: "Frais d'agence",
-    vat: "TVA",
-    advisor: "Courtier",
+    lawyerLabel: "Avocat (1% H.T)",
+    brokerLabel: "Frais d'agence (2% H.T)",
     other: "Divers",
+    ttc: "T.T.C",
     calcBtn: "Calculer le budget",
     titleResults: "Résultats",
     res_group1: "Valeur & Financement",
