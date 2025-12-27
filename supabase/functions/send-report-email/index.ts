@@ -64,7 +64,7 @@ interface ReportEmailRequest {
 }
 
 function formatNumber(num: number): string {
-  return num.toLocaleString('en-US');
+  return Math.round(num).toLocaleString('en-US');
 }
 
 function getEmailContent(data: ReportEmailRequest): { subject: string; html: string } {
@@ -710,16 +710,6 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           <span class="label">${t.isRented}</span>
           <span class="value">${inputs.isRented ? t.yes : t.no}</span>
         </div>
-        ${inputs.isRented ? `
-        <div class="row">
-          <span class="label">${t.rentalYield}</span>
-          <span class="value">${inputs.rentalYield} %</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.rentRecognition}</span>
-          <span class="value">${inputs.rentRecognition} %</span>
-        </div>
-        ` : ''}
         ${inputs.budgetCap ? `
         <div class="row">
           <span class="label">${t.budgetCap}</span>
