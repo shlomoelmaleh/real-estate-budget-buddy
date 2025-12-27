@@ -5,25 +5,12 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADVISOR_EMAIL = "shlomo.elmaleh@gmail.com";
 
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  "https://eshel-f.com",
-  "https://www.eshel-f.com",
-  "https://qtjbzvwgnqvtvykvjvgq.lovableproject.com",
-  "http://localhost:5173",
-  "http://localhost:8080",
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o.replace(/\/$/, ''))) 
-    ? origin 
-    : ALLOWED_ORIGINS[0];
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-  };
-}
+// CORS headers - allow all origins for this public calculator
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
 // Input validation schema
 const EmailRequestSchema = z.object({
@@ -1083,11 +1070,8 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
 const handler = async (req: Request): Promise<Response> => {
   console.log("send-report-email function called");
   
-  const origin = req.headers.get("origin");
-  const headers = getCorsHeaders(origin);
-  
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -1113,7 +1097,7 @@ const handler = async (req: Request): Promise<Response> => {
         }),
         {
           status: 429,
-          headers: { "Content-Type": "application/json", "Retry-After": "3600", ...headers },
+          headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders },
         }
       );
     }
@@ -1129,7 +1113,7 @@ const handler = async (req: Request): Promise<Response> => {
           error: "Invalid request data",
           details: parseResult.error.issues.map(i => i.message).join(", "),
         }),
-        { status: 400, headers: { "Content-Type": "application/json", ...headers } }
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
@@ -1209,7 +1193,7 @@ const handler = async (req: Request): Promise<Response> => {
         }),
         {
           status: 200,
-          headers: { "Content-Type": "application/json", ...headers },
+          headers: { "Content-Type": "application/json", ...corsHeaders },
         }
       );
     }
@@ -1225,7 +1209,7 @@ const handler = async (req: Request): Promise<Response> => {
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
   } catch (error: any) {
@@ -1234,7 +1218,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...headers },
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
   }
