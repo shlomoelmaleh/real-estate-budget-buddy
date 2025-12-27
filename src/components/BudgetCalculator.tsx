@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export function BudgetCalculator() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Basic info
   const [fullName, setFullName] = useState('');
@@ -242,7 +242,7 @@ export function BudgetCalculator() {
           client_name: fullName,
           email: email,
           phone: phone,
-          language: t.dir === 'rtl' ? 'he' : 'fr',
+          language: language,
           inputs: simulationInputs,
           results: simulationResults,
         });
@@ -252,7 +252,7 @@ export function BudgetCalculator() {
             recipientEmail: email,
             recipientName: fullName || 'Client',
             recipientPhone: phone,
-            language: t.dir === 'rtl' ? 'he' : 'fr',
+            language: language,
             inputs: simulationInputs,
             results: simulationResults,
             amortizationSummary,
