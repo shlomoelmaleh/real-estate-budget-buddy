@@ -68,6 +68,9 @@ export interface CalculatorResults {
   // Equity usage
   equityUsed: number;
   equityRemaining: number;
+  // Detailed closing costs
+  lawyerFeeTTC: number;
+  brokerFeeTTC: number;
 }
 
 export interface AmortizationRow {
@@ -249,7 +252,9 @@ export function calculate(inputs: CalculatorInputs): CalculatorResults | null {
   const law = lawyerPct / 100;
   const bro = brokerPct / 100;
   const vat = vatPct / 100;
-  const otherClosingCosts = P_max * (law + bro) * (1 + vat) + advisorFee + otherFee;
+  const lawyerFeeTTC = P_max * law * (1 + vat);
+  const brokerFeeTTC = P_max * bro * (1 + vat);
+  const otherClosingCosts = lawyerFeeTTC + brokerFeeTTC + advisorFee + otherFee;
   const totalClosingCosts = purchaseTax + otherClosingCosts;
 
   // Calculate equity usage
@@ -272,6 +277,8 @@ export function calculate(inputs: CalculatorInputs): CalculatorResults | null {
     taxProfile,
     equityUsed,
     equityRemaining,
+    lawyerFeeTTC,
+    brokerFeeTTC,
   };
 }
 

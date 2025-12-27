@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const ADVISOR_EMAIL = "shlomo.elmaleh@gmail.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,6 +51,8 @@ interface ReportEmailRequest {
     taxProfile: 'SINGLE_HOME' | 'INVESTOR';
     equityUsed: number;
     equityRemaining: number;
+    lawyerFeeTTC: number;
+    brokerFeeTTC: number;
   };
   amortizationSummary: {
     totalMonths: number;
@@ -98,11 +101,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       taxProfileLabel: 'סוג נכס',
       taxProfileSingleHome: 'דירה יחידה',
       taxProfileInvestor: 'דירה נוספת',
-      lawyer: 'עו"ד',
-      broker: 'תיווך',
-      vat: 'מע"מ',
-      advisor: 'יועץ משכנתא',
+      lawyerLabel: 'עו"ד (1% + מע"מ)',
+      brokerLabel: 'תיווך (2% + מע"מ)',
       other: 'שונות',
+      ttc: 'כולל מע"מ',
       // Results
       resultsTitle: 'תוצאות החישוב',
       maxProperty: 'שווי נכס מקסימלי',
@@ -134,7 +136,11 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       taxDisclaimer: 'לתשומת לבך: חישוב מס הרכישה בסימולטור זה מבוסס על מדרגות המס הסטנדרטיות (דירה יחידה או דירה נוספת). החישוב אינו לוקח בחשבון הטבות ספציפיות כגון: עולה חדש, נכות, או תושב חוזר. גובה המס הסופי ייקבע רק על ידי עו"ד מקרקעין.',
       advisorName: 'שלמה אלמליח',
       advisorPhone: '054-9997711',
-      advisorEmail: 'shlomo.elmaleh@gmail.com'
+      advisorEmail: 'shlomo.elmaleh@gmail.com',
+      // CTAs
+      ctaTitle: 'יש לך שאלות? אני כאן לעזור!',
+      ctaWhatsApp: '📞 לקביעת פגישה',
+      ctaEmail: '✉️ לשאלות נוספות'
     },
     en: {
       subject: 'Property Budget Calculator - Complete Report',
@@ -163,11 +169,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       taxProfileLabel: 'Property Type',
       taxProfileSingleHome: 'Single Home',
       taxProfileInvestor: 'Additional Property',
-      lawyer: 'Lawyer',
-      broker: 'Broker',
-      vat: 'VAT',
-      advisor: 'Mortgage Advisor',
+      lawyerLabel: 'Lawyer (1% + VAT)',
+      brokerLabel: 'Broker (2% + VAT)',
       other: 'Other Costs',
+      ttc: 'incl. VAT',
       resultsTitle: 'Calculation Results',
       maxProperty: 'Max Property Value',
       loanAmount: 'Loan Amount',
@@ -197,7 +202,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       taxDisclaimer: 'Note: The purchase tax calculation is based on standard brackets (single or additional home). It does not account for specific benefits like New Immigrant (Oleh Hadash), disability, or returning resident. The final tax amount will be determined solely by a real estate lawyer.',
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
-      advisorEmail: 'shlomo.elmaleh@gmail.com'
+      advisorEmail: 'shlomo.elmaleh@gmail.com',
+      ctaTitle: 'Have questions? I am here to help!',
+      ctaWhatsApp: '📞 Book an Appointment',
+      ctaEmail: '✉️ Ask a Question'
     },
     fr: {
       subject: 'Simulateur Budget Immobilier - Rapport Complet',
@@ -226,11 +234,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       taxProfileLabel: 'Type de bien',
       taxProfileSingleHome: 'Résidence principale',
       taxProfileInvestor: "Bien d'investissement",
-      lawyer: 'Avocat',
-      broker: "Frais d'agence",
-      vat: 'TVA',
-      advisor: 'Courtier',
+      lawyerLabel: 'Avocat (1% H.T)',
+      brokerLabel: "Frais d'agence (2% H.T)",
       other: 'Divers',
+      ttc: 'T.T.C',
       resultsTitle: 'Résultats du Calcul',
       maxProperty: 'Valeur Max du Bien',
       loanAmount: 'Montant du Prêt',
@@ -260,7 +267,10 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       taxDisclaimer: "Attention : Le calcul des droits de mutation est basé sur les barèmes standards. Il ne prend pas en compte les exonérations spécifiques (Oleh Hadash, handicap, etc.). Le montant définitif de la taxe doit être vérifié par un avocat spécialisé.",
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
-      advisorEmail: 'shlomo.elmaleh@gmail.com'
+      advisorEmail: 'shlomo.elmaleh@gmail.com',
+      ctaTitle: 'Vous avez des questions ? Je suis là pour vous aider !',
+      ctaWhatsApp: '📞 Prendre RDV',
+      ctaEmail: '✉️ Poser une question'
     }
   };
 
@@ -427,6 +437,42 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           font-size: 24px;
           font-weight: 700;
           color: #d97706;
+        }
+        .cta-section {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          padding: 30px;
+          border-radius: 16px;
+          margin: 25px 0;
+          text-align: center;
+          box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
+        }
+        .cta-section h3 {
+          color: white;
+          font-size: 20px;
+          margin: 0 0 20px 0;
+        }
+        .cta-buttons {
+          display: flex;
+          gap: 15px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .cta-button {
+          display: inline-block;
+          padding: 14px 28px;
+          border-radius: 10px;
+          text-decoration: none;
+          font-weight: 700;
+          font-size: 16px;
+          transition: transform 0.2s;
+        }
+        .cta-whatsapp {
+          background: #25D366;
+          color: white;
+        }
+        .cta-email {
+          background: white;
+          color: #1e40af;
         }
         .amortization-summary {
           background: linear-gradient(135deg, #f8fafc, #f1f5f9);
@@ -597,6 +643,15 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         <p style="color: #64748b;">${t.intro}</p>
       </div>
 
+      <!-- CTA Section - Prominent placement at the top -->
+      <div class="cta-section">
+        <h3>${t.ctaTitle}</h3>
+        <div class="cta-buttons">
+          <a href="https://wa.me/972549997711?text=${encodeURIComponent(`Bonjour ${t.advisorName}, je viens d'utiliser votre simulateur et j'aimerais en discuter.`)}" class="cta-button cta-whatsapp" target="_blank">${t.ctaWhatsApp}</a>
+          <a href="mailto:${t.advisorEmail}?subject=${encodeURIComponent(`Question suite à ma simulation`)}" class="cta-button cta-email">${t.ctaEmail}</a>
+        </div>
+      </div>
+
       <!-- Basic Information -->
       <div class="section">
         <div class="section-title">📋 ${t.basicInfo}</div>
@@ -685,20 +740,12 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           <span class="value">${results.taxProfile === 'SINGLE_HOME' ? t.taxProfileSingleHome : t.taxProfileInvestor}</span>
         </div>
         <div class="row">
-          <span class="label">${t.lawyer}</span>
-          <span class="value">${inputs.lawyerPct} %</span>
+          <span class="label">${t.lawyerLabel}</span>
+          <span class="value">₪ ${formatNumber(results.lawyerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
-          <span class="label">${t.broker}</span>
-          <span class="value">${inputs.brokerPct} %</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.vat}</span>
-          <span class="value">${inputs.vatPct} %</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.advisor}</span>
-          <span class="value">₪ ${inputs.advisorFee}</span>
+          <span class="label">${t.brokerLabel}</span>
+          <span class="value">₪ ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
           <span class="label">${t.other}</span>
@@ -875,6 +922,15 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
       </div>
 
+      <!-- CTA Section - Bottom reminder -->
+      <div class="cta-section">
+        <h3>${t.ctaTitle}</h3>
+        <div class="cta-buttons">
+          <a href="https://wa.me/972549997711?text=${encodeURIComponent(`Bonjour ${t.advisorName}, je viens d'utiliser votre simulateur et j'aimerais en discuter.`)}" class="cta-button cta-whatsapp" target="_blank">${t.ctaWhatsApp}</a>
+          <a href="mailto:${t.advisorEmail}?subject=${encodeURIComponent(`Question suite à ma simulation`)}" class="cta-button cta-email">${t.ctaEmail}</a>
+        </div>
+      </div>
+
       <div class="note">
         ⚠️ ${t.note}
       </div>
@@ -909,6 +965,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { subject, html } = getEmailContent(data);
 
+    // Send to client with BCC to advisor
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -918,6 +975,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Property Budget Pro <onboarding@resend.dev>",
         to: [data.recipientEmail],
+        bcc: [ADVISOR_EMAIL],
         subject,
         html,
       }),
