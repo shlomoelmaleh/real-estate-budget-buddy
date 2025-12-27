@@ -965,8 +965,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { subject, html } = getEmailContent(data);
 
-    // Send notification email to advisor only (Resend test mode limitation)
-    // Client email is included in the email content for reference
+    // Send email to client with advisor in BCC
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -974,9 +973,10 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Property Budget Pro <onboarding@resend.dev>",
-        to: [ADVISOR_EMAIL],
-        subject: `🔔 Nouvelle simulation - ${data.recipientName} (${data.recipientEmail})`,
+        from: "Property Budget Pro <noreply@eshel-f.com>",
+        to: [data.recipientEmail],
+        bcc: [ADVISOR_EMAIL],
+        subject,
         html,
       }),
     });
@@ -987,7 +987,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await res.json();
-    console.log("Email sent to advisor:", emailResponse);
+    console.log("Email sent successfully to client:", data.recipientEmail, emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
