@@ -126,15 +126,6 @@ export function BudgetCalculator() {
     const calcResults = calculate(inputs);
     
     if (calcResults) {
-      // DEV console.log for debugging
-      console.log('[DEV] Budget Calculation:', {
-        InputEquity: parseFormattedNumber(equity),
-        Profile: calcResults.taxProfile,
-        MaxPrice: calcResults.maxPropertyValue,
-        Tax: calcResults.purchaseTax,
-        EquityUsed: calcResults.equityUsed,
-        EquityRemaining: calcResults.equityRemaining
-      });
       
       setResults(calcResults);
       const amortRows = generateAmortizationTable(
@@ -264,7 +255,6 @@ export function BudgetCalculator() {
         if (error) throw error;
         setShowConfirmation(true);
       } catch (error) {
-        console.error('Email sending error:', error);
         toast.error(t.emailError);
       }
     } else {
