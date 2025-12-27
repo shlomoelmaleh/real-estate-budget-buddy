@@ -1,13 +1,153 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADVISOR_EMAIL = "shlomo.elmaleh@gmail.com";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  "https://eshel-f.com",
+  "https://www.eshel-f.com",
+  "https://qtjbzvwgnqvtvykvjvgq.lovableproject.com",
+  "http://localhost:5173",
+  "http://localhost:8080",
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o.replace(/\/$/, ''))) 
+    ? origin 
+    : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+}
+
+// Input validation schema
+const EmailRequestSchema = z.object({
+  recipientEmail: z.string().email().max(254),
+  recipientName: z.string().min(1).max(100),
+  recipientPhone: z.string().max(30),
+  language: z.enum(["he", "en", "fr"]),
+  inputs: z.object({
+    equity: z.string().max(30),
+    ltv: z.string().max(10),
+    isFirstProperty: z.boolean(),
+    isIsraeliCitizen: z.boolean(),
+    isIsraeliTaxResident: z.boolean(),
+    netIncome: z.string().max(30),
+    ratio: z.string().max(10),
+    age: z.string().max(10),
+    maxAge: z.string().max(10),
+    interest: z.string().max(10),
+    isRented: z.boolean(),
+    rentalYield: z.string().max(10),
+    rentRecognition: z.string().max(10),
+    budgetCap: z.string().max(30),
+    lawyerPct: z.string().max(10),
+    brokerPct: z.string().max(10),
+    vatPct: z.string().max(10),
+    advisorFee: z.string().max(30),
+    otherFee: z.string().max(30),
+  }),
+  results: z.object({
+    maxPropertyValue: z.number().nonnegative().max(1e12),
+    loanAmount: z.number().nonnegative().max(1e12),
+    actualLTV: z.number().min(0).max(100),
+    monthlyPayment: z.number().nonnegative().max(1e9),
+    rentIncome: z.number().nonnegative().max(1e9),
+    netPayment: z.number().max(1e9),
+    closingCosts: z.number().nonnegative().max(1e12),
+    totalInterest: z.number().nonnegative().max(1e12),
+    totalCost: z.number().nonnegative().max(1e12),
+    loanTermYears: z.number().int().positive().max(50),
+    shekelRatio: z.number().positive().max(100),
+    purchaseTax: z.number().nonnegative().max(1e12),
+    taxProfile: z.enum(["SINGLE_HOME", "INVESTOR"]),
+    equityUsed: z.number().nonnegative().max(1e12),
+    equityRemaining: z.number().nonnegative().max(1e12),
+    lawyerFeeTTC: z.number().nonnegative().max(1e9),
+    brokerFeeTTC: z.number().nonnegative().max(1e9),
+  }),
+  amortizationSummary: z.object({
+    totalMonths: z.number().int().positive().max(600),
+    firstPayment: z.object({
+      principal: z.number().nonnegative(),
+      interest: z.number().nonnegative(),
+    }),
+    lastPayment: z.object({
+      principal: z.number().nonnegative(),
+      interest: z.number().nonnegative(),
+    }),
+  }),
+  yearlyBalanceData: z.array(z.object({
+    year: z.number().int().positive().max(50),
+    balance: z.number().nonnegative(),
+  })).max(50).optional(),
+  paymentBreakdownData: z.array(z.object({
+    year: z.number().int().positive().max(50),
+    interest: z.number().nonnegative(),
+    principal: z.number().nonnegative(),
+  })).max(50).optional(),
+});
+
+// Rate limiting helper
+async function checkRateLimit(
+  supabaseAdmin: any,
+  identifier: string,
+  endpoint: string,
+  maxRequests: number,
+  windowMinutes: number
+): Promise<{ allowed: boolean; remaining: number }> {
+  const { data, error } = await supabaseAdmin
+    .from("rate_limits")
+    .select("request_count, window_start")
+    .eq("identifier", identifier)
+    .eq("endpoint", endpoint)
+    .single();
+
+  const now = new Date();
+
+  if (!data || error) {
+    // First request - create record
+    await supabaseAdmin.from("rate_limits").insert({
+      identifier,
+      endpoint,
+      request_count: 1,
+      window_start: now.toISOString(),
+    });
+    return { allowed: true, remaining: maxRequests - 1 };
+  }
+
+  const windowStart = new Date((data as any).window_start);
+  const minutesElapsed = (now.getTime() - windowStart.getTime()) / 60000;
+
+  if (minutesElapsed >= windowMinutes) {
+    // Reset window
+    await supabaseAdmin
+      .from("rate_limits")
+      .update({ request_count: 1, window_start: now.toISOString() })
+      .eq("identifier", identifier)
+      .eq("endpoint", endpoint);
+    return { allowed: true, remaining: maxRequests - 1 };
+  }
+
+  const currentCount = (data as any).request_count;
+  if (currentCount >= maxRequests) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  // Increment counter
+  await supabaseAdmin
+    .from("rate_limits")
+    .update({ request_count: currentCount + 1 })
+    .eq("identifier", identifier)
+    .eq("endpoint", endpoint);
+
+  return { allowed: true, remaining: maxRequests - currentCount - 1 };
+}
 
 interface ReportEmailRequest {
   recipientEmail: string;
@@ -943,13 +1083,58 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
 const handler = async (req: Request): Promise<Response> => {
   console.log("send-report-email function called");
   
+  const origin = req.headers.get("origin");
+  const headers = getCorsHeaders(origin);
+  
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers });
   }
 
   try {
-    const data: ReportEmailRequest = await req.json();
-    console.log("Received request for email to:", data.recipientEmail);
+    // Initialize Supabase admin client for rate limiting
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Rate limit by IP address - 10 emails per hour
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+                    req.headers.get("x-real-ip") ||
+                    "unknown";
+    
+    const rateCheck = await checkRateLimit(supabaseAdmin, clientIP, "send-report-email", 10, 60);
+    
+    if (!rateCheck.allowed) {
+      console.warn("Rate limit exceeded for IP:", clientIP);
+      return new Response(
+        JSON.stringify({
+          error: "Rate limit exceeded. Maximum 10 emails per hour.",
+          retryAfter: 3600,
+        }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", "Retry-After": "3600", ...headers },
+        }
+      );
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const parseResult = EmailRequestSchema.safeParse(rawBody);
+    
+    if (!parseResult.success) {
+      console.error("Validation error:", parseResult.error.format());
+      return new Response(
+        JSON.stringify({
+          error: "Invalid request data",
+          details: parseResult.error.issues.map(i => i.message).join(", "),
+        }),
+        { status: 400, headers: { "Content-Type": "application/json", ...headers } }
+      );
+    }
+
+    const data = parseResult.data as ReportEmailRequest;
+    console.log("Received validated request for email to:", data.recipientEmail);
     console.log("Chart data received - yearlyBalanceData:", data.yearlyBalanceData?.length || 0, "items");
     console.log("Chart data received - paymentBreakdownData:", data.paymentBreakdownData?.length || 0, "items");
 
@@ -1024,7 +1209,7 @@ const handler = async (req: Request): Promise<Response> => {
         }),
         {
           status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: { "Content-Type": "application/json", ...headers },
         }
       );
     }
@@ -1040,7 +1225,7 @@ const handler = async (req: Request): Promise<Response> => {
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...headers },
       }
     );
   } catch (error: any) {
@@ -1049,7 +1234,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json", ...headers },
       }
     );
   }
