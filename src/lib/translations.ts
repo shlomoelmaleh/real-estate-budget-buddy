@@ -175,7 +175,7 @@ export const translations: Record<Language, Translations> = {
     requiredField: "שדה חובה",
     isFirstProperty: "נכס ראשון בישראל?",
     isIsraeliCitizen: "בעל אזרחות ישראלית?",
-    isIsraeliTaxResident: "תושב לצרכי מס בישראל?",
+    isIsraeliTaxResident: "האם תושב מס בישראל?",
     yes: "כן",
     no: "לא",
     titlePersonal: "פרטים אישיים",
