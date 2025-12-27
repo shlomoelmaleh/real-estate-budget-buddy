@@ -100,7 +100,6 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
       
       toast.success(t.pdfSuccess);
     } catch (error) {
-      console.error('PDF generation error:', error);
       toast.error(t.pdfError);
     } finally {
       setIsGeneratingPDF(false);
@@ -189,7 +188,6 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
       
       toast.success(t.emailSuccess);
     } catch (error) {
-      console.error('Email sending error:', error);
       toast.error(t.emailError);
     } finally {
       setIsSendingEmail(false);

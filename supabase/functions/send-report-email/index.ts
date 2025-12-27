@@ -1118,9 +1118,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const data = parseResult.data as ReportEmailRequest;
-    console.log("Received validated request for email to:", data.recipientEmail);
-    console.log("Chart data received - yearlyBalanceData:", data.yearlyBalanceData?.length || 0, "items");
-    console.log("Chart data received - paymentBreakdownData:", data.paymentBreakdownData?.length || 0, "items");
+    const requestId = crypto.randomUUID().substring(0, 8);
+    console.log(`[${requestId}] Email request received`);
+    console.log(`[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}`);
 
     const { subject, html } = getEmailContent(data);
 
@@ -1179,10 +1179,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       const fallbackResponse = await fallbackRes.json();
-      console.log(
-        "Fallback email sent to advisor (domain not verified):",
-        fallbackResponse
-      );
+      console.log(`[${requestId}] Fallback email sent (domain not verified)`);
 
       return new Response(
         JSON.stringify({
@@ -1199,7 +1196,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await primaryRes.json();
-    console.log("Email sent successfully to client:", data.recipientEmail, emailResponse);
+    console.log(`[${requestId}] Email sent successfully`);
 
     return new Response(
       JSON.stringify({
@@ -1213,7 +1210,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in send-report-email function:", error);
+    console.error("Error in send-report-email function:", error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
