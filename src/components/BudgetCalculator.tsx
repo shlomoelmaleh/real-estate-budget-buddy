@@ -131,7 +131,9 @@ export function BudgetCalculator() {
         InputEquity: parseFormattedNumber(equity),
         Profile: calcResults.taxProfile,
         MaxPrice: calcResults.maxPropertyValue,
-        Tax: calcResults.purchaseTax
+        Tax: calcResults.purchaseTax,
+        EquityUsed: calcResults.equityUsed,
+        EquityRemaining: calcResults.equityRemaining
       });
       
       setResults(calcResults);
@@ -232,6 +234,8 @@ export function BudgetCalculator() {
               shekelRatio: calcResults.totalCost / calcResults.loanAmount,
               purchaseTax: calcResults.purchaseTax,
               taxProfile: calcResults.taxProfile,
+              equityUsed: calcResults.equityUsed,
+              equityRemaining: calcResults.equityRemaining,
             },
             amortizationSummary,
             yearlyBalanceData,

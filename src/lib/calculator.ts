@@ -65,6 +65,9 @@ export interface CalculatorResults {
   // New: computed tax data
   purchaseTax: number;
   taxProfile: TaxProfile;
+  // Equity usage
+  equityUsed: number;
+  equityRemaining: number;
 }
 
 export interface AmortizationRow {
@@ -249,6 +252,11 @@ export function calculate(inputs: CalculatorInputs): CalculatorResults | null {
   const otherClosingCosts = P_max * (law + bro) * (1 + vat) + advisorFee + otherFee;
   const totalClosingCosts = purchaseTax + otherClosingCosts;
 
+  // Calculate equity usage
+  const downPayment = P_max * (1 - l);
+  const equityUsed = downPayment + totalClosingCosts;
+  const equityRemaining = equity - equityUsed;
+
   return {
     maxPropertyValue: P_max,
     loanAmount: loan,
@@ -262,6 +270,8 @@ export function calculate(inputs: CalculatorInputs): CalculatorResults | null {
     loanTermYears: years,
     purchaseTax,
     taxProfile,
+    equityUsed,
+    equityRemaining,
   };
 }
 

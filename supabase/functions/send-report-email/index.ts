@@ -48,6 +48,8 @@ interface ReportEmailRequest {
     shekelRatio: number;
     purchaseTax: number;
     taxProfile: 'SINGLE_HOME' | 'INVESTOR';
+    equityUsed: number;
+    equityRemaining: number;
   };
   amortizationSummary: {
     totalMonths: number;
@@ -115,6 +117,8 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       shekelRatio: 'יחס שקל לשקל',
       loanTerm: 'תקופת המשכנתא',
       years: 'שנים',
+      equityUsed: 'הון עצמי בשימוש',
+      equityRemaining: 'יתרת הון עצמי',
       // Amortization
       amortizationInfo: 'סיכום לוח סילוקין',
       totalMonths: 'סה"כ חודשים',
@@ -177,6 +181,8 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       shekelRatio: 'Shekel-to-Shekel Ratio',
       loanTerm: 'Loan Term',
       years: 'years',
+      equityUsed: 'Equity Used',
+      equityRemaining: 'Remaining Equity',
       amortizationInfo: 'Amortization Summary',
       totalMonths: 'Total Months',
       firstPayment: 'First Payment',
@@ -238,6 +244,8 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       shekelRatio: 'Ratio Shekel pour Shekel',
       loanTerm: 'Durée du Prêt',
       years: 'ans',
+      equityUsed: 'Apport utilisé',
+      equityRemaining: 'Apport restant',
       amortizationInfo: "Résumé du Tableau d'Amortissement",
       totalMonths: 'Total Mois',
       firstPayment: 'Premier Paiement',
@@ -741,6 +749,16 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           <span class="label">${t.totalCost}</span>
           <span class="value">₪ ${formatNumber(results.totalCost)}</span>
         </div>
+        <div class="row">
+          <span class="label">${t.equityUsed}</span>
+          <span class="value">₪ ${formatNumber(results.equityUsed)}</span>
+        </div>
+        ${results.equityRemaining > 0 ? `
+        <div class="row" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); padding: 12px; border-radius: 8px; margin-top: 8px;">
+          <span class="label" style="color: #047857; font-weight: 600;">${t.equityRemaining}</span>
+          <span class="value" style="color: #059669; font-weight: 700;">₪ ${formatNumber(results.equityRemaining)}</span>
+        </div>
+        ` : ''}
         
         <div class="highlight">
           <div class="row">
