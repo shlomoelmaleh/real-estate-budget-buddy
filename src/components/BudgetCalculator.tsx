@@ -273,7 +273,183 @@ export function BudgetCalculator() {
       <main className="max-w-4xl mx-auto px-4 pb-12 space-y-8">
         {/* Form */}
         <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-          {/* Personal Information */}
+          {/* SECTION 1 - Property Status (FIRST) */}
+          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titlePropertyStatus} variant="secondary">
+            <div className="grid grid-cols-1 gap-5">
+              {/* First Property Question */}
+              <div className={cn("space-y-2", validationErrors.isFirstProperty && "ring-2 ring-destructive rounded-lg p-3")}>
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  <Home className="w-4 h-4" />
+                  {t.isFirstProperty} <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-2 w-full">
+                  <button
+                    type="button"
+                    onClick={() => setIsFirstProperty(true)}
+                    className={cn(
+                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      isFirstProperty === true
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.yes}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsFirstProperty(false)}
+                    className={cn(
+                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      isFirstProperty === false
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.no}
+                  </button>
+                </div>
+              </div>
+
+              {/* Israeli Citizenship Question */}
+              <div className={cn("space-y-2", validationErrors.isIsraeliCitizen && "ring-2 ring-destructive rounded-lg p-3")}>
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  <Flag className="w-4 h-4" />
+                  {t.isIsraeliCitizen} <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-2 w-full">
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliCitizen(true)}
+                    className={cn(
+                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      isIsraeliCitizen === true
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.yes}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliCitizen(false)}
+                    className={cn(
+                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      isIsraeliCitizen === false
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.no}
+                  </button>
+                </div>
+              </div>
+
+              {/* Israeli Tax Resident Question */}
+              <div className={cn("space-y-2", validationErrors.isIsraeliTaxResident && "ring-2 ring-destructive rounded-lg p-3")}>
+                <Label className="text-sm font-medium flex items-center gap-1">
+                  <Banknote className="w-4 h-4" />
+                  {t.isIsraeliTaxResident} <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex gap-2 w-full">
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliTaxResident(true)}
+                    className={cn(
+                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      isIsraeliTaxResident === true
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.yes}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsIsraeliTaxResident(false)}
+                    className={cn(
+                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      isIsraeliTaxResident === false
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border hover:border-primary"
+                    )}
+                  >
+                    {t.no}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </FormSection>
+
+          {/* SECTION 2 - Rent & Investment (SECOND) */}
+          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titleRent} variant="secondary">
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="isRented"
+                    checked={isRented}
+                    onCheckedChange={(checked) => setIsRented(checked === true)}
+                    className="w-5 h-5"
+                  />
+                  <Label htmlFor="isRented" className="cursor-pointer font-medium">
+                    {t.isRented}
+                  </Label>
+                </div>
+                <p className="text-xs text-muted-foreground ms-8">
+                  {t.helperRentEstimate}
+                </p>
+              </div>
+
+              {/* Rental yield and bank recognition are hidden - using default values */}
+
+              <div className="space-y-2">
+                <FormInput
+                  label={t.budgetCap}
+                  icon={<Lock className="w-4 h-4" />}
+                  suffix="₪"
+                  value={budgetCap}
+                  onChange={setBudgetCap}
+                  formatNumber
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t.helperBudgetCap}
+                </p>
+              </div>
+            </div>
+          </FormSection>
+
+          {/* SECTION 3 - Financial Information (THIRD) */}
+          <FormSection icon={<Wallet className="w-5 h-5 text-accent" />} title={t.titleFinancial} variant="accent">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <FormInput
+                label={t.equity}
+                icon={<Banknote className="w-4 h-4" />}
+                suffix="₪"
+                value={equity}
+                onChange={setEquity}
+                formatNumber
+                required
+                hasError={validationErrors.equity}
+              />
+              <div className="space-y-2">
+                <FormInput
+                  label={t.netIncomeLabel}
+                  icon={<TrendingUp className="w-4 h-4" />}
+                  suffix="₪"
+                  value={netIncome}
+                  onChange={setNetIncome}
+                  formatNumber
+                  required
+                  hasError={validationErrors.netIncome}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t.helperNetIncome}
+                </p>
+              </div>
+            </div>
+          </FormSection>
+
+          {/* SECTION 4 - Personal Information (LAST) */}
           <FormSection icon={<UserCircle className="w-5 h-5 text-primary" />} title={t.titlePersonal} variant="primary">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <FormInput
@@ -315,167 +491,6 @@ export function BudgetCalculator() {
             </div>
           </FormSection>
 
-          {/* Property Status */}
-          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titlePropertyStatus} variant="secondary">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* First Property Question */}
-              <div className={cn("space-y-2", validationErrors.isFirstProperty && "ring-2 ring-destructive rounded-lg p-3")}>
-                <Label className="text-sm font-medium flex items-center gap-1">
-                  <Home className="w-4 h-4" />
-                  {t.isFirstProperty} <span className="text-destructive">*</span>
-                </Label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsFirstProperty(true)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg border transition-all",
-                      isFirstProperty === true
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
-                    )}
-                  >
-                    {t.yes}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsFirstProperty(false)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg border transition-all",
-                      isFirstProperty === false
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
-                    )}
-                  >
-                    {t.no}
-                  </button>
-                </div>
-              </div>
-
-              {/* Israeli Citizenship Question */}
-              <div className={cn("space-y-2", validationErrors.isIsraeliCitizen && "ring-2 ring-destructive rounded-lg p-3")}>
-                <Label className="text-sm font-medium flex items-center gap-1">
-                  <Flag className="w-4 h-4" />
-                  {t.isIsraeliCitizen} <span className="text-destructive">*</span>
-                </Label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliCitizen(true)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg border transition-all",
-                      isIsraeliCitizen === true
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
-                    )}
-                  >
-                    {t.yes}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliCitizen(false)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg border transition-all",
-                      isIsraeliCitizen === false
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
-                    )}
-                  >
-                    {t.no}
-                  </button>
-                </div>
-              </div>
-
-              {/* Israeli Tax Resident Question */}
-              <div className={cn("space-y-2", validationErrors.isIsraeliTaxResident && "ring-2 ring-destructive rounded-lg p-3")}>
-                <Label className="text-sm font-medium flex items-center gap-1">
-                  <Banknote className="w-4 h-4" />
-                  {t.isIsraeliTaxResident} <span className="text-destructive">*</span>
-                </Label>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliTaxResident(true)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg border transition-all",
-                      isIsraeliTaxResident === true
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
-                    )}
-                  >
-                    {t.yes}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliTaxResident(false)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg border transition-all",
-                      isIsraeliTaxResident === false
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
-                    )}
-                  >
-                    {t.no}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </FormSection>
-
-          {/* Financial Information */}
-          <FormSection icon={<Wallet className="w-5 h-5 text-accent" />} title={t.titleFinancial} variant="accent">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <FormInput
-                label={t.equity}
-                icon={<Banknote className="w-4 h-4" />}
-                suffix="₪"
-                value={equity}
-                onChange={setEquity}
-                formatNumber
-                required
-                hasError={validationErrors.equity}
-              />
-              <FormInput
-                label={t.netIncome}
-                icon={<TrendingUp className="w-4 h-4" />}
-                suffix="₪"
-                value={netIncome}
-                onChange={setNetIncome}
-                formatNumber
-                required
-                hasError={validationErrors.netIncome}
-              />
-            </div>
-          </FormSection>
-
-          {/* Rent & Investment - Simplified for client version */}
-          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titleRent} variant="secondary">
-            <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  id="isRented"
-                  checked={isRented}
-                  onCheckedChange={(checked) => setIsRented(checked === true)}
-                  className="w-5 h-5"
-                />
-                <Label htmlFor="isRented" className="cursor-pointer font-medium">
-                  {t.isRented}
-                </Label>
-              </div>
-
-              {/* Rental yield and bank recognition are hidden - using default values */}
-
-              <FormInput
-                label={t.budgetCap}
-                icon={<Lock className="w-4 h-4" />}
-                suffix="₪"
-                value={budgetCap}
-                onChange={setBudgetCap}
-                formatNumber
-              />
-            </div>
-          </FormSection>
-
           {/* Calculate Button */}
           <div className="flex flex-col items-center pt-4 gap-4">
             <Button
@@ -503,6 +518,9 @@ export function BudgetCalculator() {
             {/* Disclaimer */}
             <p className="text-xs text-muted-foreground text-center max-w-xl leading-relaxed">
               {t.disclaimer}
+            </p>
+            <p className="text-xs text-muted-foreground/80 text-center max-w-xl leading-relaxed italic">
+              {t.helperSimulation}
             </p>
           </div>
         </form>
