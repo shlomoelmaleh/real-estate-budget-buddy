@@ -282,15 +282,15 @@ export function BudgetCalculator() {
                   <Home className="w-4 h-4" />
                   {t.isFirstProperty} <span className="text-destructive">*</span>
                 </Label>
-                <div className="flex gap-2 w-full">
+                <div className="inline-flex gap-0 rounded-lg border border-border overflow-hidden max-w-[280px]">
                   <button
                     type="button"
                     onClick={() => setIsFirstProperty(true)}
                     className={cn(
-                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap",
                       isFirstProperty === true
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
                     )}
                   >
                     {t.yes}
@@ -299,10 +299,10 @@ export function BudgetCalculator() {
                     type="button"
                     onClick={() => setIsFirstProperty(false)}
                     className={cn(
-                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap border-s border-border",
                       isFirstProperty === false
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
                     )}
                   >
                     {t.no}
@@ -316,15 +316,15 @@ export function BudgetCalculator() {
                   <Flag className="w-4 h-4" />
                   {t.isIsraeliCitizen} <span className="text-destructive">*</span>
                 </Label>
-                <div className="flex gap-2 w-full">
+                <div className="inline-flex gap-0 rounded-lg border border-border overflow-hidden max-w-[280px]">
                   <button
                     type="button"
                     onClick={() => setIsIsraeliCitizen(true)}
                     className={cn(
-                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap",
                       isIsraeliCitizen === true
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
                     )}
                   >
                     {t.yes}
@@ -333,10 +333,10 @@ export function BudgetCalculator() {
                     type="button"
                     onClick={() => setIsIsraeliCitizen(false)}
                     className={cn(
-                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap border-s border-border",
                       isIsraeliCitizen === false
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
                     )}
                   >
                     {t.no}
@@ -350,15 +350,15 @@ export function BudgetCalculator() {
                   <Banknote className="w-4 h-4" />
                   {t.isIsraeliTaxResident} <span className="text-destructive">*</span>
                 </Label>
-                <div className="flex gap-2 w-full">
+                <div className="inline-flex gap-0 rounded-lg border border-border overflow-hidden max-w-[280px]">
                   <button
                     type="button"
                     onClick={() => setIsIsraeliTaxResident(true)}
                     className={cn(
-                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap",
                       isIsraeliTaxResident === true
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
                     )}
                   >
                     {t.yes}
@@ -367,10 +367,10 @@ export function BudgetCalculator() {
                     type="button"
                     onClick={() => setIsIsraeliTaxResident(false)}
                     className={cn(
-                      "flex-1 px-4 py-3 rounded-lg border transition-all font-medium",
+                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap border-s border-border",
                       isIsraeliTaxResident === false
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background border-border hover:border-primary"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
                     )}
                   >
                     {t.no}
