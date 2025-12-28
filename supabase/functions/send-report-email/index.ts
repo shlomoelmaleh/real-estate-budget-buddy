@@ -293,6 +293,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       // Footer
       footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
       note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.',
+      simulationDisclaimer: 'הסימולציה היא הערכה לצורך קבלת סדר גודל ראשוני ותחילת התהליך.',
       advisorName: 'שלמה אלמליח',
       advisorPhone: '054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
@@ -362,6 +363,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       ctaEmail: '✉️ Ask a Question',
       footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
       note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.',
+      simulationDisclaimer: 'This simulation is an estimate to give an initial ballpark and start the process.',
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
@@ -431,6 +433,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       ctaEmail: '✉️ Poser une question',
       footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
       note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
+      simulationDisclaimer: "Cette simulation est une estimation pour donner un ordre d'idée et démarrer le projet.",
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
@@ -1023,6 +1026,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <div class="a-label">${t.loanTerm}</div>
             <div class="a-value">${results.loanTermYears} ${t.years}</div>
           </div>
+        </div>
+        <div style="font-size: 11px; color: #64748b; margin-top: 12px; text-align: ${alignStart};">
+          ${t.simulationDisclaimer}
         </div>
       </div>
 
