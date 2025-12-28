@@ -220,6 +220,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
     he: {
       subject: 'דוח מחשבון תקציב רכישת נכס',
       subjectWithName: 'דוח תיק של',
+      // Greeting
+      greeting: 'שלום',
       // Section 1 - Hero
       heroTitle: 'סיכום פרויקט הנדל"ן שלך',
       heroTitleWithName: 'דוח תיק של',
@@ -263,6 +265,15 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       chartPaymentTitle: 'פירוט תשלומים שנתי',
       principal: 'קרן',
       interestLabel: 'ריבית',
+      // Amortization Summary
+      amortizationSummaryTitle: 'סיכום לוח סילוקין',
+      loanTermLabel: 'משך ההלוואה',
+      monthlyPaymentLabel: 'תשלום חודשי משוער',
+      totalInterestLabel: 'סה"כ ריבית',
+      totalRepaidLabel: 'סה"כ להחזר',
+      firstPaymentLabel: 'תשלום ראשון',
+      lastPaymentLabel: 'תשלום אחרון',
+      amortizationNote: 'טיפ: הסכום הסופי תלוי במידה רבה בריבית ובמשך ההלוואה – ייעול המימון יכול להפחית אותו.',
       // Section 6 - Assumptions
       assumptionsTitle: 'פרמטרים לסימולציה',
       age: 'גיל לווה',
@@ -289,6 +300,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
     en: {
       subject: 'Property Budget Calculator - Complete Report',
       subjectWithName: 'Report for',
+      greeting: 'Hello',
       heroTitle: 'Your Property Project Summary',
       heroTitleWithName: 'Report for',
       clientInfoTitle: 'Client Information',
@@ -326,6 +338,14 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       chartPaymentTitle: 'Annual Payment Breakdown',
       principal: 'Principal',
       interestLabel: 'Interest',
+      amortizationSummaryTitle: 'Amortization Summary',
+      loanTermLabel: 'Loan Term',
+      monthlyPaymentLabel: 'Estimated Monthly Payment',
+      totalInterestLabel: 'Total Interest',
+      totalRepaidLabel: 'Total Repaid',
+      firstPaymentLabel: 'First Payment',
+      lastPaymentLabel: 'Last Payment',
+      amortizationNote: 'Quick read: this total depends heavily on the rate and term — optimizing the structure can reduce it.',
       assumptionsTitle: 'Simulation Assumptions',
       age: 'Borrower Age',
       citizenship: 'Israeli Citizenship',
@@ -349,6 +369,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
     fr: {
       subject: 'Simulateur Budget Immobilier - Rapport Complet',
       subjectWithName: 'Rapport du dossier de',
+      greeting: 'Bonjour',
       heroTitle: 'Synthèse de votre projet immobilier',
       heroTitleWithName: 'Rapport du dossier de',
       clientInfoTitle: 'Coordonnées du client',
@@ -386,6 +407,14 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       chartPaymentTitle: 'Répartition Annuelle des Paiements',
       principal: 'Capital',
       interestLabel: 'Intérêts',
+      amortizationSummaryTitle: 'Résumé du tableau d\'amortissement',
+      loanTermLabel: 'Durée du prêt',
+      monthlyPaymentLabel: 'Mensualité estimée',
+      totalInterestLabel: 'Total des intérêts',
+      totalRepaidLabel: 'Montant total remboursé',
+      firstPaymentLabel: 'Première mensualité',
+      lastPaymentLabel: 'Dernière mensualité',
+      amortizationNote: 'Lecture rapide : ce total dépend fortement du taux et de la durée — l\'optimisation du montage peut le réduire.',
       assumptionsTitle: 'Hypothèses de la simulation',
       age: "Âge de l'emprunteur",
       citizenship: 'Nationalité israélienne',
@@ -737,6 +766,11 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         <h1>🏠 ${t.heroTitleWithName} ${recipientName}</h1>
       </div>
 
+      <!-- Personalized Greeting -->
+      <div style="padding: 16px 20px; font-size: 15px; color: #1e293b;">
+        ${recipientName ? `${t.greeting} ${recipientName},` : `${t.greeting},`}
+      </div>
+
       ${isAdvisorCopy ? `
       <!-- CLIENT INFO SECTION (Advisor Only) -->
       <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? '5px solid #3b82f6' : 'none'}; border-left: ${isRTL ? 'none' : '5px solid #3b82f6'};">
@@ -909,6 +943,52 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
         </div>
         ` : ''}
+
+        <!-- Amortization Summary Block -->
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
+          <div class="section-title" style="font-size: 14px; margin-bottom: 12px;">📋 ${t.amortizationSummaryTitle}</div>
+          <div class="row">
+            <span class="label">${t.loanTermLabel}</span>
+            <span class="value">${results.loanTermYears} ${t.years}</span>
+          </div>
+          <div class="row">
+            <span class="label">${t.monthlyPaymentLabel}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
+          </div>
+          <div class="row">
+            <span class="label">${t.totalInterestLabel}</span>
+            <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
+          </div>
+          ${results.loanAmount > 0 && results.totalInterest >= 0 ? `
+          <div class="row" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; padding: 12px !important; margin-top: 8px;">
+            <span class="label" style="font-weight: 600; color: #0369a1;">${t.totalRepaidLabel}</span>
+            <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">₪ ${formatNumber(results.loanAmount + results.totalInterest)}</span>
+          </div>
+          ` : ''}
+          ${amortizationSummary.firstPayment && amortizationSummary.lastPayment ? `
+          <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
+              <div style="font-size: 11px; color: #64748b;">${t.firstPaymentLabel}</div>
+              <div style="font-size: 12px; margin-top: 4px;">
+                <span style="color: #10b981; font-weight: 600;">${t.principal}: ₪${formatNumber(amortizationSummary.firstPayment.principal)}</span>
+                <span style="color: #64748b; margin: 0 4px;">|</span>
+                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ₪${formatNumber(amortizationSummary.firstPayment.interest)}</span>
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
+              <div style="font-size: 11px; color: #64748b;">${t.lastPaymentLabel}</div>
+              <div style="font-size: 12px; margin-top: 4px;">
+                <span style="color: #10b981; font-weight: 600;">${t.principal}: ₪${formatNumber(amortizationSummary.lastPayment.principal)}</span>
+                <span style="color: #64748b; margin: 0 4px;">|</span>
+                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ₪${formatNumber(amortizationSummary.lastPayment.interest)}</span>
+              </div>
+            </div>
+          </div>
+          ` : ''}
+          <div style="font-size: 11px; color: #64748b; margin-top: 12px; font-style: italic; background: #fffbeb; padding: 10px; border-radius: 6px; border: 1px solid #fde68a;">
+            💡 ${t.amortizationNote}
+          </div>
+        </div>
       </div>
 
       <!-- SECTION 6: Simulation Assumptions -->
