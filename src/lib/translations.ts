@@ -98,6 +98,12 @@ export interface Translations {
   // Equity usage
   equityUsed: string;
   equityRemaining: string;
+  // Helper texts (UI refactor)
+  helperRentEstimate: string;
+  helperBudgetCap: string;
+  helperNetIncome: string;
+  netIncomeLabel: string;
+  helperSimulation: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -194,7 +200,13 @@ export const translations: Record<Language, Translations> = {
     taxProfileInvestor: "דירה נוספת",
     // Equity usage
     equityUsed: "הון עצמי בשימוש",
-    equityRemaining: "יתרת הון עצמי"
+    equityRemaining: "יתרת הון עצמי",
+    // Helper texts (UI refactor)
+    helperRentEstimate: "אם כן: תילקח בחשבון הערכת שכירות סטנדרטית (עם מקדם זהירות).",
+    helperBudgetCap: "אופציונלי: לחישוב לפי נוחות החזר חודשית.",
+    helperNetIncome: "סכום שכבר מנוכה מהחזרי הלוואות קיימות (אם יש).",
+    netIncomeLabel: "הכנסה נטו פנויה",
+    helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים."
   },
   en: {
     dir: 'ltr',
@@ -289,7 +301,13 @@ export const translations: Record<Language, Translations> = {
     taxProfileInvestor: "Additional Property",
     // Equity usage
     equityUsed: "Equity Used",
-    equityRemaining: "Remaining Equity"
+    equityRemaining: "Remaining Equity",
+    // Helper texts (UI refactor)
+    helperRentEstimate: "If yes: a standard rent estimate is included (with a prudence margin).",
+    helperBudgetCap: "Optional: to calculate based on your comfort limit.",
+    helperNetIncome: "Net income already reduced by existing loan payments (if any).",
+    netIncomeLabel: "Available net income",
+    helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details."
   },
   fr: {
     dir: 'ltr',
@@ -384,6 +402,12 @@ export const translations: Record<Language, Translations> = {
     taxProfileInvestor: "Bien d'investissement",
     // Equity usage
     equityUsed: "Apport utilisé",
-    equityRemaining: "Apport restant"
+    equityRemaining: "Apport restant",
+    // Helper texts (UI refactor)
+    helperRentEstimate: "Si oui : une estimation standard du loyer est intégrée (avec marge de prudence).",
+    helperBudgetCap: "Optionnel : pour calculer selon votre confort mensuel.",
+    helperNetIncome: "Montant déjà déduit de vos crédits existants (si vous en avez).",
+    netIncomeLabel: "Revenu net disponible",
+    helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation."
   }
 };
