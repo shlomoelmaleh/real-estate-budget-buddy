@@ -297,6 +297,14 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       advisorName: 'שלמה אלמליח',
       advisorPhone: '054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
+      // Monthly Summary
+      monthlySummary: 'סיכום חודשי',
+      monthlyPaymentUsed: 'החזר חודשי בסימולציה',
+      monthlyPaymentCap: 'תקרת החזר חודשי (אופציונלי)',
+      estimatedRentalIncome: 'הכנסה משכירות משוערת (3% שנתי)',
+      rentalIncomeRetained: 'הכנסה משכירות מוכרת (80%)',
+      netMonthlyBalance: 'יתרה חודשית נטו',
+      monthlySummaryNote: 'אינדיקטיבי: לאימות בהתאם לחוזה השכירות והוצאות.',
     },
     en: {
       subject: 'Property Budget Calculator - Complete Report',
@@ -367,6 +375,14 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
+      // Monthly Summary
+      monthlySummary: 'Monthly Summary',
+      monthlyPaymentUsed: 'Monthly mortgage payment used in the simulation',
+      monthlyPaymentCap: 'Monthly payment cap (optional)',
+      estimatedRentalIncome: 'Estimated rental income (3% annual)',
+      rentalIncomeRetained: 'Rental income retained (80%)',
+      netMonthlyBalance: 'Net monthly balance',
+      monthlySummaryNote: 'Indicative: to be confirmed based on lease and expenses.',
     },
     fr: {
       subject: 'Simulateur Budget Immobilier - Rapport Complet',
@@ -437,6 +453,14 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
+      // Monthly Summary
+      monthlySummary: 'Récapitulatif mensuel',
+      monthlyPaymentUsed: 'Mensualité utilisée dans la simulation',
+      monthlyPaymentCap: 'Plafond de mensualité (optionnel)',
+      estimatedRentalIncome: 'Revenu locatif estimé (3% annuel)',
+      rentalIncomeRetained: 'Revenu locatif retenu (80%)',
+      netMonthlyBalance: 'Solde mensuel net',
+      monthlySummaryNote: 'Indicatif : à confirmer selon le bail et les charges.',
     }
   };
 
