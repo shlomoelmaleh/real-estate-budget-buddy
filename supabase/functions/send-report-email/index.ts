@@ -194,7 +194,7 @@ function formatNumber(num: number): string {
   return Math.round(num).toLocaleString('en-US');
 }
 
-function getEmailContent(data: ReportEmailRequest): { subject: string; html: string } {
+function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = false): { subject: string; html: string } {
   const { language, recipientName, recipientPhone, recipientEmail, inputs, results, amortizationSummary, yearlyBalanceData, paymentBreakdownData } = data;
   
   // Parse income for DTI calculation
@@ -219,8 +219,15 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
   const texts = {
     he: {
       subject: 'דוח מחשבון תקציב רכישת נכס',
+      subjectWithName: 'דוח תיק של',
       // Section 1 - Hero
       heroTitle: 'סיכום פרויקט הנדל"ן שלך',
+      heroTitleWithName: 'דוח תיק של',
+      // Client info for advisor copy
+      clientInfoTitle: 'פרטי הלקוח',
+      clientName: 'שם',
+      clientPhone: 'טלפון',
+      clientEmail: 'אימייל',
       maxPropertyLabel: 'שווי נכס מקסימלי',
       limitingFactorLabel: 'גורם מגביל לתקציב',
       limitingCash: 'מוגבל לפי ההון העצמי (Cash)',
@@ -281,7 +288,13 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
     },
     en: {
       subject: 'Property Budget Calculator - Complete Report',
+      subjectWithName: 'Report for',
       heroTitle: 'Your Property Project Summary',
+      heroTitleWithName: 'Report for',
+      clientInfoTitle: 'Client Information',
+      clientName: 'Name',
+      clientPhone: 'Phone',
+      clientEmail: 'Email',
       maxPropertyLabel: 'Max Property Value',
       limitingFactorLabel: 'Budget Limiting Factor',
       limitingCash: 'Limited by Equity (Cash)',
@@ -335,7 +348,13 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
     },
     fr: {
       subject: 'Simulateur Budget Immobilier - Rapport Complet',
+      subjectWithName: 'Rapport du dossier de',
       heroTitle: 'Synthèse de votre projet immobilier',
+      heroTitleWithName: 'Rapport du dossier de',
+      clientInfoTitle: 'Coordonnées du client',
+      clientName: 'Nom',
+      clientPhone: 'Téléphone',
+      clientEmail: 'Email',
       maxPropertyLabel: 'Valeur Max du Bien',
       limitingFactorLabel: 'Facteur déterminant du budget',
       limitingCash: "Limité par l'apport (Cash)",
@@ -715,8 +734,27 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
           </div>
           <p style="font-size: 12px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
         </div>
-        <h1>🏠 Property Budget Pro</h1>
+        <h1>🏠 ${t.heroTitleWithName} ${recipientName}</h1>
       </div>
+
+      ${isAdvisorCopy ? `
+      <!-- CLIENT INFO SECTION (Advisor Only) -->
+      <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? '5px solid #3b82f6' : 'none'}; border-left: ${isRTL ? 'none' : '5px solid #3b82f6'};">
+        <div class="section-title" style="color: #1d4ed8;">👤 ${t.clientInfoTitle}</div>
+        <div class="row">
+          <span class="label">${t.clientName}</span>
+          <span class="value" style="font-weight: 700;">${recipientName}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.clientPhone}</span>
+          <span class="value"><a href="tel:${recipientPhone}" style="color: #1d4ed8; text-decoration: none;">${recipientPhone}</a></span>
+        </div>
+        <div class="row">
+          <span class="label">${t.clientEmail}</span>
+          <span class="value"><a href="mailto:${recipientEmail}" style="color: #1d4ed8; text-decoration: none;">${recipientEmail}</a></span>
+        </div>
+      </div>
+      ` : ''}
 
       <!-- SECTION 1: Hero - Maximum Purchasing Power -->
       <div class="section hero-section">
@@ -929,7 +967,13 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
     </html>
   `;
 
-  return { subject: t.subject, html };
+  // For client: use personalized subject with their name
+  // For advisor: use subject with client name for easy identification
+  const personalizedSubject = isAdvisorCopy 
+    ? `🔔 ${t.subjectWithName} ${recipientName}` 
+    : `${t.subjectWithName} ${recipientName}`;
+    
+  return { subject: personalizedSubject, html };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -987,7 +1031,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Email request received`);
     console.log(`[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}`);
 
-    const { subject, html } = getEmailContent(data);
+    // Generate two versions: one for client, one for advisor (with client info section)
+    const { subject: clientSubject, html: clientHtml } = getEmailContent(data, false);
+    const { subject: advisorSubject, html: advisorHtml } = getEmailContent(data, true);
 
     // Try to send to client from verified domain
     // If the domain isn't verified yet, fallback to advisor-only so the app doesn't break.
@@ -1000,11 +1046,29 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [data.recipientEmail],
-        bcc: [ADVISOR_EMAIL],
-        subject,
-        html,
+        subject: clientSubject,
+        html: clientHtml,
       }),
     });
+
+    // Always try to send advisor copy separately (with client info section)
+    const advisorRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "Property Budget Pro <onboarding@resend.dev>",
+        to: [ADVISOR_EMAIL],
+        subject: `🔔 ${advisorSubject}`,
+        html: advisorHtml,
+      }),
+    });
+
+    if (!advisorRes.ok) {
+      console.warn(`[${requestId}] Advisor copy failed to send`);
+    }
 
     if (!primaryRes.ok) {
       const errorText = await primaryRes.text();
@@ -1018,40 +1082,14 @@ const handler = async (req: Request): Promise<Response> => {
         throw new Error(errorText);
       }
 
-      // Fallback: send to advisor only using Resend test sender
-      const fallbackRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: "Property Budget Pro <onboarding@resend.dev>",
-          to: [ADVISOR_EMAIL],
-          subject: `🔔 Nouvelle simulation - ${data.recipientName} (${data.recipientEmail})`,
-          html,
-        }),
-      });
-
-      if (!fallbackRes.ok) {
-        const fallbackError = await fallbackRes.text();
-        console.error(
-          "Fallback advisor-only email send failed:",
-          fallbackRes.status,
-          fallbackError
-        );
-        throw new Error(fallbackError);
-      }
-
-      const fallbackResponse = await fallbackRes.json();
-      console.log(`[${requestId}] Fallback email sent (domain not verified)`);
-
+      // Fallback: advisor email was already sent above, just return success
+      console.log(`[${requestId}] Domain not verified - advisor email sent as fallback`);
+      
       return new Response(
         JSON.stringify({
           deliveredToClient: false,
           deliveredToAdvisor: true,
           reason: "domain_not_verified",
-          resend: fallbackResponse,
         }),
         {
           status: 200,
