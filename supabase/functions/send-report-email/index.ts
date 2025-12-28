@@ -1035,8 +1035,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { subject: clientSubject, html: clientHtml } = getEmailContent(data, false);
     const { subject: advisorSubject, html: advisorHtml } = getEmailContent(data, true);
 
-    // Send to client using Resend's test domain (works without domain verification)
-    // Note: Once eshel-f.com is verified on Resend, you can switch to "Property Budget Pro <noreply@eshel-f.com>"
+    // Send to client using verified domain eshel-f.com
     const primaryRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -1044,7 +1043,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Property Budget Pro <onboarding@resend.dev>",
+        from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [data.recipientEmail],
         subject: clientSubject,
         html: clientHtml,
@@ -1059,7 +1058,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Property Budget Pro <onboarding@resend.dev>",
+        from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [ADVISOR_EMAIL],
         subject: `🔔 ${advisorSubject}`,
         html: advisorHtml,
@@ -1067,17 +1066,20 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (!advisorRes.ok) {
-      console.warn(`[${requestId}] Advisor copy failed to send`);
+      const advisorError = await advisorRes.text();
+      console.warn(`[${requestId}] Advisor copy failed to send:`, advisorError);
+    } else {
+      console.log(`[${requestId}] Advisor email sent successfully`);
     }
 
     if (!primaryRes.ok) {
       const errorText = await primaryRes.text();
       console.error("Client email send failed:", primaryRes.status, errorText);
-      // Don't throw - advisor email was already sent, log the error
+      throw new Error(`Failed to send client email: ${errorText}`);
     }
 
     const emailResponse = await primaryRes.json();
-    console.log(`[${requestId}] Email sent successfully`);
+    console.log(`[${requestId}] Client email sent successfully`);
 
     return new Response(
       JSON.stringify({
