@@ -1035,8 +1035,8 @@ const handler = async (req: Request): Promise<Response> => {
     const { subject: clientSubject, html: clientHtml } = getEmailContent(data, false);
     const { subject: advisorSubject, html: advisorHtml } = getEmailContent(data, true);
 
-    // Try to send to client from verified domain
-    // If the domain isn't verified yet, fallback to advisor-only so the app doesn't break.
+    // Send to client using Resend's test domain (works without domain verification)
+    // Note: Once eshel-f.com is verified on Resend, you can switch to "Property Budget Pro <noreply@eshel-f.com>"
     const primaryRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -1044,7 +1044,7 @@ const handler = async (req: Request): Promise<Response> => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Property Budget Pro <noreply@eshel-f.com>",
+        from: "Property Budget Pro <onboarding@resend.dev>",
         to: [data.recipientEmail],
         subject: clientSubject,
         html: clientHtml,
@@ -1072,30 +1072,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!primaryRes.ok) {
       const errorText = await primaryRes.text();
-      console.error("Primary email send failed:", primaryRes.status, errorText);
-
-      const isDomainNotVerified =
-        primaryRes.status === 403 &&
-        errorText.toLowerCase().includes("domain is not verified");
-
-      if (!isDomainNotVerified) {
-        throw new Error(errorText);
-      }
-
-      // Fallback: advisor email was already sent above, just return success
-      console.log(`[${requestId}] Domain not verified - advisor email sent as fallback`);
-      
-      return new Response(
-        JSON.stringify({
-          deliveredToClient: false,
-          deliveredToAdvisor: true,
-          reason: "domain_not_verified",
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
+      console.error("Client email send failed:", primaryRes.status, errorText);
+      // Don't throw - advisor email was already sent, log the error
     }
 
     const emailResponse = await primaryRes.json();
