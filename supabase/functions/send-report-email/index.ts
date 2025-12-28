@@ -1065,10 +1065,12 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
+    let advisorResponse: any = null;
     if (!advisorRes.ok) {
       const advisorError = await advisorRes.text();
       console.warn(`[${requestId}] Advisor copy failed to send:`, advisorError);
     } else {
+      advisorResponse = await advisorRes.json();
       console.log(`[${requestId}] Advisor email sent successfully`);
     }
 
@@ -1083,9 +1085,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({
+        requestId,
         deliveredToClient: true,
-        deliveredToAdvisor: true,
-        resend: emailResponse,
+        deliveredToAdvisor: advisorRes.ok,
+        resendClient: emailResponse,
+        resendAdvisor: advisorResponse,
       }),
       {
         status: 200,
