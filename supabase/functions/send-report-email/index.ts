@@ -197,217 +197,221 @@ function formatNumber(num: number): string {
 function getEmailContent(data: ReportEmailRequest): { subject: string; html: string } {
   const { language, recipientName, recipientPhone, recipientEmail, inputs, results, amortizationSummary, yearlyBalanceData, paymentBreakdownData } = data;
   
+  // Parse income for DTI calculation
+  const parseNumber = (str: string): number => {
+    if (!str) return 0;
+    return parseFloat(str.replace(/,/g, '')) || 0;
+  };
+  
+  const incomeNet = parseNumber(inputs.netIncome);
+  const monthlyPayment = results.monthlyPayment;
+  const equityInitial = parseNumber(inputs.equity);
+  const equityRemaining = results.equityRemaining;
+  
+  // Normalize DTI max allowed (could be 33 or 0.33)
+  let dtiMaxAllowedRaw = parseFloat(inputs.ratio) || 0;
+  const dtiMaxAllowed = dtiMaxAllowedRaw > 1 ? dtiMaxAllowedRaw / 100 : dtiMaxAllowedRaw;
+  
+  // Calculate estimated DTI
+  const dtiEstimated = incomeNet > 0 ? monthlyPayment / incomeNet : null;
+  const thresholdDelta = 0.01;
+  
   const texts = {
     he: {
       subject: 'דוח מחשבון תקציב רכישת נכס',
-      greeting: `שלום ${recipientName},`,
-      intro: 'להלן סיכום מלא של החישוב שביצעת:',
-      // Input sections
-      basicInfo: 'נתוני בסיס',
-      clientName: 'שם הלקוח',
-      clientPhone: 'טלפון',
-      clientEmail: 'אימייל',
-      equity: 'הון עצמי',
-      ltv: 'מימון מקסימלי',
-      netIncome: 'הכנסה פנויה',
-      ratio: 'יחס החזר',
-      age: 'גיל לווה',
-      maxAge: 'פריסה מקסימלית (גיל)',
-      interest: 'ריבית שנתית',
-      // Rental
-      rentalInfo: 'שכירות והשקעה',
-      isRented: 'נכס להשקעה',
-      rentalYield: 'תשואת שכירות',
-      rentRecognition: 'הכרה בבנק',
-      budgetCap: 'תקרת החזר חודשי',
-      yes: 'כן',
-      no: 'לא',
-      // Expenses
-      expensesInfo: 'הוצאות נלוות',
-      purchaseTax: 'מס רכישה מחושב',
-      taxProfileLabel: 'סוג נכס',
-      taxProfileSingleHome: 'דירה יחידה',
-      taxProfileInvestor: 'דירה נוספת',
-      lawyerLabel: 'עו"ד (1% + מע"מ)',
-      brokerLabel: 'תיווך (2% + מע"מ)',
-      other: 'שונות',
-      ttc: 'כולל מע"מ',
-      // Results
-      resultsTitle: 'תוצאות החישוב',
-      maxProperty: 'שווי נכס מקסימלי',
+      // Section 1 - Hero
+      heroTitle: 'סיכום פרויקט הנדל"ן שלך',
+      maxPropertyLabel: 'שווי נכס מקסימלי',
+      limitingFactorLabel: 'גורם מגביל לתקציב',
+      limitingCash: 'מוגבל לפי ההון העצמי (Cash)',
+      limitingIncome: 'מוגבל לפי הכנסה (יחס החזר)',
+      limitingComfortable: 'פרופיל נוח (מרווח זמין)',
+      limitingInsufficient: 'נתונים חסרים (לאימות)',
+      // Section 2 - Funding
+      fundingTitle: 'פירוט מימון',
       loanAmount: 'סכום משכנתא',
-      actualLTV: 'אחוז מימון בפועל',
-      monthlyPayment: 'החזר חודשי',
-      rentIncome: 'הכנסה משכירות',
-      netPayment: 'תשלום נטו',
-      closingCosts: 'הוצאות נלוות',
-      totalInterest: 'סך תשלומי ריבית',
-      totalCost: 'עלות כוללת',
-      shekelRatio: 'יחס שקל לשקל',
-      loanTerm: 'תקופת המשכנתא',
-      years: 'שנים',
-      equityUsed: 'הון עצמי בשימוש',
-      equityRemaining: 'יתרת הון עצמי',
-      // Amortization
-      amortizationInfo: 'סיכום לוח סילוקין',
-      totalMonths: 'סה"כ חודשים',
-      firstPayment: 'תשלום ראשון',
-      lastPayment: 'תשלום אחרון',
-      principal: 'קרן',
-      interestLabel: 'ריבית',
+      equityOnProperty: 'הון עצמי על הנכס',
+      fundingNote: 'הלוואה + הון עצמי = מחיר הנכס',
+      // Section 3 - Transaction
+      transactionTitle: 'פירוט עלויות רכישה',
+      purchaseTax: 'מס רכישה',
+      lawyerLabel: 'עו"ד',
+      brokerLabel: 'תיווך',
+      other: 'שונות',
+      transactionTotal: 'סך עלויות רכישה',
+      taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
+      ttc: 'כולל מע"מ',
+      // Section 4 - Cash Summary
+      cashTitle: 'סיכום הון עצמי',
+      capitalAllocated: 'הון עצמי בשימוש',
+      liquidBuffer: 'יתרת הון עצמי (Cash)',
+      cashNote: 'הערכת יתרת המזומנים לאחר רכישה + עלויות.',
+      // Section 5 - Feasibility
+      feasibilityTitle: 'ניתוח היתכנות',
+      ltvRatio: 'יחס מימון (LTV)',
+      dtiMaxLabel: 'יחס החזר מקסימלי',
+      dtiEstimatedLabel: 'יחס החזר משוער',
+      notAvailable: 'לא זמין',
       chartBalanceTitle: 'יתרת הלוואה לאורך זמן',
       chartPaymentTitle: 'פירוט תשלומים שנתי',
-      chartYear: 'שנה',
+      principal: 'קרן',
+      interestLabel: 'ריבית',
+      // Section 6 - Assumptions
+      assumptionsTitle: 'פרמטרים לסימולציה',
+      age: 'גיל לווה',
+      citizenship: 'אזרחות ישראלית',
+      taxResident: 'תושב מס',
+      firstProperty: 'נכס ראשון',
+      netIncome: 'הכנסה פנויה',
+      interestRate: 'ריבית שנתית',
+      loanTerm: 'משך ההלוואה',
+      years: 'שנים',
+      yes: 'כן',
+      no: 'לא',
+      // CTA
+      ctaTitle: 'יש לך שאלות? אני כאן לעזור!',
+      ctaWhatsApp: '📞 לקביעת פגישה',
+      ctaEmail: '✉️ לשאלות נוספות',
+      // Footer
       footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
       note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.',
-      taxDisclaimer: 'לתשומת לבך: חישוב מס הרכישה בסימולטור זה מבוסס על מדרגות המס הסטנדרטיות (דירה יחידה או דירה נוספת). החישוב אינו לוקח בחשבון הטבות ספציפיות כגון: עולה חדש, נכות, או תושב חוזר. גובה המס הסופי ייקבע רק על ידי עו"ד מקרקעין.',
       advisorName: 'שלמה אלמליח',
       advisorPhone: '054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
-      // CTAs
-      ctaTitle: 'יש לך שאלות? אני כאן לעזור!',
-      ctaWhatsApp: '📞 לקביעת פגישה',
-      ctaEmail: '✉️ לשאלות נוספות'
     },
     en: {
       subject: 'Property Budget Calculator - Complete Report',
-      greeting: `Hello ${recipientName},`,
-      intro: 'Here is the complete summary of your calculation:',
-      basicInfo: 'Basic Information',
-      clientName: 'Client Name',
-      clientPhone: 'Phone',
-      clientEmail: 'Email',
-      equity: 'Equity',
-      ltv: 'Max LTV',
-      netIncome: 'Net Income',
-      ratio: 'Repayment Ratio',
-      age: 'Borrower Age',
-      maxAge: 'Max Age (End of loan)',
-      interest: 'Annual Interest',
-      rentalInfo: 'Rent & Investment',
-      isRented: 'Investment Property',
-      rentalYield: 'Rental Yield',
-      rentRecognition: 'Bank Recognition',
-      budgetCap: 'Monthly Payment Cap',
-      yes: 'Yes',
-      no: 'No',
-      expensesInfo: 'Closing Costs',
-      purchaseTax: 'Calculated Purchase Tax',
-      taxProfileLabel: 'Property Type',
-      taxProfileSingleHome: 'Single Home',
-      taxProfileInvestor: 'Additional Property',
-      lawyerLabel: 'Lawyer (1% + VAT)',
-      brokerLabel: 'Broker (2% + VAT)',
-      other: 'Other Costs',
-      ttc: 'incl. VAT',
-      resultsTitle: 'Calculation Results',
-      maxProperty: 'Max Property Value',
+      heroTitle: 'Your Property Project Summary',
+      maxPropertyLabel: 'Max Property Value',
+      limitingFactorLabel: 'Budget Limiting Factor',
+      limitingCash: 'Limited by Equity (Cash)',
+      limitingIncome: 'Limited by Income (DTI)',
+      limitingComfortable: 'Comfortable Profile (Margin Available)',
+      limitingInsufficient: 'Insufficient Data (To Confirm)',
+      fundingTitle: 'Funding Breakdown',
       loanAmount: 'Loan Amount',
-      actualLTV: 'Actual LTV',
-      monthlyPayment: 'Monthly Payment',
-      rentIncome: 'Rental Income',
-      netPayment: 'Net Payment',
-      closingCosts: 'Closing Costs',
-      totalInterest: 'Total Interest',
-      totalCost: 'Total Cost',
-      shekelRatio: 'Shekel-to-Shekel Ratio',
-      loanTerm: 'Loan Term',
-      years: 'years',
-      equityUsed: 'Equity Used',
-      equityRemaining: 'Remaining Equity',
-      amortizationInfo: 'Amortization Summary',
-      totalMonths: 'Total Months',
-      firstPayment: 'First Payment',
-      lastPayment: 'Last Payment',
-      principal: 'Principal',
-      interestLabel: 'Interest',
+      equityOnProperty: 'Equity on Property',
+      fundingNote: 'Loan + Equity = Property Price',
+      transactionTitle: 'Transaction Costs Details',
+      purchaseTax: 'Purchase Tax',
+      lawyerLabel: 'Lawyer',
+      brokerLabel: 'Broker/Agency',
+      other: 'Other',
+      transactionTotal: 'Total Transaction Costs',
+      taxDisclaimer: 'Tax calculated using standard brackets only; special exemptions not included. Verify with attorney.',
+      ttc: 'incl. VAT',
+      cashTitle: 'Equity Summary',
+      capitalAllocated: 'Total Capital Allocated',
+      liquidBuffer: 'Liquid Safety Buffer',
+      cashNote: 'Estimated cash remaining after purchase + costs.',
+      feasibilityTitle: 'Feasibility Analysis',
+      ltvRatio: 'LTV Ratio',
+      dtiMaxLabel: 'Max DTI Allowed',
+      dtiEstimatedLabel: 'Estimated DTI',
+      notAvailable: 'N/A',
       chartBalanceTitle: 'Loan Balance Over Time',
       chartPaymentTitle: 'Annual Payment Breakdown',
-      chartYear: 'Year',
+      principal: 'Principal',
+      interestLabel: 'Interest',
+      assumptionsTitle: 'Simulation Assumptions',
+      age: 'Borrower Age',
+      citizenship: 'Israeli Citizenship',
+      taxResident: 'Tax Resident',
+      firstProperty: 'First Property',
+      netIncome: 'Net Income',
+      interestRate: 'Annual Interest',
+      loanTerm: 'Loan Term',
+      years: 'years',
+      yes: 'Yes',
+      no: 'No',
+      ctaTitle: 'Have questions? I am here to help!',
+      ctaWhatsApp: '📞 Book an Appointment',
+      ctaEmail: '✉️ Ask a Question',
       footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
       note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.',
-      taxDisclaimer: 'Note: The purchase tax calculation is based on standard brackets (single or additional home). It does not account for specific benefits like New Immigrant (Oleh Hadash), disability, or returning resident. The final tax amount will be determined solely by a real estate lawyer.',
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
-      ctaTitle: 'Have questions? I am here to help!',
-      ctaWhatsApp: '📞 Book an Appointment',
-      ctaEmail: '✉️ Ask a Question'
     },
     fr: {
       subject: 'Simulateur Budget Immobilier - Rapport Complet',
-      greeting: `Bonjour ${recipientName},`,
-      intro: 'Voici le résumé complet de votre calcul:',
-      basicInfo: 'Informations de Base',
-      clientName: 'Nom du Client',
-      clientPhone: 'Téléphone',
-      clientEmail: 'Email',
-      equity: 'Apport Personnel',
-      ltv: 'Financement Max',
-      netIncome: 'Revenu Net',
-      ratio: "Taux d'endettement",
-      age: "Âge de l'emprunteur",
-      maxAge: 'Âge max fin de prêt',
-      interest: "Taux d'intérêt annuel",
-      rentalInfo: 'Investissement Locatif',
-      isRented: 'Bien destiné à la location',
-      rentalYield: 'Rendement Locatif',
-      rentRecognition: 'Reconnaissance Banque',
-      budgetCap: 'Plafond Mensualité',
-      yes: 'Oui',
-      no: 'Non',
-      expensesInfo: 'Frais Annexes',
-      purchaseTax: "Taxe d'acquisition calculée",
-      taxProfileLabel: 'Type de bien',
-      taxProfileSingleHome: 'Résidence principale',
-      taxProfileInvestor: "Bien d'investissement",
-      lawyerLabel: 'Avocat (1% H.T)',
-      brokerLabel: "Frais d'agence (2% H.T)",
-      other: 'Divers',
-      ttc: 'T.T.C',
-      resultsTitle: 'Résultats du Calcul',
-      maxProperty: 'Valeur Max du Bien',
+      heroTitle: 'Synthèse de votre projet immobilier',
+      maxPropertyLabel: 'Valeur Max du Bien',
+      limitingFactorLabel: 'Facteur déterminant du budget',
+      limitingCash: "Limité par l'apport (Cash)",
+      limitingIncome: 'Limité par la mensualité (Revenus)',
+      limitingComfortable: 'Profil confortable (marge disponible)',
+      limitingInsufficient: 'Données insuffisantes (à confirmer)',
+      fundingTitle: 'Le montage financier',
       loanAmount: 'Montant du Prêt',
-      actualLTV: 'LTV Actuel',
-      monthlyPayment: 'Mensualité',
-      rentIncome: 'Revenu Locatif',
-      netPayment: 'Paiement Net',
-      closingCosts: 'Frais Annexes',
-      totalInterest: 'Total Intérêts',
-      totalCost: 'Coût Total',
-      shekelRatio: 'Ratio Shekel pour Shekel',
-      loanTerm: 'Durée du Prêt',
-      years: 'ans',
-      equityUsed: 'Apport utilisé',
-      equityRemaining: 'Apport restant',
-      amortizationInfo: "Résumé du Tableau d'Amortissement",
-      totalMonths: 'Total Mois',
-      firstPayment: 'Premier Paiement',
-      lastPayment: 'Dernier Paiement',
-      principal: 'Capital',
-      interestLabel: 'Intérêts',
+      equityOnProperty: 'Apport net sur le prix du bien',
+      fundingNote: 'Prêt + Apport = Prix du bien',
+      transactionTitle: 'Détail des frais de transaction',
+      purchaseTax: "Taxe d'acquisition",
+      lawyerLabel: 'Avocat',
+      brokerLabel: "Frais d'agence",
+      other: 'Divers',
+      transactionTotal: 'Total des frais de transaction',
+      taxDisclaimer: 'Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d\'un avocat.',
+      ttc: 'T.T.C',
+      cashTitle: 'Bilan des fonds propres',
+      capitalAllocated: 'Capital total mobilisé',
+      liquidBuffer: 'Réserve de sécurité (cash)',
+      cashNote: 'Estimation du cash restant sur votre compte après achat + frais.',
+      feasibilityTitle: 'Analyse de faisabilité',
+      ltvRatio: 'Ratio LTV',
+      dtiMaxLabel: 'DTI Max autorisé',
+      dtiEstimatedLabel: 'DTI Estimé',
+      notAvailable: 'N/A',
       chartBalanceTitle: 'Solde du Prêt dans le Temps',
       chartPaymentTitle: 'Répartition Annuelle des Paiements',
-      chartYear: 'Année',
+      principal: 'Capital',
+      interestLabel: 'Intérêts',
+      assumptionsTitle: 'Hypothèses de la simulation',
+      age: "Âge de l'emprunteur",
+      citizenship: 'Nationalité israélienne',
+      taxResident: 'Résident fiscal',
+      firstProperty: 'Premier bien',
+      netIncome: 'Revenu Net',
+      interestRate: "Taux d'intérêt annuel",
+      loanTerm: 'Durée du Prêt',
+      years: 'ans',
+      yes: 'Oui',
+      no: 'Non',
+      ctaTitle: 'Vous avez des questions ? Je suis là pour vous aider !',
+      ctaWhatsApp: '📞 Prendre RDV',
+      ctaEmail: '✉️ Poser une question',
       footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
       note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
-      taxDisclaimer: "Attention : Le calcul des droits de mutation est basé sur les barèmes standards. Il ne prend pas en compte les exonérations spécifiques (Oleh Hadash, handicap, etc.). Le montant définitif de la taxe doit être vérifié par un avocat spécialisé.",
       advisorName: 'Shlomo Elmaleh',
       advisorPhone: '+972-054-9997711',
       advisorEmail: 'shlomo.elmaleh@gmail.com',
-      ctaTitle: 'Vous avez des questions ? Je suis là pour vous aider !',
-      ctaWhatsApp: '📞 Prendre RDV',
-      ctaEmail: '✉️ Poser une question'
     }
   };
 
   const t = texts[language];
   const dir = language === 'he' ? 'rtl' : 'ltr';
-
-  // Force RTL inline styles for Hebrew
   const isRTL = language === 'he';
   const alignStart = isRTL ? 'right' : 'left';
   const alignEnd = isRTL ? 'left' : 'right';
+
+  // Compute limiting factor
+  let limitingFactor: string;
+  const hasCriticalData = equityInitial > 0 && incomeNet > 0 && monthlyPayment > 0;
+  
+  if (!hasCriticalData) {
+    limitingFactor = t.limitingInsufficient;
+  } else if (equityRemaining <= 0.01 * equityInitial) {
+    limitingFactor = t.limitingCash;
+  } else if (dtiMaxAllowed > 0 && dtiEstimated !== null && dtiEstimated >= (dtiMaxAllowed - thresholdDelta)) {
+    limitingFactor = t.limitingIncome;
+  } else {
+    limitingFactor = t.limitingComfortable;
+  }
+
+  // Computed values
+  const equityOnProperty = results.maxPropertyValue - results.loanAmount;
+  const dtiEstimatedDisplay = dtiEstimated !== null ? `${(dtiEstimated * 100).toFixed(1)}%` : t.notAvailable;
 
   const html = `
     <!DOCTYPE html>
@@ -421,16 +425,14 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
       </style>
       <![endif]-->
       <style>
-        * {
-          direction: ${dir} !important;
-        }
+        * { direction: ${dir} !important; box-sizing: border-box; }
         body {
           font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-          line-height: 1.7;
+          line-height: 1.6;
           color: #1e293b;
-          max-width: 700px;
+          max-width: 600px;
           margin: 0 auto;
-          padding: 25px;
+          padding: 16px;
           background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%);
           direction: ${dir} !important;
           text-align: ${alignStart} !important;
@@ -438,424 +440,316 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         .header {
           background: linear-gradient(135deg, #1e40af 0%, #0891b2 50%, #059669 100%);
           color: white;
-          padding: 35px 25px;
-          border-radius: 16px;
-          text-align: center;
-          margin-bottom: 25px;
-          box-shadow: 0 10px 40px rgba(30, 64, 175, 0.3);
-        }
-        .header h1 {
-          margin: 0;
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-        }
-        .header p {
-          margin: 8px 0 0;
-          opacity: 0.9;
-          font-size: 14px;
-        }
-        .intro-section {
-          background: white;
-          padding: 20px 25px;
+          padding: 24px 20px;
           border-radius: 12px;
-          margin-bottom: 20px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-          text-align: ${alignStart} !important;
-          direction: ${dir} !important;
+          text-align: center;
+          margin-bottom: 16px;
+          box-shadow: 0 8px 30px rgba(30, 64, 175, 0.25);
         }
-        .intro-section p {
-          margin: 8px 0;
-          text-align: ${alignStart} !important;
-          direction: ${dir} !important;
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; }
+        .header-info {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 16px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.2);
+          ${isRTL ? 'flex-direction: row-reverse;' : ''}
         }
+        .header-info p { margin: 3px 0; font-size: 13px; opacity: 0.9; }
+        .header-info a { color: white; text-decoration: underline; }
+        
         .section {
           background: white;
-          padding: 22px;
-          border-radius: 14px;
-          margin-bottom: 18px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-          border-${alignStart}: 5px solid #3b82f6;
+          padding: 20px;
+          border-radius: 12px;
+          margin-bottom: 14px;
+          box-shadow: 0 3px 15px rgba(0,0,0,0.05);
           text-align: ${alignStart} !important;
           direction: ${dir} !important;
         }
         .section-title {
-          font-size: 17px;
+          font-size: 15px;
           font-weight: 700;
           color: #1e40af;
-          margin-bottom: 18px;
-          padding-bottom: 12px;
+          margin-bottom: 14px;
+          padding-bottom: 10px;
           border-bottom: 2px solid #e2e8f0;
-          text-align: ${alignStart} !important;
-          direction: ${dir} !important;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
         .row {
           display: table;
           width: 100%;
-          padding: 12px 0;
+          padding: 10px 0;
           border-bottom: 1px solid #f1f5f9;
           direction: ${dir} !important;
         }
-        .row:last-child {
-          border-bottom: none;
-        }
+        .row:last-child { border-bottom: none; }
         .label {
           display: table-cell;
           width: 55%;
           color: #64748b;
-          font-size: 14px;
+          font-size: 13px;
           text-align: ${alignStart} !important;
-          padding-${alignEnd}: 20px;
+          padding-${alignEnd}: 12px;
           vertical-align: middle;
-          direction: ${dir} !important;
         }
         .value {
           display: table-cell;
           width: 45%;
           font-weight: 600;
           color: #0f172a;
-          font-size: 15px;
+          font-size: 14px;
           text-align: ${alignEnd} !important;
           vertical-align: middle;
-          direction: ${dir} !important;
         }
-        .section-rental {
-          border-${alignStart}-color: #10b981;
-        }
-        .section-rental .section-title {
-          color: #047857;
-        }
-        .section-expenses {
-          border-${alignStart}-color: #f59e0b;
-        }
-        .section-expenses .section-title {
-          color: #b45309;
-        }
-        .results-section {
+        
+        /* Hero Section */
+        .hero-section {
           background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
           border: 2px solid #34d399;
           border-${alignStart}: 6px solid #10b981;
+          text-align: center;
+          padding: 28px 20px;
         }
-        .results-section .section-title {
+        .hero-section .section-title {
+          justify-content: center;
           color: #047857;
         }
-        .highlight {
+        .hero-value {
+          font-size: 32px;
+          font-weight: 800;
+          color: #059669;
+          margin: 12px 0;
+          letter-spacing: -0.5px;
+        }
+        .hero-factor {
           background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-          padding: 18px;
-          border-radius: 10px;
-          margin-top: 18px;
-          border: 2px solid #f59e0b;
-          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
-        }
-        .highlight .row {
-          border: none;
-          padding: 8px 0;
-        }
-        .highlight .label {
-          font-size: 16px;
-          font-weight: 600;
-          color: #92400e;
-        }
-        .highlight .value {
-          font-size: 24px;
-          font-weight: 700;
-          color: #d97706;
-        }
-        .cta-section {
-          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-          padding: 30px;
-          border-radius: 16px;
-          margin: 25px 0;
-          text-align: center;
-          box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
-        }
-        .cta-section h3 {
-          color: white;
-          font-size: 20px;
-          margin: 0 0 20px 0;
-        }
-        .cta-buttons {
-          display: flex;
-          gap: 15px;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-        .cta-button {
-          display: inline-block;
-          padding: 14px 28px;
-          border-radius: 10px;
-          text-decoration: none;
-          font-weight: 700;
-          font-size: 16px;
-          transition: transform 0.2s;
-        }
-        .cta-whatsapp {
-          background: #25D366;
-          color: white;
-        }
-        .cta-email {
-          background: white;
-          color: #1e40af;
-        }
-        .amortization-summary {
-          background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-          padding: 18px;
-          border-radius: 10px;
-          margin-top: 12px;
-        }
-        .amortization-grid {
-          display: table;
-          width: 100%;
-        }
-        .amortization-row {
-          display: table-row;
-        }
-        .amortization-item {
-          display: table-cell;
-          text-align: center;
-          padding: 12px 8px;
-          background: white;
+          border: 1px solid #f59e0b;
           border-radius: 8px;
-          margin: 5px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-          width: 25%;
+          padding: 10px 16px;
+          margin-top: 14px;
+          font-size: 13px;
+          color: #92400e;
+          display: inline-block;
         }
-        .amortization-item .title {
+        .hero-factor-label { font-weight: 600; }
+        
+        /* Funding Section */
+        .funding-section { border-${alignStart}: 5px solid #3b82f6; }
+        .funding-note {
+          background: #f0f9ff;
+          border-radius: 6px;
+          padding: 10px;
+          margin-top: 10px;
+          font-size: 12px;
+          color: #1e40af;
+          text-align: center;
+        }
+        
+        /* Transaction Section */
+        .transaction-section { border-${alignStart}: 5px solid #f59e0b; }
+        .transaction-section .section-title { color: #b45309; }
+        .tax-disclaimer {
+          font-size: 11px;
+          font-style: italic;
+          color: #9a3412;
+          margin-top: 4px;
+          padding-${alignStart}: 0;
+        }
+        .total-row {
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border-radius: 8px;
+          margin-top: 10px;
+          padding: 12px !important;
+        }
+        .total-row .label { font-weight: 600; color: #92400e; }
+        .total-row .value { font-weight: 700; color: #d97706; font-size: 16px; }
+        
+        /* Cash Section */
+        .cash-section { border-${alignStart}: 5px solid #10b981; }
+        .cash-section .section-title { color: #047857; }
+        .buffer-row {
+          background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+          border-radius: 8px;
+          padding: 12px !important;
+          margin-top: 8px;
+        }
+        .buffer-row .label { font-weight: 600; color: #047857; }
+        .buffer-row .value { font-weight: 700; color: #059669; font-size: 16px; }
+        .cash-note {
           font-size: 11px;
           color: #64748b;
-          margin-bottom: 6px;
+          margin-top: 10px;
+          font-style: italic;
         }
-        .amortization-item .amount {
-          font-weight: 700;
-          color: #0f172a;
-          font-size: 14px;
-        }
-        .footer {
-          text-align: center;
-          margin-top: 30px;
-          padding: 20px;
-          color: #64748b;
+        
+        /* Feasibility Section */
+        .feasibility-section { border-${alignStart}: 5px solid #8b5cf6; }
+        .feasibility-section .section-title { color: #7c3aed; }
+        
+        /* Charts */
+        .chart-container { margin-top: 16px; }
+        .chart-title-small {
           font-size: 13px;
-          background: white;
-          border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-        }
-        .footer p {
-          margin: 5px 0;
-        }
-        .note {
-          background: linear-gradient(135deg, #fff7ed, #ffedd5);
-          border: 2px solid #fb923c;
-          padding: 15px 18px;
-          border-radius: 10px;
-          margin-top: 20px;
-          font-size: 13px;
-          color: #9a3412;
-          text-align: ${alignStart} !important;
-          direction: ${dir} !important;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          ${isRTL ? 'flex-direction: row-reverse;' : ''}
-        }
-        .chart-section {
-          background: white;
-          padding: 22px;
-          border-radius: 14px;
-          margin-bottom: 18px;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-          border-${alignStart}: 5px solid #3b82f6;
-        }
-        .chart-title {
-          font-size: 17px;
-          font-weight: 700;
-          color: #1e40af;
-          margin-bottom: 18px;
-          padding-bottom: 12px;
-          border-bottom: 2px solid #e2e8f0;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
-        }
-
-        /* Email-safe vertical charts: use TABLE layout (works in Gmail/Outlook). */
-        .vchart {
-          width: 100%;
-          height: 190px;
-          table-layout: fixed;
-          border-collapse: collapse;
-          border-bottom: 2px solid #e2e8f0;
-          direction: ltr !important; /* prevents RTL reversing years order */
-          unicode-bidi: bidi-override;
-          margin-bottom: 8px;
-        }
-        .vchart td {
-          vertical-align: bottom;
-          text-align: center;
-          padding: 0 3px;
-        }
-        .vbar {
-          width: 100%;
-          border-radius: 4px 4px 0 0;
-          display: block;
-          margin: 0 auto;
-        }
-        .vbar-balance {
-          background: linear-gradient(180deg, #3b82f6, #60a5fa);
-        }
-        .vstack {
-          width: 100%;
-          display: block;
-          border-radius: 4px 4px 0 0;
-          overflow: hidden;
-        }
-        .vbar-principal {
-          background: linear-gradient(180deg, #10b981, #34d399);
-          display: block;
-        }
-        .vbar-interest {
-          background: linear-gradient(180deg, #f59e0b, #fbbf24);
-          display: block;
-        }
-        .vlabel {
-          font-size: 10px;
+          font-weight: 600;
           color: #64748b;
-          margin-top: 6px;
-          line-height: 1;
-          direction: ltr !important;
-          unicode-bidi: bidi-override;
-        }
-
-        .chart-legend {
-          display: flex;
-          gap: 20px;
-          margin-top: 15px;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-        .chart-legend-item {
+          margin-bottom: 10px;
           display: flex;
           align-items: center;
           gap: 6px;
+          ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
+        }
+        .vchart {
+          width: 100%;
+          max-width: 100%;
+          height: 140px;
+          table-layout: fixed;
+          border-collapse: collapse;
+          border-bottom: 2px solid #e2e8f0;
+          direction: ltr !important;
+          unicode-bidi: bidi-override;
+          margin-bottom: 6px;
+        }
+        .vchart td { vertical-align: bottom; text-align: center; padding: 0 2px; }
+        .vbar { width: 100%; border-radius: 3px 3px 0 0; display: block; margin: 0 auto; }
+        .vbar-balance { background: linear-gradient(180deg, #3b82f6, #60a5fa); }
+        .vstack { width: 100%; display: block; border-radius: 3px 3px 0 0; overflow: hidden; }
+        .vbar-principal { background: linear-gradient(180deg, #10b981, #34d399); display: block; }
+        .vbar-interest { background: linear-gradient(180deg, #f59e0b, #fbbf24); display: block; }
+        .vlabel { font-size: 9px; color: #64748b; margin-top: 4px; line-height: 1; direction: ltr !important; }
+        .chart-legend {
+          display: flex;
+          gap: 16px;
+          margin-top: 10px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .chart-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #64748b; }
+        .chart-legend-color { width: 12px; height: 12px; border-radius: 2px; }
+        
+        /* Assumptions Section */
+        .assumptions-section {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+        }
+        .assumptions-section .section-title { color: #64748b; border-bottom-color: #cbd5e1; }
+        .assumptions-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .assumption-item {
+          background: white;
+          border-radius: 6px;
+          padding: 8px 12px;
           font-size: 12px;
+          border: 1px solid #e2e8f0;
+          flex: 1 1 45%;
+          min-width: 120px;
+        }
+        .assumption-item .a-label { color: #64748b; font-size: 11px; }
+        .assumption-item .a-value { font-weight: 600; color: #0f172a; margin-top: 2px; }
+        
+        /* CTA Section */
+        .cta-section {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+          padding: 24px;
+          border-radius: 12px;
+          margin: 14px 0;
+          text-align: center;
+          box-shadow: 0 8px 30px rgba(59, 130, 246, 0.25);
+        }
+        .cta-section h3 { color: white; font-size: 16px; margin: 0 0 14px 0; }
+        .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .cta-button {
+          display: inline-block;
+          padding: 12px 20px;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 700;
+          font-size: 14px;
+        }
+        .cta-whatsapp { background: #25D366; color: white; }
+        .cta-email { background: white; color: #1e40af; }
+        
+        .note {
+          background: linear-gradient(135deg, #fff7ed, #ffedd5);
+          border: 1px solid #fb923c;
+          padding: 12px 14px;
+          border-radius: 8px;
+          margin-top: 14px;
+          font-size: 11px;
+          color: #9a3412;
+          text-align: ${alignStart} !important;
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          ${isRTL ? 'flex-direction: row-reverse;' : ''}
+        }
+        
+        .footer {
+          text-align: center;
+          margin-top: 20px;
+          padding: 16px;
           color: #64748b;
+          font-size: 12px;
+          background: white;
+          border-radius: 10px;
         }
-        .chart-legend-color {
-          width: 14px;
-          height: 14px;
-          border-radius: 3px;
-        }
+        .footer p { margin: 4px 0; }
       </style>
     </head>
     <body style="direction: ${dir}; text-align: ${alignStart};">
+      <!-- Header -->
       <div class="header">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); ${isRTL ? 'flex-direction: row-reverse;' : ''}">
+        <div class="header-info">
           <div style="text-align: ${alignStart}; ${isRTL ? 'direction: rtl;' : ''}">
-            <p style="font-weight: 700; font-size: 18px; margin: 0 0 5px 0;">${t.advisorName}</p>
-            <p style="font-size: 14px; opacity: 0.9; margin: 3px 0;">📞 <a href="https://wa.me/972549997711" target="_blank" style="color: white; text-decoration: underline;">${t.advisorPhone}</a></p>
-            <p style="font-size: 14px; opacity: 0.9; margin: 3px 0;">✉️ <a href="mailto:${t.advisorEmail}" style="color: white; text-decoration: underline;">${t.advisorEmail}</a></p>
+            <p style="font-weight: 700; font-size: 16px; margin: 0 0 4px 0;">${t.advisorName}</p>
+            <p>📞 <a href="https://wa.me/972549997711" target="_blank">${t.advisorPhone}</a></p>
+            <p>✉️ <a href="mailto:${t.advisorEmail}">${t.advisorEmail}</a></p>
           </div>
-          <p style="opacity: 0.9; font-size: 14px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
+          <p style="font-size: 12px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
         </div>
         <h1>🏠 Property Budget Pro</h1>
       </div>
 
-      <div class="intro-section">
-        <p style="font-size: 16px; font-weight: 500;">${t.greeting}</p>
-        <p style="color: #64748b;">${t.intro}</p>
-      </div>
-
-      <!-- CTA Section - Prominent placement at the top -->
-      <div class="cta-section">
-        <h3>${t.ctaTitle}</h3>
-        <div class="cta-buttons">
-          <a href="https://wa.me/972549997711?text=${encodeURIComponent(`Bonjour ${t.advisorName}, je viens d'utiliser votre simulateur et j'aimerais en discuter.`)}" class="cta-button cta-whatsapp" target="_blank">${t.ctaWhatsApp}</a>
-          <a href="mailto:${t.advisorEmail}?subject=${encodeURIComponent(`Question suite à ma simulation`)}" class="cta-button cta-email">${t.ctaEmail}</a>
+      <!-- SECTION 1: Hero - Maximum Purchasing Power -->
+      <div class="section hero-section">
+        <div class="section-title">💎 ${t.heroTitle}</div>
+        <div style="font-size: 13px; color: #047857; margin-bottom: 4px;">${t.maxPropertyLabel}</div>
+        <div class="hero-value">₪ ${formatNumber(results.maxPropertyValue)}</div>
+        <div class="hero-factor">
+          <span class="hero-factor-label">${t.limitingFactorLabel}:</span> ${limitingFactor}
         </div>
       </div>
 
-      <!-- Basic Information -->
-      <div class="section">
-        <div class="section-title">📋 ${t.basicInfo}</div>
-        ${recipientName ? `
+      <!-- SECTION 2: Funding Breakdown -->
+      <div class="section funding-section">
+        <div class="section-title">🏦 ${t.fundingTitle}</div>
         <div class="row">
-          <span class="label">${t.clientName}</span>
-          <span class="value">${recipientName}</span>
-        </div>
-        ` : ''}
-        ${recipientPhone ? `
-        <div class="row">
-          <span class="label">${t.clientPhone}</span>
-          <span class="value">${recipientPhone}</span>
-        </div>
-        ` : ''}
-        ${recipientEmail ? `
-        <div class="row">
-          <span class="label">${t.clientEmail}</span>
-          <span class="value">${recipientEmail}</span>
-        </div>
-        ` : ''}
-        <div class="row">
-          <span class="label">${t.equity}</span>
-          <span class="value">₪ ${inputs.equity}</span>
+          <span class="label">${t.loanAmount}</span>
+          <span class="value">₪ ${formatNumber(results.loanAmount)}</span>
         </div>
         <div class="row">
-          <span class="label">${t.ltv}</span>
-          <span class="value">${inputs.ltv} %</span>
+          <span class="label">${t.equityOnProperty}</span>
+          <span class="value">₪ ${formatNumber(equityOnProperty)}</span>
         </div>
-        <div class="row">
-          <span class="label">${t.netIncome}</span>
-          <span class="value">₪ ${inputs.netIncome}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.ratio}</span>
-          <span class="value">${inputs.ratio} %</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.age}</span>
-          <span class="value">${inputs.age}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.maxAge}</span>
-          <span class="value">${inputs.maxAge}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.interest}</span>
-          <span class="value">${inputs.interest} %</span>
-        </div>
+        <div class="funding-note">💡 ${t.fundingNote}</div>
       </div>
 
-      <!-- Rental Information -->
-      <div class="section section-rental">
-        <div class="section-title">🏠 ${t.rentalInfo}</div>
-        <div class="row">
-          <span class="label">${t.isRented}</span>
-          <span class="value">${inputs.isRented ? t.yes : t.no}</span>
-        </div>
-        ${inputs.budgetCap ? `
-        <div class="row">
-          <span class="label">${t.budgetCap}</span>
-          <span class="value">₪ ${inputs.budgetCap}</span>
-        </div>
-        ` : ''}
-      </div>
-
-      <!-- Expenses -->
-      <div class="section section-expenses">
-        <div class="section-title">💰 ${t.expensesInfo}</div>
+      <!-- SECTION 3: Transaction Envelope -->
+      <div class="section transaction-section">
+        <div class="section-title">📑 ${t.transactionTitle}</div>
         <div class="row">
           <span class="label">${t.purchaseTax}</span>
           <span class="value">₪ ${formatNumber(results.purchaseTax)}</span>
         </div>
-        <div class="row">
-          <span class="label">${t.taxProfileLabel}</span>
-          <span class="value">${results.taxProfile === 'SINGLE_HOME' ? t.taxProfileSingleHome : t.taxProfileInvestor}</span>
-        </div>
+        <div class="tax-disclaimer">${t.taxDisclaimer}</div>
         <div class="row">
           <span class="label">${t.lawyerLabel}</span>
           <span class="value">₪ ${formatNumber(results.lawyerFeeTTC)} ${t.ttc}</span>
@@ -866,180 +760,155 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
         </div>
         <div class="row">
           <span class="label">${t.other}</span>
-          <span class="value">₪ ${inputs.otherFee}</span>
+          <span class="value">₪ ${inputs.otherFee || '0'}</span>
+        </div>
+        <div class="row total-row">
+          <span class="label">${t.transactionTotal}</span>
+          <span class="value">₪ ${formatNumber(results.closingCosts)}</span>
         </div>
       </div>
 
-      <!-- Results -->
-      <div class="section results-section">
-        <div class="section-title">📊 ${t.resultsTitle}</div>
+      <!-- SECTION 4: Cash Summary -->
+      <div class="section cash-section">
+        <div class="section-title">💰 ${t.cashTitle}</div>
         <div class="row">
-          <span class="label">${t.maxProperty}</span>
-          <span class="value">₪ ${formatNumber(results.maxPropertyValue)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.loanAmount}</span>
-          <span class="value">₪ ${formatNumber(results.loanAmount)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.actualLTV}</span>
-          <span class="value">${results.actualLTV.toFixed(1)} %</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.loanTerm}</span>
-          <span class="value">${results.loanTermYears} ${t.years}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.monthlyPayment}</span>
-          <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.rentIncome}</span>
-          <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.netPayment}</span>
-          <span class="value">₪ ${formatNumber(results.netPayment)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.closingCosts}</span>
-          <span class="value">₪ ${formatNumber(results.closingCosts)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.totalInterest}</span>
-          <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.totalCost}</span>
-          <span class="value">₪ ${formatNumber(results.totalCost)}</span>
-        </div>
-        <div class="row">
-          <span class="label">${t.equityUsed}</span>
+          <span class="label">${t.capitalAllocated}</span>
           <span class="value">₪ ${formatNumber(results.equityUsed)}</span>
         </div>
-        ${results.equityRemaining > 0 ? `
-        <div class="row" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); padding: 12px; border-radius: 8px; margin-top: 8px;">
-          <span class="label" style="color: #047857; font-weight: 600;">${t.equityRemaining}</span>
-          <span class="value" style="color: #059669; font-weight: 700;">₪ ${formatNumber(results.equityRemaining)}</span>
+        <div class="row buffer-row">
+          <span class="label">${t.liquidBuffer}</span>
+          <span class="value">₪ ${formatNumber(results.equityRemaining)}</span>
+        </div>
+        <div class="cash-note">${t.cashNote}</div>
+      </div>
+
+      <!-- SECTION 5: Feasibility & Analysis -->
+      <div class="section feasibility-section">
+        <div class="section-title">📊 ${t.feasibilityTitle}</div>
+        <div class="row">
+          <span class="label">${t.ltvRatio}</span>
+          <span class="value">${results.actualLTV.toFixed(1)}%</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.dtiMaxLabel}</span>
+          <span class="value">${dtiMaxAllowed > 0 ? `${(dtiMaxAllowed * 100).toFixed(0)}%` : t.notAvailable}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.dtiEstimatedLabel}</span>
+          <span class="value">${dtiEstimatedDisplay}</span>
+        </div>
+        
+        <!-- Charts -->
+        ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
+        <div class="chart-container">
+          <div class="chart-title-small">📉 ${t.chartBalanceTitle}</div>
+          ${(() => {
+            const CHART_H = 120;
+            const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
+            return `
+              <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  ${yearlyBalanceData
+                    .slice()
+                    .sort((a, b) => a.year - b.year)
+                    .map(d => {
+                      const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
+                      return `
+                        <td>
+                          <div class="vbar vbar-balance" style="height: ${barH}px;"></div>
+                          <div class="vlabel" dir="ltr">${d.year}</div>
+                        </td>
+                      `;
+                    })
+                    .join('')}
+                </tr>
+              </table>
+            `;
+          })()}
         </div>
         ` : ''}
         
-        <div class="highlight">
-          <div class="row">
-            <span class="label" style="font-size: 16px; font-weight: 600;">${t.shekelRatio}</span>
-            <span class="value">${results.shekelRatio.toFixed(2)}</span>
+        ${paymentBreakdownData && paymentBreakdownData.length > 0 ? `
+        <div class="chart-container">
+          <div class="chart-title-small">📊 ${t.chartPaymentTitle}</div>
+          ${(() => {
+            const CHART_H = 120;
+            const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
+            const maxTotal = Math.max(...rows.map(d => d.principal + d.interest));
+            return `
+              <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  ${rows
+                    .map(d => {
+                      const total = d.principal + d.interest;
+                      const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
+                      const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
+                      const principalH = Math.max(1, totalH - interestH);
+                      return `
+                        <td>
+                          <div class="vstack" style="height: ${totalH}px;">
+                            <div class="vbar vbar-interest" style="height: ${interestH}px;"></div>
+                            <div class="vbar vbar-principal" style="height: ${principalH}px;"></div>
+                          </div>
+                          <div class="vlabel" dir="ltr">${d.year}</div>
+                        </td>
+                      `;
+                    })
+                    .join('')}
+                </tr>
+              </table>
+            `;
+          })()}
+          <div class="chart-legend">
+            <div class="chart-legend-item">
+              <div class="chart-legend-color" style="background: linear-gradient(180deg, #10b981, #34d399);"></div>
+              <span>${t.principal}</span>
+            </div>
+            <div class="chart-legend-item">
+              <div class="chart-legend-color" style="background: linear-gradient(180deg, #f59e0b, #fbbf24);"></div>
+              <span>${t.interestLabel}</span>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+      </div>
+
+      <!-- SECTION 6: Simulation Assumptions -->
+      <div class="section assumptions-section">
+        <div class="section-title">⚙️ ${t.assumptionsTitle}</div>
+        <div class="assumptions-grid">
+          <div class="assumption-item">
+            <div class="a-label">${t.age}</div>
+            <div class="a-value">${inputs.age}</div>
+          </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.citizenship}</div>
+            <div class="a-value">${inputs.isIsraeliCitizen ? t.yes : t.no}</div>
+          </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.taxResident}</div>
+            <div class="a-value">${inputs.isIsraeliTaxResident ? t.yes : t.no}</div>
+          </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.firstProperty}</div>
+            <div class="a-value">${inputs.isFirstProperty ? t.yes : t.no}</div>
+          </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.netIncome}</div>
+            <div class="a-value">₪ ${inputs.netIncome}</div>
+          </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.interestRate}</div>
+            <div class="a-value">${inputs.interest}%</div>
+          </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.loanTerm}</div>
+            <div class="a-value">${results.loanTermYears} ${t.years}</div>
           </div>
         </div>
       </div>
 
-      <!-- Chart: Loan Balance Over Time (Vertical / email-safe table) -->
-      ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
-      <div class="chart-section">
-        <div class="chart-title">📉 ${t.chartBalanceTitle}</div>
-        ${(() => {
-          const CHART_H = 160;
-          const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
-          return `
-            <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
-              <tr>
-                ${yearlyBalanceData
-                  .slice()
-                  .sort((a, b) => a.year - b.year)
-                  .map(d => {
-                    const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
-                    return `
-                      <td>
-                        <div class="vbar vbar-balance" style="height: ${barH}px;"></div>
-                        <div class="vlabel" dir="ltr">${d.year}</div>
-                      </td>
-                    `;
-                  })
-                  .join('')}
-              </tr>
-            </table>
-          `;
-        })()}
-      </div>
-      ` : ''}
-
-      <!-- Chart: Payment Breakdown by Year (Vertical stacked / email-safe table) -->
-      ${paymentBreakdownData && paymentBreakdownData.length > 0 ? `
-      <div class="chart-section">
-        <div class="chart-title">📊 ${t.chartPaymentTitle}</div>
-        ${(() => {
-          const CHART_H = 160;
-          const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
-          const maxTotal = Math.max(...rows.map(d => d.principal + d.interest));
-
-          return `
-            <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
-              <tr>
-                ${rows
-                  .map(d => {
-                    const total = d.principal + d.interest;
-                    const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
-                    const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
-                    const principalH = Math.max(1, totalH - interestH);
-
-                    // Interest should be on TOP, principal at the bottom (more intuitive)
-                    return `
-                      <td>
-                        <div class="vstack" style="height: ${totalH}px;">
-                          <div class="vbar vbar-interest" style="height: ${interestH}px;"></div>
-                          <div class="vbar vbar-principal" style="height: ${principalH}px;"></div>
-                        </div>
-                        <div class="vlabel" dir="ltr">${d.year}</div>
-                      </td>
-                    `;
-                  })
-                  .join('')}
-              </tr>
-            </table>
-          `;
-        })()}
-        <div class="chart-legend">
-          <div class="chart-legend-item">
-            <div class="chart-legend-color" style="background: linear-gradient(180deg, #10b981, #34d399);"></div>
-            <span>${t.principal}</span>
-          </div>
-          <div class="chart-legend-item">
-            <div class="chart-legend-color" style="background: linear-gradient(180deg, #f59e0b, #fbbf24);"></div>
-            <span>${t.interestLabel}</span>
-          </div>
-        </div>
-      </div>
-      ` : ''}
-
-      <!-- Amortization Summary -->
-      <div class="section">
-        <div class="section-title">📅 ${t.amortizationInfo}</div>
-        <div class="row">
-          <span class="label">${t.totalMonths}</span>
-          <span class="value">${amortizationSummary.totalMonths}</span>
-        </div>
-        <div class="amortization-summary">
-          <div class="amortization-grid">
-            <div class="amortization-item">
-              <div class="title">${t.firstPayment} - ${t.principal}</div>
-              <div class="amount">₪ ${formatNumber(amortizationSummary.firstPayment.principal)}</div>
-            </div>
-            <div class="amortization-item">
-              <div class="title">${t.firstPayment} - ${t.interestLabel}</div>
-              <div class="amount">₪ ${formatNumber(amortizationSummary.firstPayment.interest)}</div>
-            </div>
-            <div class="amortization-item">
-              <div class="title">${t.lastPayment} - ${t.principal}</div>
-              <div class="amount">₪ ${formatNumber(amortizationSummary.lastPayment.principal)}</div>
-            </div>
-            <div class="amortization-item">
-              <div class="title">${t.lastPayment} - ${t.interestLabel}</div>
-              <div class="amount">₪ ${formatNumber(amortizationSummary.lastPayment.interest)}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CTA Section - Bottom reminder -->
+      <!-- CTA Section -->
       <div class="cta-section">
         <h3>${t.ctaTitle}</h3>
         <div class="cta-buttons">
@@ -1050,10 +919,6 @@ function getEmailContent(data: ReportEmailRequest): { subject: string; html: str
 
       <div class="note">
         ⚠️ ${t.note}
-      </div>
-
-      <div class="note" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #f59e0b; margin-top: 12px;">
-        ⚠️ ${t.taxDisclaimer}
       </div>
 
       <div class="footer">
