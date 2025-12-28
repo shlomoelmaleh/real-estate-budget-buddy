@@ -219,7 +219,7 @@ export const translations: Record<Language, Translations> = {
     titleExpenses: "Closing Costs",
     purchaseTax: "Purchase Tax",
     lawyerLabel: "Lawyer (1% + VAT)",
-    brokerLabel: "Broker (2% + VAT)",
+    brokerLabel: "Agency (2% + VAT)",
     other: "Other Costs",
     ttc: "incl. VAT",
     calcBtn: "Calculate Now",
