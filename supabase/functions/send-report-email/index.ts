@@ -896,6 +896,36 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="label">${t.dtiEstimatedLabel}</span>
           <span class="value">${dtiEstimatedDisplay}</span>
         </div>
+
+        <!-- Monthly Summary Block -->
+        <div style="margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 8px; border: 1px solid #86efac;">
+          <div style="font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 10px;">📋 ${t.monthlySummary}</div>
+          <div class="row" style="margin-bottom: 4px;">
+            <span class="label">${t.monthlyPaymentUsed}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
+          </div>
+          ${parseNumber(inputs.budgetCap) > 0 ? `
+          <div class="row" style="margin-bottom: 4px;">
+            <span class="label">${t.monthlyPaymentCap}</span>
+            <span class="value">₪ ${inputs.budgetCap}</span>
+          </div>
+          ` : ''}
+          ${inputs.isRented ? `
+          <div class="row" style="margin-bottom: 4px;">
+            <span class="label">${t.estimatedRentalIncome}</span>
+            <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
+          </div>
+          <div class="row" style="margin-bottom: 4px;">
+            <span class="label">${t.rentalIncomeRetained}</span>
+            <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
+          </div>
+          <div class="row" style="margin-bottom: 4px;">
+            <span class="label">${t.netMonthlyBalance}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment - (results.rentIncome * (parseNumber(inputs.rentRecognition) / 100)))}</span>
+          </div>
+          ` : ''}
+          <div style="font-size: 10px; color: #64748b; margin-top: 8px; font-style: italic;">${t.monthlySummaryNote}</div>
+        </div>
         
         <!-- Charts -->
         ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
