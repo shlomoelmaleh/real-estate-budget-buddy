@@ -69,25 +69,15 @@ const EmailRequestSchema = z.object({
       interest: z.number().nonnegative(),
     }),
   }),
-  yearlyBalanceData: z
-    .array(
-      z.object({
-        year: z.number().int().positive().max(50),
-        balance: z.number().nonnegative(),
-      }),
-    )
-    .max(50)
-    .optional(),
-  paymentBreakdownData: z
-    .array(
-      z.object({
-        year: z.number().int().positive().max(50),
-        interest: z.number().nonnegative(),
-        principal: z.number().nonnegative(),
-      }),
-    )
-    .max(50)
-    .optional(),
+  yearlyBalanceData: z.array(z.object({
+    year: z.number().int().positive().max(50),
+    balance: z.number().nonnegative(),
+  })).max(50).optional(),
+  paymentBreakdownData: z.array(z.object({
+    year: z.number().int().positive().max(50),
+    interest: z.number().nonnegative(),
+    principal: z.number().nonnegative(),
+  })).max(50).optional(),
 });
 
 // Rate limiting helper
@@ -96,7 +86,7 @@ async function checkRateLimit(
   identifier: string,
   endpoint: string,
   maxRequests: number,
-  windowMinutes: number,
+  windowMinutes: number
 ): Promise<{ allowed: boolean; remaining: number }> {
   const { data, error } = await supabaseAdmin
     .from("rate_limits")
@@ -150,7 +140,7 @@ interface ReportEmailRequest {
   recipientEmail: string;
   recipientName: string;
   recipientPhone: string;
-  language: "he" | "en" | "fr";
+  language: 'he' | 'en' | 'fr';
   inputs: {
     equity: string;
     ltv: string;
@@ -185,7 +175,7 @@ interface ReportEmailRequest {
     loanTermYears: number;
     shekelRatio: number;
     purchaseTax: number;
-    taxProfile: "SINGLE_HOME" | "INVESTOR";
+    taxProfile: 'SINGLE_HOME' | 'INVESTOR';
     equityUsed: number;
     equityRemaining: number;
     lawyerFeeTTC: number;
@@ -201,307 +191,294 @@ interface ReportEmailRequest {
 }
 
 function formatNumber(num: number): string {
-  return Math.round(num).toLocaleString("en-US");
+  return Math.round(num).toLocaleString('en-US');
 }
 
 function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = false): { subject: string; html: string } {
-  const {
-    language,
-    recipientName,
-    recipientPhone,
-    recipientEmail,
-    inputs,
-    results,
-    amortizationSummary,
-    yearlyBalanceData,
-    paymentBreakdownData,
-  } = data;
-
+  const { language, recipientName, recipientPhone, recipientEmail, inputs, results, amortizationSummary, yearlyBalanceData, paymentBreakdownData } = data;
+  
   // Parse income for DTI calculation
   const parseNumber = (str: string): number => {
     if (!str) return 0;
-    return parseFloat(str.replace(/,/g, "")) || 0;
+    return parseFloat(str.replace(/,/g, '')) || 0;
   };
-
+  
   const incomeNet = parseNumber(inputs.netIncome);
   const monthlyPayment = results.monthlyPayment;
   const equityInitial = parseNumber(inputs.equity);
   const equityRemaining = results.equityRemaining;
-
+  
   // Normalize DTI max allowed (could be 33 or 0.33)
   let dtiMaxAllowedRaw = parseFloat(inputs.ratio) || 0;
   const dtiMaxAllowed = dtiMaxAllowedRaw > 1 ? dtiMaxAllowedRaw / 100 : dtiMaxAllowedRaw;
-
+  
   // Calculate estimated DTI
   const dtiEstimated = incomeNet > 0 ? monthlyPayment / incomeNet : null;
   const thresholdDelta = 0.01;
-
+  
   const texts = {
     he: {
-      subject: "דוח מחשבון תקציב רכישת נכס",
-      subjectWithName: "דוח תיק של",
+      subject: 'דוח מחשבון תקציב רכישת נכס',
+      subjectWithName: 'דוח תיק של',
       // Greeting
-      greeting: "שלום",
+      greeting: 'שלום',
       // Section 1 - Hero
       heroTitle: 'סיכום פרויקט הנדל"ן שלך',
-      heroTitleWithName: "דוח תיק של",
+      heroTitleWithName: 'דוח תיק של',
       // Client info for advisor copy
-      clientInfoTitle: "פרטי הלקוח",
-      clientName: "שם",
-      clientPhone: "טלפון",
-      clientEmail: "אימייל",
-      maxPropertyLabel: "שווי נכס מקסימלי",
-      limitingFactorLabel: "גורם מגביל לתקציב",
-      limitingCash: "מוגבל לפי ההון העצמי (Cash)",
-      limitingIncome: "מוגבל לפי הכנסה (יחס החזר)",
-      limitingComfortable: "פרופיל נוח (מרווח זמין)",
-      limitingInsufficient: "נתונים חסרים (לאימות)",
+      clientInfoTitle: 'פרטי הלקוח',
+      clientName: 'שם',
+      clientPhone: 'טלפון',
+      clientEmail: 'אימייל',
+      maxPropertyLabel: 'שווי נכס מקסימלי',
+      limitingFactorLabel: 'גורם מגביל לתקציב',
+      limitingCash: 'מוגבל לפי ההון העצמי (Cash)',
+      limitingIncome: 'מוגבל לפי הכנסה (יחס החזר)',
+      limitingComfortable: 'פרופיל נוח (מרווח זמין)',
+      limitingInsufficient: 'נתונים חסרים (לאימות)',
       // Section 2 - Funding
-      fundingTitle: "פירוט מימון",
-      loanAmount: "סכום משכנתא",
-      equityOnProperty: "הון עצמי על הנכס",
-      fundingNote: "הלוואה + הון עצמי = מחיר הנכס",
+      fundingTitle: 'פירוט מימון',
+      loanAmount: 'סכום משכנתא',
+      equityOnProperty: 'הון עצמי על הנכס',
+      fundingNote: 'הלוואה + הון עצמי = מחיר הנכס',
       // Section 3 - Transaction
-      transactionTitle: "פירוט עלויות רכישה",
-      purchaseTax: "מס רכישה",
+      transactionTitle: 'פירוט עלויות רכישה',
+      purchaseTax: 'מס רכישה',
       lawyerLabel: 'עו"ד (1% + מע"מ)',
       brokerLabel: 'תיווך (2% + מע"מ)',
-      other: "שונות",
-      transactionTotal: "סך עלויות רכישה",
+      other: 'שונות',
+      transactionTotal: 'סך עלויות רכישה',
       taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
       ttc: 'כולל מע"מ',
       // Section 4 - Cash Summary
-      cashTitle: "סיכום הון עצמי",
-      capitalAllocated: "הון עצמי בשימוש",
-      liquidBuffer: "יתרת הון עצמי (Cash)",
-      cashNote: "הערכת יתרת המזומנים לאחר רכישה + עלויות.",
+      cashTitle: 'סיכום הון עצמי',
+      capitalAllocated: 'הון עצמי בשימוש',
+      liquidBuffer: 'יתרת הון עצמי (Cash)',
+      cashNote: 'הערכת יתרת המזומנים לאחר רכישה + עלויות.',
       // Section 5 - Feasibility
-      feasibilityTitle: "ניתוח היתכנות",
-      ltvRatio: "יחס מימון (LTV)",
-      dtiMaxLabel: "יחס החזר מקסימלי",
-      dtiEstimatedLabel: "יחס החזר משוער",
-      notAvailable: "לא זמין",
-      chartBalanceTitle: "יתרת הלוואה לאורך זמן",
-      chartPaymentTitle: "פירוט תשלומים שנתי",
-      principal: "קרן",
-      interestLabel: "ריבית",
+      feasibilityTitle: 'ניתוח היתכנות',
+      ltvRatio: 'יחס מימון (LTV)',
+      dtiMaxLabel: 'יחס החזר מקסימלי',
+      dtiEstimatedLabel: 'יחס החזר משוער',
+      notAvailable: 'לא זמין',
+      chartBalanceTitle: 'יתרת הלוואה לאורך זמן',
+      chartPaymentTitle: 'פירוט תשלומים שנתי',
+      principal: 'קרן',
+      interestLabel: 'ריבית',
       // Amortization Summary
-      amortizationSummaryTitle: "סיכום לוח סילוקין",
-      loanTermLabel: "משך ההלוואה",
-      monthlyPaymentLabel: "תשלום חודשי משוער",
+      amortizationSummaryTitle: 'סיכום לוח סילוקין',
+      loanTermLabel: 'משך ההלוואה',
+      monthlyPaymentLabel: 'תשלום חודשי משוער',
       totalInterestLabel: 'סה"כ ריבית',
       totalRepaidLabel: 'סה"כ להחזר',
-      firstPaymentLabel: "תשלום ראשון",
-      lastPaymentLabel: "תשלום אחרון",
-      amortizationNote: "טיפ: הסכום הסופי תלוי במידה רבה בריבית ובמשך ההלוואה – ייעול המימון יכול להפחית אותו.",
+      firstPaymentLabel: 'תשלום ראשון',
+      lastPaymentLabel: 'תשלום אחרון',
+      amortizationNote: 'טיפ: הסכום הסופי תלוי במידה רבה בריבית ובמשך ההלוואה – ייעול המימון יכול להפחית אותו.',
       // Section 6 - Assumptions
-      assumptionsTitle: "פרמטרים לסימולציה",
-      age: "גיל לווה",
-      citizenship: "אזרחות ישראלית",
-      taxResident: "תושב מס",
-      firstProperty: "נכס ראשון",
-      netIncome: "הכנסה פנויה",
-      interestRate: "ריבית שנתית",
-      loanTerm: "משך ההלוואה",
-      years: "שנים",
-      yes: "כן",
-      no: "לא",
+      assumptionsTitle: 'פרמטרים לסימולציה',
+      age: 'גיל לווה',
+      citizenship: 'אזרחות ישראלית',
+      taxResident: 'תושב מס',
+      firstProperty: 'נכס ראשון',
+      netIncome: 'הכנסה פנויה',
+      interestRate: 'ריבית שנתית',
+      loanTerm: 'משך ההלוואה',
+      years: 'שנים',
+      yes: 'כן',
+      no: 'לא',
       // CTA
-      ctaTitle: "יש לך שאלות? אני כאן לעזור!",
-      ctaWhatsApp: "📞 לקביעת פגישה",
-      ctaEmail: "✉️ לשאלות נוספות",
+      ctaTitle: 'יש לך שאלות? אני כאן לעזור!',
+      ctaWhatsApp: '📞 לקביעת פגישה',
+      ctaEmail: '✉️ לשאלות נוספות',
       // Footer
-      footer: "Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן",
-      note: "הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.",
-      simulationDisclaimer: "הסימולציה היא הערכה לצורך קבלת סדר גודל ראשוני ותחילת התהליך.",
-      advisorName: "שלמה אלמליח",
-      advisorPhone: "054-9997711",
-      advisorEmail: "shlomo.elmaleh@gmail.com",
+      footer: 'Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן',
+      note: 'הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.',
+      simulationDisclaimer: 'הסימולציה היא הערכה לצורך קבלת סדר גודל ראשוני ותחילת התהליך.',
+      advisorName: 'שלמה אלמליח',
+      advisorPhone: '054-9997711',
+      advisorEmail: 'shlomo.elmaleh@gmail.com',
       // Monthly Summary
-      monthlySummary: "סיכום חודשי",
-      monthlyPaymentUsed: "החזר חודשי בסימולציה",
-      monthlyPaymentCap: "תקרת החזר חודשי (אופציונלי)",
-      estimatedRentalIncome: "הכנסה משכירות משוערת (3% שנתי)",
-      rentalIncomeRetained: "הכנסה משכירות מוכרת (80%)",
-      netMonthlyBalance: "יתרה חודשית נטו",
-      monthlySummaryNote: "אינדיקטיבי: לאימות בהתאם לחוזה השכירות והוצאות.",
+      monthlySummary: 'סיכום חודשי',
+      monthlyPaymentUsed: 'החזר חודשי בסימולציה',
+      monthlyPaymentCap: 'תקרת החזר חודשי (אופציונלי)',
+      estimatedRentalIncome: 'הכנסה משכירות משוערת (3% שנתי)',
+      rentalIncomeRetained: 'הכנסה משכירות מוכרת (80%)',
+      netMonthlyBalance: 'יתרה חודשית נטו',
+      monthlySummaryNote: 'אינדיקטיבי: לאימות בהתאם לחוזה השכירות והוצאות.',
     },
     en: {
-      subject: "Property Budget Calculator - Complete Report",
-      subjectWithName: "Report for",
-      greeting: "Hello",
-      heroTitle: "Your Property Project Summary",
-      heroTitleWithName: "Report for",
-      clientInfoTitle: "Client Information",
-      clientName: "Name",
-      clientPhone: "Phone",
-      clientEmail: "Email",
-      maxPropertyLabel: "Max Property Value",
-      limitingFactorLabel: "Budget Limiting Factor",
-      limitingCash: "Limited by Equity (Cash)",
-      limitingIncome: "Limited by Income (DTI)",
-      limitingComfortable: "Comfortable Profile (Margin Available)",
-      limitingInsufficient: "Insufficient Data (To Confirm)",
-      fundingTitle: "Funding Breakdown",
-      loanAmount: "Loan Amount",
-      equityOnProperty: "Equity on Property",
-      fundingNote: "Loan + Equity = Property Price",
-      transactionTitle: "Transaction Costs Details",
-      purchaseTax: "Purchase Tax",
-      lawyerLabel: "Lawyer (1% + VAT)",
-      brokerLabel: "Agency (2% + VAT)",
-      other: "Other",
-      transactionTotal: "Total Transaction Costs",
-      taxDisclaimer:
-        "Tax calculated using standard brackets only; special exemptions not included. Verify with attorney.",
-      ttc: "incl. VAT",
-      cashTitle: "Equity Summary",
-      capitalAllocated: "Total Capital Allocated",
-      liquidBuffer: "Liquid Safety Buffer",
-      cashNote: "Estimated cash remaining after purchase + costs.",
-      feasibilityTitle: "Feasibility Analysis",
-      ltvRatio: "LTV Ratio",
-      dtiMaxLabel: "Max DTI Allowed",
-      dtiEstimatedLabel: "Estimated DTI",
-      notAvailable: "N/A",
-      chartBalanceTitle: "Loan Balance Over Time",
-      chartPaymentTitle: "Annual Payment Breakdown",
-      principal: "Principal",
-      interestLabel: "Interest",
-      amortizationSummaryTitle: "Amortization Summary",
-      loanTermLabel: "Loan Term",
-      monthlyPaymentLabel: "Estimated Monthly Payment",
-      totalInterestLabel: "Total Interest",
-      totalRepaidLabel: "Total Repaid",
-      firstPaymentLabel: "First Payment",
-      lastPaymentLabel: "Last Payment",
-      amortizationNote:
-        "Quick read: this total depends heavily on the rate and term — optimizing the structure can reduce it.",
-      assumptionsTitle: "Simulation Assumptions",
-      age: "Borrower Age",
-      citizenship: "Israeli Citizenship",
-      taxResident: "Tax Resident",
-      firstProperty: "First Property",
-      netIncome: "Net Income",
-      interestRate: "Annual Interest",
-      loanTerm: "Loan Term",
-      years: "years",
-      yes: "Yes",
-      no: "No",
-      ctaTitle: "Have questions? I am here to help!",
-      ctaWhatsApp: "📞 Book an Appointment",
-      ctaEmail: "✉️ Ask a Question",
-      footer: "Property Budget Pro - Professional Real Estate Planning Tool",
-      note: "This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.",
-      simulationDisclaimer: "This simulation is an estimate to give an initial ballpark and start the process.",
-      advisorName: "Shlomo Elmaleh",
-      advisorPhone: "+972-054-9997711",
-      advisorEmail: "shlomo.elmaleh@gmail.com",
+      subject: 'Property Budget Calculator - Complete Report',
+      subjectWithName: 'Report for',
+      greeting: 'Hello',
+      heroTitle: 'Your Property Project Summary',
+      heroTitleWithName: 'Report for',
+      clientInfoTitle: 'Client Information',
+      clientName: 'Name',
+      clientPhone: 'Phone',
+      clientEmail: 'Email',
+      maxPropertyLabel: 'Max Property Value',
+      limitingFactorLabel: 'Budget Limiting Factor',
+      limitingCash: 'Limited by Equity (Cash)',
+      limitingIncome: 'Limited by Income (DTI)',
+      limitingComfortable: 'Comfortable Profile (Margin Available)',
+      limitingInsufficient: 'Insufficient Data (To Confirm)',
+      fundingTitle: 'Funding Breakdown',
+      loanAmount: 'Loan Amount',
+      equityOnProperty: 'Equity on Property',
+      fundingNote: 'Loan + Equity = Property Price',
+      transactionTitle: 'Transaction Costs Details',
+      purchaseTax: 'Purchase Tax',
+      lawyerLabel: 'Lawyer (1% + VAT)',
+      brokerLabel: 'Agency (2% + VAT)',
+      other: 'Other',
+      transactionTotal: 'Total Transaction Costs',
+      taxDisclaimer: 'Tax calculated using standard brackets only; special exemptions not included. Verify with attorney.',
+      ttc: 'incl. VAT',
+      cashTitle: 'Equity Summary',
+      capitalAllocated: 'Total Capital Allocated',
+      liquidBuffer: 'Liquid Safety Buffer',
+      cashNote: 'Estimated cash remaining after purchase + costs.',
+      feasibilityTitle: 'Feasibility Analysis',
+      ltvRatio: 'LTV Ratio',
+      dtiMaxLabel: 'Max DTI Allowed',
+      dtiEstimatedLabel: 'Estimated DTI',
+      notAvailable: 'N/A',
+      chartBalanceTitle: 'Loan Balance Over Time',
+      chartPaymentTitle: 'Annual Payment Breakdown',
+      principal: 'Principal',
+      interestLabel: 'Interest',
+      amortizationSummaryTitle: 'Amortization Summary',
+      loanTermLabel: 'Loan Term',
+      monthlyPaymentLabel: 'Estimated Monthly Payment',
+      totalInterestLabel: 'Total Interest',
+      totalRepaidLabel: 'Total Repaid',
+      firstPaymentLabel: 'First Payment',
+      lastPaymentLabel: 'Last Payment',
+      amortizationNote: 'Quick read: this total depends heavily on the rate and term — optimizing the structure can reduce it.',
+      assumptionsTitle: 'Simulation Assumptions',
+      age: 'Borrower Age',
+      citizenship: 'Israeli Citizenship',
+      taxResident: 'Tax Resident',
+      firstProperty: 'First Property',
+      netIncome: 'Net Income',
+      interestRate: 'Annual Interest',
+      loanTerm: 'Loan Term',
+      years: 'years',
+      yes: 'Yes',
+      no: 'No',
+      ctaTitle: 'Have questions? I am here to help!',
+      ctaWhatsApp: '📞 Book an Appointment',
+      ctaEmail: '✉️ Ask a Question',
+      footer: 'Property Budget Pro - Professional Real Estate Planning Tool',
+      note: 'This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.',
+      simulationDisclaimer: 'This simulation is an estimate to give an initial ballpark and start the process.',
+      advisorName: 'Shlomo Elmaleh',
+      advisorPhone: '+972-054-9997711',
+      advisorEmail: 'shlomo.elmaleh@gmail.com',
       // Monthly Summary
-      monthlySummary: "Monthly Summary",
-      monthlyPaymentUsed: "Monthly mortgage payment used in the simulation",
-      monthlyPaymentCap: "Monthly payment cap (optional)",
-      estimatedRentalIncome: "Estimated rental income (3% annual)",
-      rentalIncomeRetained: "Rental income retained (80%)",
-      netMonthlyBalance: "Net monthly balance",
-      monthlySummaryNote: "Indicative: to be confirmed based on lease and expenses.",
+      monthlySummary: 'Monthly Summary',
+      monthlyPaymentUsed: 'Monthly mortgage payment used in the simulation',
+      monthlyPaymentCap: 'Monthly payment cap (optional)',
+      estimatedRentalIncome: 'Estimated rental income (3% annual)',
+      rentalIncomeRetained: 'Rental income retained (80%)',
+      netMonthlyBalance: 'Net monthly balance',
+      monthlySummaryNote: 'Indicative: to be confirmed based on lease and expenses.',
     },
     fr: {
-      subject: "Simulateur Budget Immobilier - Rapport Complet",
-      subjectWithName: "Rapport du dossier de",
-      greeting: "Bonjour",
-      heroTitle: "Synthèse de votre projet immobilier",
-      heroTitleWithName: "Rapport du dossier de",
-      clientInfoTitle: "Coordonnées du client",
-      clientName: "Nom",
-      clientPhone: "Téléphone",
-      clientEmail: "Email",
-      maxPropertyLabel: "Valeur Max du Bien",
-      limitingFactorLabel: "Facteur déterminant du budget",
+      subject: 'Simulateur Budget Immobilier - Rapport Complet',
+      subjectWithName: 'Rapport du dossier de',
+      greeting: 'Bonjour',
+      heroTitle: 'Synthèse de votre projet immobilier',
+      heroTitleWithName: 'Rapport du dossier de',
+      clientInfoTitle: 'Coordonnées du client',
+      clientName: 'Nom',
+      clientPhone: 'Téléphone',
+      clientEmail: 'Email',
+      maxPropertyLabel: 'Valeur Max du Bien',
+      limitingFactorLabel: 'Facteur déterminant du budget',
       limitingCash: "Limité par l'apport (Cash)",
-      limitingIncome: "Limité par la mensualité (Revenus)",
-      limitingComfortable: "Profil confortable (marge disponible)",
-      limitingInsufficient: "Données insuffisantes (à confirmer)",
-      fundingTitle: "Le montage financier",
-      loanAmount: "Montant du Prêt",
-      equityOnProperty: "Apport net sur le prix du bien",
-      fundingNote: "Prêt + Apport = Prix du bien",
-      transactionTitle: "Détail des frais de transaction",
+      limitingIncome: 'Limité par la mensualité (Revenus)',
+      limitingComfortable: 'Profil confortable (marge disponible)',
+      limitingInsufficient: 'Données insuffisantes (à confirmer)',
+      fundingTitle: 'Le montage financier',
+      loanAmount: 'Montant du Prêt',
+      equityOnProperty: 'Apport net sur le prix du bien',
+      fundingNote: 'Prêt + Apport = Prix du bien',
+      transactionTitle: 'Détail des frais de transaction',
       purchaseTax: "Taxe d'acquisition",
-      lawyerLabel: "Avocat (1% H.T)",
+      lawyerLabel: 'Avocat (1% H.T)',
       brokerLabel: "Frais d'agence (2% H.T)",
-      other: "Divers",
-      transactionTotal: "Total des frais de transaction",
-      taxDisclaimer: "Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d'un avocat.",
-      ttc: "T.T.C",
-      cashTitle: "Bilan des fonds propres",
-      capitalAllocated: "Capital total mobilisé",
-      liquidBuffer: "Réserve de sécurité (cash)",
-      cashNote: "Estimation du cash restant sur votre compte après achat + frais.",
-      feasibilityTitle: "Analyse de faisabilité",
-      ltvRatio: "Ratio LTV",
-      dtiMaxLabel: "DTI Max autorisé",
-      dtiEstimatedLabel: "DTI Estimé",
-      notAvailable: "N/A",
-      chartBalanceTitle: "Solde du Prêt dans le Temps",
-      chartPaymentTitle: "Répartition Annuelle des Paiements",
-      principal: "Capital",
-      interestLabel: "Intérêts",
-      amortizationSummaryTitle: "Résumé du tableau d'amortissement",
-      loanTermLabel: "Durée du prêt",
-      monthlyPaymentLabel: "Mensualité estimée",
-      totalInterestLabel: "Total des intérêts",
-      totalRepaidLabel: "Montant total remboursé",
-      firstPaymentLabel: "Première mensualité",
-      lastPaymentLabel: "Dernière mensualité",
-      amortizationNote:
-        "Lecture rapide : ce total dépend fortement du taux et de la durée — l'optimisation du montage peut le réduire.",
-      assumptionsTitle: "Hypothèses de la simulation",
+      other: 'Divers',
+      transactionTotal: 'Total des frais de transaction',
+      taxDisclaimer: 'Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d\'un avocat.',
+      ttc: 'T.T.C',
+      cashTitle: 'Bilan des fonds propres',
+      capitalAllocated: 'Capital total mobilisé',
+      liquidBuffer: 'Réserve de sécurité (cash)',
+      cashNote: 'Estimation du cash restant sur votre compte après achat + frais.',
+      feasibilityTitle: 'Analyse de faisabilité',
+      ltvRatio: 'Ratio LTV',
+      dtiMaxLabel: 'DTI Max autorisé',
+      dtiEstimatedLabel: 'DTI Estimé',
+      notAvailable: 'N/A',
+      chartBalanceTitle: 'Solde du Prêt dans le Temps',
+      chartPaymentTitle: 'Répartition Annuelle des Paiements',
+      principal: 'Capital',
+      interestLabel: 'Intérêts',
+      amortizationSummaryTitle: 'Résumé du tableau d\'amortissement',
+      loanTermLabel: 'Durée du prêt',
+      monthlyPaymentLabel: 'Mensualité estimée',
+      totalInterestLabel: 'Total des intérêts',
+      totalRepaidLabel: 'Montant total remboursé',
+      firstPaymentLabel: 'Première mensualité',
+      lastPaymentLabel: 'Dernière mensualité',
+      amortizationNote: 'Lecture rapide : ce total dépend fortement du taux et de la durée — l\'optimisation du montage peut le réduire.',
+      assumptionsTitle: 'Hypothèses de la simulation',
       age: "Âge de l'emprunteur",
-      citizenship: "Nationalité israélienne",
-      taxResident: "Résident fiscal",
-      firstProperty: "Premier bien",
-      netIncome: "Revenu Net",
+      citizenship: 'Nationalité israélienne',
+      taxResident: 'Résident fiscal',
+      firstProperty: 'Premier bien',
+      netIncome: 'Revenu Net',
       interestRate: "Taux d'intérêt annuel",
-      loanTerm: "Durée du Prêt",
-      years: "ans",
-      yes: "Oui",
-      no: "Non",
-      ctaTitle: "Vous avez des questions ? Je suis là pour vous aider !",
-      ctaWhatsApp: "📞 Prendre RDV",
-      ctaEmail: "✉️ Poser une question",
-      footer: "Property Budget Pro - Outil Professionnel de Planification Immobilière",
+      loanTerm: 'Durée du Prêt',
+      years: 'ans',
+      yes: 'Oui',
+      no: 'Non',
+      ctaTitle: 'Vous avez des questions ? Je suis là pour vous aider !',
+      ctaWhatsApp: '📞 Prendre RDV',
+      ctaEmail: '✉️ Poser une question',
+      footer: 'Property Budget Pro - Outil Professionnel de Planification Immobilière',
       note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
       simulationDisclaimer: "Cette simulation est une estimation pour donner un ordre d'idée et démarrer le projet.",
-      advisorName: "Shlomo Elmaleh",
-      advisorPhone: "+972-054-9997711",
-      advisorEmail: "shlomo.elmaleh@gmail.com",
+      advisorName: 'Shlomo Elmaleh',
+      advisorPhone: '+972-054-9997711',
+      advisorEmail: 'shlomo.elmaleh@gmail.com',
       // Monthly Summary
-      monthlySummary: "Récapitulatif mensuel",
-      monthlyPaymentUsed: "Mensualité utilisée dans la simulation",
-      monthlyPaymentCap: "Plafond de mensualité (optionnel)",
-      estimatedRentalIncome: "Revenu locatif estimé (3% annuel)",
-      rentalIncomeRetained: "Revenu locatif retenu (80%)",
-      netMonthlyBalance: "Solde mensuel net",
-      monthlySummaryNote: "Indicatif : à confirmer selon le bail et les charges.",
-    },
+      monthlySummary: 'Récapitulatif mensuel',
+      monthlyPaymentUsed: 'Mensualité utilisée dans la simulation',
+      monthlyPaymentCap: 'Plafond de mensualité (optionnel)',
+      estimatedRentalIncome: 'Revenu locatif estimé (3% annuel)',
+      rentalIncomeRetained: 'Revenu locatif retenu (80%)',
+      netMonthlyBalance: 'Solde mensuel net',
+      monthlySummaryNote: 'Indicatif : à confirmer selon le bail et les charges.',
+    }
   };
 
   const t = texts[language];
-  const dir = language === "he" ? "rtl" : "ltr";
-  const isRTL = language === "he";
-  const alignStart = isRTL ? "right" : "left";
-  const alignEnd = isRTL ? "left" : "right";
+  const dir = language === 'he' ? 'rtl' : 'ltr';
+  const isRTL = language === 'he';
+  const alignStart = isRTL ? 'right' : 'left';
+  const alignEnd = isRTL ? 'left' : 'right';
 
   // Compute limiting factor
   let limitingFactor: string;
   const hasCriticalData = equityInitial > 0 && incomeNet > 0 && monthlyPayment > 0;
-
+  
   if (!hasCriticalData) {
     limitingFactor = t.limitingInsufficient;
   } else if (equityRemaining <= 0.01 * equityInitial) {
     limitingFactor = t.limitingCash;
-  } else if (dtiMaxAllowed > 0 && dtiEstimated !== null && dtiEstimated >= dtiMaxAllowed - thresholdDelta) {
+  } else if (dtiMaxAllowed > 0 && dtiEstimated !== null && dtiEstimated >= (dtiMaxAllowed - thresholdDelta)) {
     limitingFactor = t.limitingIncome;
   } else {
     limitingFactor = t.limitingComfortable;
@@ -552,7 +529,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           margin-bottom: 16px;
           padding-bottom: 12px;
           border-bottom: 1px solid rgba(255,255,255,0.2);
-          ${isRTL ? "flex-direction: row-reverse;" : ""}
+          ${isRTL ? 'flex-direction: row-reverse;' : ''}
         }
         .header-info p { margin: 3px 0; font-size: 13px; opacity: 0.9; }
         .header-info a { color: white; text-decoration: underline; }
@@ -576,7 +553,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           display: flex;
           align-items: center;
           gap: 8px;
-          ${isRTL ? "flex-direction: row-reverse; justify-content: flex-end;" : ""}
+          ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
         .row {
           display: table;
@@ -699,7 +676,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           display: flex;
           align-items: center;
           gap: 6px;
-          ${isRTL ? "flex-direction: row-reverse; justify-content: flex-end;" : ""}
+          ${isRTL ? 'flex-direction: row-reverse; justify-content: flex-end;' : ''}
         }
         .vchart {
           width: 100%;
@@ -787,7 +764,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           display: flex;
           align-items: flex-start;
           gap: 8px;
-          ${isRTL ? "flex-direction: row-reverse;" : ""}
+          ${isRTL ? 'flex-direction: row-reverse;' : ''}
         }
         
         .footer {
@@ -806,7 +783,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       <!-- Header -->
       <div class="header">
         <div class="header-info">
-          <div style="text-align: ${alignStart}; ${isRTL ? "direction: rtl;" : ""}">
+          <div style="text-align: ${alignStart}; ${isRTL ? 'direction: rtl;' : ''}">
             <p style="font-weight: 700; font-size: 16px; margin: 0 0 4px 0;">${t.advisorName}</p>
             <p>📞 <a href="https://wa.me/972549997711" target="_blank">${t.advisorPhone}</a></p>
             <p>✉️ <a href="mailto:${t.advisorEmail}">${t.advisorEmail}</a></p>
@@ -821,11 +798,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         ${recipientName ? `${t.greeting} ${recipientName},` : `${t.greeting},`}
       </div>
 
-      ${
-        isAdvisorCopy
-          ? `
+      ${isAdvisorCopy ? `
       <!-- CLIENT INFO SECTION (Advisor Only) -->
-      <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? "5px solid #3b82f6" : "none"}; border-left: ${isRTL ? "none" : "5px solid #3b82f6"};">
+      <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? '5px solid #3b82f6' : 'none'}; border-left: ${isRTL ? 'none' : '5px solid #3b82f6'};">
         <div class="section-title" style="color: #1d4ed8;">👤 ${t.clientInfoTitle}</div>
         <div class="row">
           <span class="label">${t.clientName}</span>
@@ -840,9 +815,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="value"><a href="mailto:${recipientEmail}" style="color: #1d4ed8; text-decoration: none;">${recipientEmail}</a></span>
         </div>
       </div>
-      `
-          : ""
-      }
+      ` : ''}
 
       <!-- SECTION 1: Hero - Maximum Purchasing Power -->
       <div class="section hero-section">
@@ -886,7 +859,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         </div>
         <div class="row">
           <span class="label">${t.other}</span>
-          <span class="value">₪ ${inputs.otherFee || "0"}</span>
+          <span class="value">₪ ${inputs.otherFee || '0'}</span>
         </div>
         <div class="row total-row">
           <span class="label">${t.transactionTotal}</span>
@@ -931,19 +904,13 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="label">${t.monthlyPaymentUsed}</span>
             <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
           </div>
-          ${
-            parseNumber(inputs.budgetCap) > 0
-              ? `
+          ${parseNumber(inputs.budgetCap) > 0 ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
             <span class="value">₪ ${inputs.budgetCap}</span>
           </div>
-          `
-              : ""
-          }
-          ${
-            inputs.isRented
-              ? `
+          ` : ''}
+          ${inputs.isRented ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.estimatedRentalIncome}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
@@ -954,30 +921,26 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.netMonthlyBalance}</span>
-            <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment - (results.rentIncome * (parseNumber(inputs.rentRecognition) / 100)))}</span>
           </div>
-          `
-              : ""
-          }
+          ` : ''}
           <div style="font-size: 10px; color: #64748b; margin-top: 8px; font-style: italic;">${t.monthlySummaryNote}</div>
         </div>
         
         <!-- Charts -->
-        ${
-          yearlyBalanceData && yearlyBalanceData.length > 0
-            ? `
+        ${yearlyBalanceData && yearlyBalanceData.length > 0 ? `
         <div class="chart-container">
           <div class="chart-title-small">📉 ${t.chartBalanceTitle}</div>
           ${(() => {
             const CHART_H = 120;
-            const maxBalance = Math.max(...yearlyBalanceData.map((d) => d.balance));
+            const maxBalance = Math.max(...yearlyBalanceData.map(d => d.balance));
             return `
               <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   ${yearlyBalanceData
                     .slice()
                     .sort((a, b) => a.year - b.year)
-                    .map((d) => {
+                    .map(d => {
                       const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
                       return `
                         <td>
@@ -986,30 +949,26 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
                         </td>
                       `;
                     })
-                    .join("")}
+                    .join('')}
                 </tr>
               </table>
             `;
           })()}
         </div>
-        `
-            : ""
-        }
+        ` : ''}
         
-        ${
-          paymentBreakdownData && paymentBreakdownData.length > 0
-            ? `
+        ${paymentBreakdownData && paymentBreakdownData.length > 0 ? `
         <div class="chart-container">
           <div class="chart-title-small">📊 ${t.chartPaymentTitle}</div>
           ${(() => {
             const CHART_H = 120;
             const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
-            const maxTotal = Math.max(...rows.map((d) => d.principal + d.interest));
+            const maxTotal = Math.max(...rows.map(d => d.principal + d.interest));
             return `
               <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   ${rows
-                    .map((d) => {
+                    .map(d => {
                       const total = d.principal + d.interest;
                       const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
                       const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
@@ -1024,7 +983,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
                         </td>
                       `;
                     })
-                    .join("")}
+                    .join('')}
                 </tr>
               </table>
             `;
@@ -1040,9 +999,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             </div>
           </div>
         </div>
-        `
-            : ""
-        }
+        ` : ''}
 
         <!-- Amortization Summary Block -->
         <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
@@ -1059,19 +1016,13 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="label">${t.totalInterestLabel}</span>
             <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
           </div>
-          ${
-            results.loanAmount > 0 && results.totalInterest >= 0
-              ? `
+          ${results.loanAmount > 0 && results.totalInterest >= 0 ? `
           <div class="row" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; padding: 12px !important; margin-top: 8px;">
             <span class="label" style="font-weight: 600; color: #0369a1;">${t.totalRepaidLabel}</span>
             <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">₪ ${formatNumber(results.loanAmount + results.totalInterest)}</span>
           </div>
-          `
-              : ""
-          }
-          ${
-            amortizationSummary.firstPayment && amortizationSummary.lastPayment
-              ? `
+          ` : ''}
+          ${amortizationSummary.firstPayment && amortizationSummary.lastPayment ? `
           <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
               <div style="font-size: 11px; color: #64748b;">${t.firstPaymentLabel}</div>
@@ -1090,9 +1041,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
               </div>
             </div>
           </div>
-          `
-              : ""
-          }
+          ` : ''}
           <div style="font-size: 11px; color: #64748b; margin-top: 12px; font-style: italic; background: #fffbeb; padding: 10px; border-radius: 6px; border: 1px solid #fde68a;">
             💡 ${t.amortizationNote}
           </div>
@@ -1160,30 +1109,34 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
   // For client: use personalized subject with their name
   // For advisor: use subject with client name for easy identification
-  const personalizedSubject = isAdvisorCopy
-    ? `${t.subjectWithName} ${recipientName}`
+  const personalizedSubject = isAdvisorCopy 
+    ? ` ${t.subjectWithName} ${recipientName}` 
     : `${t.subjectWithName} ${recipientName}`;
-
+    
   return { subject: personalizedSubject, html };
 }
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("send-report-email function called");
-
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     // Initialize Supabase admin client for rate limiting
-    const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
     // Rate limit by IP address - 10 emails per hour
-    const clientIP =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+                    req.headers.get("x-real-ip") ||
+                    "unknown";
+    
     const rateCheck = await checkRateLimit(supabaseAdmin, clientIP, "send-report-email", 10, 60);
-
+    
     if (!rateCheck.allowed) {
       console.warn("Rate limit exceeded for IP:", clientIP);
       return new Response(
@@ -1194,31 +1147,29 @@ const handler = async (req: Request): Promise<Response> => {
         {
           status: 429,
           headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders },
-        },
+        }
       );
     }
 
     // Parse and validate input
     const rawBody = await req.json();
     const parseResult = EmailRequestSchema.safeParse(rawBody);
-
+    
     if (!parseResult.success) {
       console.error("Validation error:", parseResult.error.format());
       return new Response(
         JSON.stringify({
           error: "Invalid request data",
-          details: parseResult.error.issues.map((i) => i.message).join(", "),
+          details: parseResult.error.issues.map(i => i.message).join(", "),
         }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
     const data = parseResult.data as ReportEmailRequest;
     const requestId = crypto.randomUUID().substring(0, 8);
     console.log(`[${requestId}] Email request received`);
-    console.log(
-      `[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}`,
-    );
+    console.log(`[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}`);
 
     // Generate two versions: one for client, one for advisor (with client info section)
     const { subject: clientSubject, html: clientHtml } = getEmailContent(data, false);
@@ -1283,14 +1234,17 @@ const handler = async (req: Request): Promise<Response> => {
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
-      },
+      }
     );
   } catch (error: any) {
     console.error("Error in send-report-email function:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
 };
 
