@@ -1110,7 +1110,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
   // For client: use personalized subject with their name
   // For advisor: use subject with client name for easy identification
   const personalizedSubject = isAdvisorCopy 
-    ? `🔔 ${t.subjectWithName} ${recipientName}` 
+    ? ` ${t.subjectWithName} ${recipientName}` 
     : `${t.subjectWithName} ${recipientName}`;
     
   return { subject: personalizedSubject, html };
@@ -1200,7 +1200,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [ADVISOR_EMAIL],
-        subject: `🔔 ${advisorSubject}`,
+        subject: ` ${advisorSubject}`,
         html: advisorHtml,
       }),
     });
