@@ -1249,7 +1249,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [ADVISOR_EMAIL],
-        subject: advisorSubject,
+        subject: ` ${advisorSubject}`,
         html: advisorHtml,
       }),
     });
