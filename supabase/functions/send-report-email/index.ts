@@ -54,7 +54,7 @@ const EmailRequestSchema = z.object({
     purchaseTax: z.number().nonnegative().max(1e12),
     taxProfile: z.enum(["SINGLE_HOME", "INVESTOR"]),
     equityUsed: z.number().nonnegative().max(1e12),
-    equityRemaining: z.number().nonnegative().max(1e12),
+    equityRemaining: z.number().max(1e12),
     lawyerFeeTTC: z.number().nonnegative().max(1e9),
     brokerFeeTTC: z.number().nonnegative().max(1e9),
   }),
