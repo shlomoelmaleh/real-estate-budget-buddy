@@ -21,8 +21,7 @@ import {
 } from '@/lib/calculator';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Eye } from 'lucide-react';
-import { EmailPreviewDialog } from './EmailPreviewDialog';
+
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
@@ -64,7 +63,7 @@ export function BudgetCalculator() {
   const [amortization, setAmortization] = useState<AmortizationRow[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
   const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
 
   const validateRequiredFields = (): boolean => {
@@ -519,58 +518,7 @@ export function BudgetCalculator() {
                 {t.calcBtn}
               </Button>
 
-              {import.meta.env.DEV && (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (validateRequiredFields()) {
-                      // Logic to prepare data for preview
-                      const calculatedLTV = calculateLTV();
-                      const inputs = {
-                        equity: parseFormattedNumber(equity),
-                        ltv: calculatedLTV,
-                        netIncome: parseFormattedNumber(netIncome),
-                        ratio: parseFormattedNumber(ratio),
-                        age: parseFormattedNumber(age),
-                        maxAge: parseFormattedNumber(maxAge),
-                        interest: parseFloat(interest) || 0,
-                        isRented,
-                        rentalYield: parseFloat(rentalYield) || 0,
-                        rentRecognition: parseFormattedNumber(rentRecognition),
-                        budgetCap: budgetCap ? parseFormattedNumber(budgetCap) : null,
-                        isFirstProperty: isFirstProperty ?? false,
-                        isIsraeliTaxResident: isIsraeliTaxResident ?? false,
-                        lawyerPct: parseFloat(lawyerPct) || 0,
-                        brokerPct: parseFloat(brokerPct) || 0,
-                        vatPct: parseFormattedNumber(vatPct),
-                        advisorFee: parseFormattedNumber(advisorFee),
-                        otherFee: parseFormattedNumber(otherFee),
-                      };
-                      const calcResults = calculate(inputs);
-                      if (calcResults) {
-                        setResults(calcResults);
-                        const amortRows = generateAmortizationTable(
-                          calcResults.loanAmount,
-                          inputs.interest,
-                          calcResults.loanTermYears
-                        );
-                        setAmortization(amortRows);
-                        setIsPreviewOpen(true);
-                      } else {
-                        toast.error('Please check your input values');
-                      }
-                    } else {
-                      toast.error(t.requiredField);
-                    }
-                  }}
-                  variant="outline"
-                  size="lg"
-                  className="px-8 py-6 text-lg font-semibold rounded-xl border-2 hover:bg-muted/50 gap-2"
-                >
-                  <Eye className="w-5 h-5" />
-                  Preview Email
-                </Button>
-              )}
+
             </div>
 
             {/* Disclaimer */}
@@ -583,43 +531,7 @@ export function BudgetCalculator() {
           </div>
         </form>
 
-        <EmailPreviewDialog
-          isOpen={isPreviewOpen}
-          onOpenChange={setIsPreviewOpen}
-          data={{
-            language,
-            recipientName: fullName || 'Client',
-            recipientPhone: phone,
-            recipientEmail: email,
-            inputs: {
-              equity: parseFormattedNumber(equity).toString(),
-              ltv: calculateLTV().toString(),
-              isFirstProperty: isFirstProperty ?? false,
-              isIsraeliCitizen: isIsraeliCitizen ?? false,
-              isIsraeliTaxResident: isIsraeliTaxResident ?? false,
-              netIncome: parseFormattedNumber(netIncome).toString(),
-              ratio: parseFormattedNumber(ratio).toString(),
-              age: parseFormattedNumber(age).toString(),
-              maxAge: parseFormattedNumber(maxAge).toString(),
-              interest: interest,
-              isRented,
-              rentalYield: rentalYield,
-              rentRecognition: parseFormattedNumber(rentRecognition).toString(),
-              budgetCap: budgetCap ? parseFormattedNumber(budgetCap).toString() : '',
-              lawyerPct: lawyerPct,
-              brokerPct: brokerPct,
-              vatPct: vatPct,
-              advisorFee: advisorFee,
-              otherFee: otherFee,
-            },
-            results: results!,
-            amortizationSummary: {
-              totalMonths: amortization.length,
-              firstPayment: amortization.length > 0 ? { principal: amortization[0].principal, interest: amortization[0].interest } : { principal: 0, interest: 0 },
-              lastPayment: amortization.length > 0 ? { principal: amortization[amortization.length - 1].principal, interest: amortization[amortization.length - 1].interest } : { principal: 0, interest: 0 },
-            }
-          }}
-        />
+
 
         {/* Confirmation Message - Client version only shows confirmation, no results */}
         {showConfirmation && (
