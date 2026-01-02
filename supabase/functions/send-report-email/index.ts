@@ -12,11 +12,11 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Input validation schema
+// Input validation schema with strict character set restrictions
 const EmailRequestSchema = z.object({
   recipientEmail: z.string().email().max(254),
-  recipientName: z.string().min(1).max(100),
-  recipientPhone: z.string().max(30),
+  recipientName: z.string().min(1).max(100).regex(/^[\p{L}\p{N}\s\-'.,]+$/u, "Name contains invalid characters"),
+  recipientPhone: z.string().max(30).regex(/^[+0-9\s\-()]*$/, "Phone contains invalid characters"),
   language: z.enum(["he", "en", "fr"]),
   inputs: z.object({
     equity: z.string().max(30),
@@ -204,18 +204,36 @@ function formatNumber(num: number): string {
   return Math.round(num).toLocaleString("en-US");
 }
 
+// HTML escape function to prevent XSS attacks in email HTML
+function escapeHtml(text: string): string {
+  if (!text) return "";
+  const map: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
 function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = false): { subject: string; html: string } {
   const {
     language,
-    recipientName,
-    recipientPhone,
-    recipientEmail,
+    recipientName: rawRecipientName,
+    recipientPhone: rawRecipientPhone,
+    recipientEmail: rawRecipientEmail,
     inputs,
     results,
     amortizationSummary,
     yearlyBalanceData,
     paymentBreakdownData,
   } = data;
+
+  // Sanitize all user-provided strings to prevent XSS in HTML emails
+  const recipientName = escapeHtml(rawRecipientName);
+  const recipientPhone = escapeHtml(rawRecipientPhone);
+  const recipientEmail = escapeHtml(rawRecipientEmail);
 
   // Parse income for DTI calculation
   const parseNumber = (str: string): number => {
