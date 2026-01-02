@@ -21,6 +21,7 @@ import {
 } from '@/lib/calculator';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { validateSimulationInput } from '@/lib/validation';
 
 
 export function BudgetCalculator() {
@@ -230,12 +231,28 @@ export function BudgetCalculator() {
           brokerFeeTTC: calcResults.brokerFeeTTC,
         };
 
-        // Insert simulation into database
-        await supabase.from('simulations').insert({
-          client_name: fullName,
+        // Validate user inputs before database insertion
+        const validationResult = validateSimulationInput({
+          clientName: fullName,
           email: email,
           phone: phone,
           language: language,
+        });
+
+        if (validationResult.success === false) {
+          toast.error(validationResult.error);
+          setIsSubmitting(false);
+          return;
+        }
+
+        const validatedData = validationResult.data;
+
+        // Insert simulation into database with validated data
+        await supabase.from('simulations').insert({
+          client_name: validatedData.clientName,
+          email: validatedData.email,
+          phone: validatedData.phone,
+          language: validatedData.language,
           inputs: simulationInputs,
           results: simulationResults,
         });
