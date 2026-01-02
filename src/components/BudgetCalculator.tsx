@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { 
-  User, Home, Calculator, 
-  UserCircle, Phone, Mail, Banknote, Building, 
+import {
+  User, Home, Calculator,
+  UserCircle, Phone, Mail, Banknote, Building,
   TrendingUp, Percent, Clock, Lock, CheckCircle2, Flag, Wallet
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,15 +12,17 @@ import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { 
-  calculate, 
-  generateAmortizationTable, 
+import {
+  calculate,
+  generateAmortizationTable,
   parseFormattedNumber,
   CalculatorResults,
-  AmortizationRow 
+  AmortizationRow
 } from '@/lib/calculator';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { Eye } from 'lucide-react';
+import { EmailPreviewDialog } from './EmailPreviewDialog';
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
@@ -33,12 +35,12 @@ export function BudgetCalculator() {
   const [netIncome, setNetIncome] = useState('');
   // ratio is hidden - using default value
   const [age, setAge] = useState('');
-  
+
   // New fields for LTV calculation
   const [isFirstProperty, setIsFirstProperty] = useState<boolean | null>(null);
   const [isIsraeliCitizen, setIsIsraeliCitizen] = useState<boolean | null>(null);
   const [isIsraeliTaxResident, setIsIsraeliTaxResident] = useState<boolean | null>(null);
-  
+
   // Hidden defaults
   const maxAge = '80';
   const interest = '5.0';
@@ -62,11 +64,12 @@ export function BudgetCalculator() {
   const [amortization, setAmortization] = useState<AmortizationRow[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
 
   const validateRequiredFields = (): boolean => {
     const errors: Record<string, boolean> = {};
-    
+
     // Required fields (except isRented and budgetCap)
     if (!fullName.trim()) errors.fullName = true;
     if (!phone.trim()) errors.phone = true;
@@ -124,9 +127,9 @@ export function BudgetCalculator() {
     };
 
     const calcResults = calculate(inputs);
-    
+
     if (calcResults) {
-      
+
       setResults(calcResults);
       const amortRows = generateAmortizationTable(
         calcResults.loanAmount,
@@ -134,7 +137,7 @@ export function BudgetCalculator() {
         calcResults.loanTermYears
       );
       setAmortization(amortRows);
-      
+
       // Send email automatically
       try {
         const amortizationSummary = {
@@ -146,9 +149,9 @@ export function BudgetCalculator() {
           lastPayment:
             amortRows.length > 0
               ? {
-                  principal: amortRows[amortRows.length - 1].principal,
-                  interest: amortRows[amortRows.length - 1].interest,
-                }
+                principal: amortRows[amortRows.length - 1].principal,
+                interest: amortRows[amortRows.length - 1].interest,
+              }
               : { principal: 0, interest: 0 },
         };
 
@@ -184,7 +187,7 @@ export function BudgetCalculator() {
         }
 
         const { supabase } = await import('@/integrations/supabase/client');
-        
+
         // Save simulation to database
         const simulationInputs = {
           equity,
@@ -207,7 +210,7 @@ export function BudgetCalculator() {
           advisorFee,
           otherFee,
         };
-        
+
         const simulationResults = {
           maxPropertyValue: calcResults.maxPropertyValue,
           loanAmount: calcResults.loanAmount,
@@ -227,7 +230,7 @@ export function BudgetCalculator() {
           lawyerFeeTTC: calcResults.lawyerFeeTTC,
           brokerFeeTTC: calcResults.brokerFeeTTC,
         };
-        
+
         // Insert simulation into database
         await supabase.from('simulations').insert({
           client_name: fullName,
@@ -237,7 +240,7 @@ export function BudgetCalculator() {
           inputs: simulationInputs,
           results: simulationResults,
         });
-        
+
         const { error } = await supabase.functions.invoke('send-report-email', {
           body: {
             recipientEmail: email,
@@ -260,7 +263,7 @@ export function BudgetCalculator() {
     } else {
       toast.error('Please check your input values');
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -268,7 +271,7 @@ export function BudgetCalculator() {
     <div className="min-h-screen bg-background">
       {/* Hero Header */}
       <HeroHeader />
-      
+
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 pb-12 space-y-8">
         {/* Form */}
@@ -491,30 +494,85 @@ export function BudgetCalculator() {
             </div>
           </FormSection>
 
-          {/* Calculate Button */}
+          {/* Calculate & Preview Buttons */}
           <div className="flex flex-col items-center pt-4 gap-4">
-            <Button
-              type="button"
-              onClick={handleCalculate}
-              disabled={isSubmitting}
-              size="lg"
-              className={cn(
-                "px-12 py-6 text-lg font-semibold rounded-xl",
-                "bg-gradient-to-r from-primary to-primary-dark",
-                "hover:shadow-elevated hover:scale-[1.02]",
-                "transition-all duration-300",
-                "gap-3",
-                isSubmitting && "opacity-70 cursor-not-allowed"
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <Button
+                type="button"
+                onClick={handleCalculate}
+                disabled={isSubmitting}
+                size="lg"
+                className={cn(
+                  "px-8 py-6 text-lg font-semibold rounded-xl flex-1 sm:flex-initial min-w-[200px]",
+                  "bg-gradient-to-r from-primary to-primary-dark",
+                  "hover:shadow-elevated hover:scale-[1.02]",
+                  "transition-all duration-300",
+                  "gap-2",
+                  isSubmitting && "opacity-70 cursor-not-allowed"
+                )}
+              >
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Calculator className="w-5 h-5" />
+                )}
+                {t.calcBtn}
+              </Button>
+
+              {import.meta.env.DEV && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (validateRequiredFields()) {
+                      // Logic to prepare data for preview
+                      const calculatedLTV = calculateLTV();
+                      const inputs = {
+                        equity: parseFormattedNumber(equity),
+                        ltv: calculatedLTV,
+                        netIncome: parseFormattedNumber(netIncome),
+                        ratio: parseFormattedNumber(ratio),
+                        age: parseFormattedNumber(age),
+                        maxAge: parseFormattedNumber(maxAge),
+                        interest: parseFloat(interest) || 0,
+                        isRented,
+                        rentalYield: parseFloat(rentalYield) || 0,
+                        rentRecognition: parseFormattedNumber(rentRecognition),
+                        budgetCap: budgetCap ? parseFormattedNumber(budgetCap) : null,
+                        isFirstProperty: isFirstProperty ?? false,
+                        isIsraeliTaxResident: isIsraeliTaxResident ?? false,
+                        lawyerPct: parseFloat(lawyerPct) || 0,
+                        brokerPct: parseFloat(brokerPct) || 0,
+                        vatPct: parseFormattedNumber(vatPct),
+                        advisorFee: parseFormattedNumber(advisorFee),
+                        otherFee: parseFormattedNumber(otherFee),
+                      };
+                      const calcResults = calculate(inputs);
+                      if (calcResults) {
+                        setResults(calcResults);
+                        const amortRows = generateAmortizationTable(
+                          calcResults.loanAmount,
+                          inputs.interest,
+                          calcResults.loanTermYears
+                        );
+                        setAmortization(amortRows);
+                        setIsPreviewOpen(true);
+                      } else {
+                        toast.error('Please check your input values');
+                      }
+                    } else {
+                      toast.error(t.requiredField);
+                    }
+                  }}
+                  variant="outline"
+                  size="lg"
+                  className="px-8 py-6 text-lg font-semibold rounded-xl border-2 hover:bg-muted/50 gap-2"
+                >
+                  <Eye className="w-5 h-5" />
+                  Preview Email
+                </Button>
               )}
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Calculator className="w-5 h-5" />
-              )}
-              {t.calcBtn}
-            </Button>
-            
+            </div>
+
             {/* Disclaimer */}
             <p className="text-xs text-muted-foreground text-center max-w-xl leading-relaxed">
               {t.disclaimer}
@@ -524,6 +582,44 @@ export function BudgetCalculator() {
             </p>
           </div>
         </form>
+
+        <EmailPreviewDialog
+          isOpen={isPreviewOpen}
+          onOpenChange={setIsPreviewOpen}
+          data={{
+            language,
+            recipientName: fullName || 'Client',
+            recipientPhone: phone,
+            recipientEmail: email,
+            inputs: {
+              equity: parseFormattedNumber(equity).toString(),
+              ltv: calculateLTV().toString(),
+              isFirstProperty: isFirstProperty ?? false,
+              isIsraeliCitizen: isIsraeliCitizen ?? false,
+              isIsraeliTaxResident: isIsraeliTaxResident ?? false,
+              netIncome: parseFormattedNumber(netIncome).toString(),
+              ratio: parseFormattedNumber(ratio).toString(),
+              age: parseFormattedNumber(age).toString(),
+              maxAge: parseFormattedNumber(maxAge).toString(),
+              interest: interest,
+              isRented,
+              rentalYield: rentalYield,
+              rentRecognition: parseFormattedNumber(rentRecognition).toString(),
+              budgetCap: budgetCap ? parseFormattedNumber(budgetCap).toString() : '',
+              lawyerPct: lawyerPct,
+              brokerPct: brokerPct,
+              vatPct: vatPct,
+              advisorFee: advisorFee,
+              otherFee: otherFee,
+            },
+            results: results!,
+            amortizationSummary: {
+              totalMonths: amortization.length,
+              firstPayment: amortization.length > 0 ? { principal: amortization[0].principal, interest: amortization[0].interest } : { principal: 0, interest: 0 },
+              lastPayment: amortization.length > 0 ? { principal: amortization[amortization.length - 1].principal, interest: amortization[amortization.length - 1].interest } : { principal: 0, interest: 0 },
+            }
+          }}
+        />
 
         {/* Confirmation Message - Client version only shows confirmation, no results */}
         {showConfirmation && (
@@ -536,7 +632,7 @@ export function BudgetCalculator() {
               <p className="text-green-700 text-lg">{t.confirmationMessage}</p>
               <p className="mt-4 text-sm text-green-600">{email}</p>
             </div>
-            
+
             {/* Tax Disclaimer */}
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
               <div className="flex items-start gap-3">
@@ -556,7 +652,7 @@ export function BudgetCalculator() {
             <span className="text-xs uppercase tracking-wider">Property Budget Pro</span>
             <div className="h-px w-8 bg-border" />
           </div>
-          
+
           {/* Advisor Contact - Elegant footer */}
           <div className="flex flex-col items-center gap-2 mb-4 text-muted-foreground">
             <p className="font-medium text-foreground/80">{t.advisorName}</p>
@@ -569,7 +665,7 @@ export function BudgetCalculator() {
               </a>
             </div>
           </div>
-          
+
           <p className="text-xs">© {new Date().getFullYear()} All rights reserved</p>
         </footer>
       </main>
