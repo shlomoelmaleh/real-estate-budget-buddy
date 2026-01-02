@@ -121,179 +121,153 @@ export function computePurchaseTax(price: number, profile: TaxProfile): number {
 }
 
 /**
- * Calculate total equity required for a given price
+ * Calculate closing costs for a given price
  */
-function calculateTotalEquityRequired(
+function calculateClosingCosts(
   price: number,
   purchaseTax: number,
-  ltv: number,
   lawyerPct: number,
   brokerPct: number,
   vatPct: number,
   advisorFee: number,
   otherFee: number
 ): number {
-  const ltvDecimal = ltv / 100;
-  const downPayment = price * (1 - ltvDecimal);
-  
   const lawyerFee = price * (lawyerPct / 100) * (1 + vatPct / 100);
   const brokerFee = price * (brokerPct / 100) * (1 + vatPct / 100);
-  const otherCosts = advisorFee + otherFee;
-  
-  return downPayment + purchaseTax + lawyerFee + brokerFee + otherCosts;
+  return purchaseTax + lawyerFee + brokerFee + advisorFee + otherFee;
 }
 
 /**
- * Binary Search solver to find max affordable property price
+ * Unified Binary Search solver to find max affordable property price
+ * Takes into account Equity, LTV, Income DTI, Rental Income, and Budget Cap
  */
-function solveMaxPrice(inputs: CalculatorInputs, taxProfile: TaxProfile): number | null {
-  const { equity, ltv, lawyerPct, brokerPct, vatPct, advisorFee, otherFee } = inputs;
-  
+function solveMaximumBudget(
+  inputs: CalculatorInputs,
+  taxProfile: TaxProfile,
+  amortizationFactor: number,
+  maxLoanTermMonths: number
+): CalculatorResults | null {
+  const {
+    equity,
+    ltv,
+    netIncome,
+    ratio,
+    rentalYield,
+    rentRecognition,
+    budgetCap,
+    isRented,
+    lawyerPct,
+    brokerPct,
+    vatPct,
+    advisorFee,
+    otherFee,
+    interest
+  } = inputs;
+
   let low = 0;
-  let high = equity * 15; // Upper bound estimate
+  let high = equity * 20; // Sufficiently high upper bound
   let iterations = 0;
-  
+
+  // Best valid result found so far
+  let bestResult: CalculatorResults | null = null;
+
   while (high - low > TOLERANCE && iterations < MAX_ITERATIONS) {
     iterations++;
-    const mid = (low + high) / 2;
-    const tax = computePurchaseTax(mid, taxProfile);
-    const totalRequired = calculateTotalEquityRequired(
-      mid, tax, ltv, lawyerPct, brokerPct, vatPct, advisorFee, otherFee
+    const price = (low + high) / 2;
+
+    // 1. Calculate Costs
+    const purchaseTax = computePurchaseTax(price, taxProfile);
+    const closingCosts = calculateClosingCosts(
+      price, purchaseTax, lawyerPct, brokerPct, vatPct, advisorFee, otherFee
     );
-    
-    if (totalRequired <= equity) {
-      low = mid;
+
+    // 2. Calculate Max Loan Allowed
+    // a. Income Constraint (DTI)
+    // Rent calculation: price * yield * recognition
+    const estimatedRent = isRented ? (price * (rentalYield / 100)) / 12 : 0;
+    const recognizedRent = estimatedRent * (rentRecognition / 100);
+    const maxMonthlyPaymentByIncome = (netIncome + recognizedRent) * (ratio / 100);
+
+    // b. Budget Cap (User Defined Max Payment)
+    const maxPayment = (budgetCap && budgetCap > 0)
+      ? Math.min(maxMonthlyPaymentByIncome, budgetCap)
+      : maxMonthlyPaymentByIncome;
+
+    const maxLoanByPayment = maxPayment / amortizationFactor;
+
+    // c. LTV Constraint
+    const maxLoanByLTV = price * (ltv / 100);
+
+    // Final Max Loan for this price
+    const maxLoan = Math.min(maxLoanByPayment, maxLoanByLTV);
+
+    // 3. Check Equity Requirement
+    // Price + Costs = Equity + Loan
+    // RequiredEquity = Price + Costs - Loan
+    const requiredEquity = price + closingCosts - maxLoan;
+
+    if (requiredEquity <= equity + TOLERANCE) { // Allow small float margin
+      // This price is feasible, try higher
+      low = price;
+
+      // Store details for this valid price
+      const loan = maxLoan;
+      const payment = loan * amortizationFactor;
+
+      const lawyerFeeTTC = price * (lawyerPct / 100) * (1 + vatPct / 100);
+      const brokerFeeTTC = price * (brokerPct / 100) * (1 + vatPct / 100);
+
+      bestResult = {
+        maxPropertyValue: price,
+        loanAmount: loan,
+        actualLTV: (loan / price) * 100,
+        monthlyPayment: payment,
+        rentIncome: estimatedRent,
+        netPayment: payment - estimatedRent,
+        closingCosts: closingCosts,
+        totalInterest: (payment * maxLoanTermMonths) - loan,
+        totalCost: payment * maxLoanTermMonths,
+        loanTermYears: maxLoanTermMonths / 12,
+        purchaseTax,
+        taxProfile,
+        equityUsed: price + closingCosts - loan, // Actual used equity
+        equityRemaining: equity - (price + closingCosts - loan),
+        lawyerFeeTTC,
+        brokerFeeTTC
+      };
     } else {
-      high = mid;
+      // Too expensive, try lower
+      high = price;
     }
   }
-  
-  // Safety check
-  if (iterations >= MAX_ITERATIONS) {
-    console.warn('[DEV] Binary search hit max iterations');
-  }
-  
-  return low > 0 ? low : null;
+
+  return bestResult;
 }
 
 // ============= MAIN CALCULATION FUNCTION =============
 
 export function calculate(inputs: CalculatorInputs): CalculatorResults | null {
   const {
-    equity,
-    ltv,
-    netIncome,
-    ratio,
     age,
     maxAge,
     interest,
-    isRented,
-    rentalYield,
-    rentRecognition,
-    budgetCap,
     isFirstProperty,
     isIsraeliTaxResident,
-    lawyerPct,
-    brokerPct,
-    vatPct,
-    advisorFee,
-    otherFee,
   } = inputs;
 
   const years = Math.min(30, maxAge - age);
   if (years <= 0) return null;
 
-  // Determine tax profile
-  const taxProfile = determineTaxProfile(isFirstProperty, isIsraeliTaxResident);
-  
-  // Use binary search to find max property value considering progressive tax
-  const maxPriceFromEquity = solveMaxPrice(inputs, taxProfile);
-  if (!maxPriceFromEquity) return null;
-
-  const l = ltv / 100;
-  const r = ratio / 100;
+  const n = years * 12;
   const rate = interest / 100;
   const mRate = rate / 12;
-  const n = years * 12;
-
-  // Amortization factor
   const A = mRate === 0 ? 1 / n : mRate / (1 - Math.pow(1 + mRate, -n));
 
-  const yld = isRented ? rentalYield / 100 : 0;
-  const recg = isRented ? rentRecognition / 100 : 0;
+  // Determine tax profile
+  const taxProfile = determineTaxProfile(isFirstProperty, isIsraeliTaxResident);
 
-  // Calculate max price from income constraint
-  // When property is rented, the recognized rental income (80% of rental) is ADDED to net income
-  // Formula: maxPayment = ratio × (netIncome + recognizedRent)
-  // Where: recognizedRent = recg × yld × P / 12
-  // So: maxPayment = r × netIncome + r × recg × yld × P / 12
-  // And: loan = P × l, payment = A × loan = A × P × l
-  // Therefore: A × P × l = r × netIncome + r × recg × yld × P / 12
-  // Solving for P: P × (A × l - r × recg × yld / 12) = r × netIncome
-  // P = (r × netIncome) / (A × l - r × recg × yld / 12)
-  
-  const incomeComponent = r * netIncome;
-  const rentAdjustmentFactor = r * recg * yld / 12;
-  const loanPaymentFactor = A * l;
-  
-  let maxPriceFromIncome: number;
-  if (loanPaymentFactor > rentAdjustmentFactor) {
-    maxPriceFromIncome = incomeComponent / (loanPaymentFactor - rentAdjustmentFactor);
-  } else {
-    // If rental income recognition would cover more than the payment, cap at equity-based max
-    maxPriceFromIncome = Infinity;
-  }
-
-  // Apply budget cap if set
-  let P_max = Math.min(maxPriceFromEquity, maxPriceFromIncome);
-  
-  if (budgetCap && budgetCap > 0) {
-    const maxLoanFromBudget = budgetCap / A;
-    const maxPriceFromBudget = maxLoanFromBudget / l;
-    P_max = Math.min(P_max, maxPriceFromBudget);
-  }
-
-  if (P_max <= 0 || !isFinite(P_max)) return null;
-
-  // Calculate final values
-  const purchaseTax = computePurchaseTax(P_max, taxProfile);
-  const loan = P_max * l;
-  const pay = A * loan;
-  const rent = (yld * P_max) / 12;
-  const totalPay = pay * n;
-
-  // Closing costs (without purchase tax, we'll add it separately for display)
-  const law = lawyerPct / 100;
-  const bro = brokerPct / 100;
-  const vat = vatPct / 100;
-  const lawyerFeeTTC = P_max * law * (1 + vat);
-  const brokerFeeTTC = P_max * bro * (1 + vat);
-  const otherClosingCosts = lawyerFeeTTC + brokerFeeTTC + advisorFee + otherFee;
-  const totalClosingCosts = purchaseTax + otherClosingCosts;
-
-  // Calculate equity usage
-  const downPayment = P_max * (1 - l);
-  const equityUsed = downPayment + totalClosingCosts;
-  const equityRemaining = equity - equityUsed;
-
-  return {
-    maxPropertyValue: P_max,
-    loanAmount: loan,
-    actualLTV: (loan / P_max) * 100,
-    monthlyPayment: pay,
-    rentIncome: rent,
-    netPayment: pay - rent,
-    closingCosts: totalClosingCosts,
-    totalInterest: totalPay - loan,
-    totalCost: totalPay,
-    loanTermYears: years,
-    purchaseTax,
-    taxProfile,
-    equityUsed,
-    equityRemaining,
-    lawyerFeeTTC,
-    brokerFeeTTC,
-  };
+  // Solve
+  return solveMaximumBudget(inputs, taxProfile, A, n);
 }
 
 // ============= AMORTIZATION TABLE =============
