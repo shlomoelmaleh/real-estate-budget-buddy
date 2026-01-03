@@ -1302,11 +1302,21 @@ const handler = async (req: Request): Promise<Response> => {
       },
     );
   } catch (error: any) {
-    console.error("Error in send-report-email function:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+    const errorId = crypto.randomUUID().substring(0, 8);
+    // Log full error details for debugging (server-side only)
+    console.error(`[${errorId}] Error in send-report-email function:`, error.message);
+    
+    // Return generic error message to client to prevent information leakage
+    return new Response(
+      JSON.stringify({ 
+        error: "An error occurred while sending the report. Please try again later.",
+        errorId 
+      }), 
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
   }
 };
 
