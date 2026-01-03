@@ -1239,8 +1239,9 @@ const handler = async (req: Request): Promise<Response> => {
       ? [
         {
           filename: csvFilenames[data.language] || "amortization-table.csv",
-          content: btoa(data.csvData),
-          content_type: "text/csv",
+          // Use UTF-8 BOM for Excel compatibility and safe base64 encoding for Hebrew
+          content: btoa(unescape(encodeURIComponent("\uFEFF" + data.csvData))),
+          content_type: "text/csv; charset=utf-8",
         },
       ]
       : [];
