@@ -288,11 +288,6 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       transactionTotal: "סך עלויות רכישה",
       taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
       ttc: 'כולל מע"מ',
-      // Section 4 - Cash Summary
-      cashTitle: "סיכום הון עצמי",
-      capitalAllocated: "הון עצמי בשימוש",
-      liquidBuffer: "יתרת הון עצמי (Cash)",
-      cashNote: "הערכת יתרת המזומנים לאחר רכישה + עלויות.",
       // Section 5 - Feasibility
       feasibilityTitle: "ניתוח היתכנות",
       ltvRatio: "יחס מימון (LTV)",
@@ -373,10 +368,6 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       taxDisclaimer:
         "Tax calculated using standard brackets only; special exemptions not included. Verify with attorney.",
       ttc: "incl. VAT",
-      cashTitle: "Equity Summary",
-      capitalAllocated: "Total Capital Allocated",
-      liquidBuffer: "Liquid Safety Buffer",
-      cashNote: "Estimated cash remaining after purchase + costs.",
       feasibilityTitle: "Feasibility Analysis",
       ltvRatio: "LTV Ratio",
       dtiMaxLabel: "Max DTI Allowed",
@@ -452,10 +443,6 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       transactionTotal: "Total des frais de transaction",
       taxDisclaimer: "Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d'un avocat.",
       ttc: "T.T.C",
-      cashTitle: "Bilan des fonds propres",
-      capitalAllocated: "Capital total mobilisé",
-      liquidBuffer: "Réserve de sécurité (cash)",
-      cashNote: "Estimation du cash restant sur votre compte après achat + frais.",
       feasibilityTitle: "Analyse de faisabilité",
       ltvRatio: "Ratio LTV",
       dtiMaxLabel: "DTI Max autorisé",
@@ -684,24 +671,6 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         }
         .total-row .label { font-weight: 600; color: #92400e; }
         .total-row .value { font-weight: 700; color: #d97706; font-size: 16px; }
-        
-        /* Cash Section */
-        .cash-section { border-${alignStart}: 5px solid #10b981; }
-        .cash-section .section-title { color: #047857; }
-        .buffer-row {
-          background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-          border-radius: 8px;
-          padding: 12px !important;
-          margin-top: 8px;
-        }
-        .buffer-row .label { font-weight: 600; color: #047857; }
-        .buffer-row .value { font-weight: 700; color: #059669; font-size: 16px; }
-        .cash-note {
-          font-size: 11px;
-          color: #64748b;
-          margin-top: 10px;
-          font-style: italic;
-        }
         
         /* Feasibility Section */
         .feasibility-section { border-${alignStart}: 5px solid #8b5cf6; }
