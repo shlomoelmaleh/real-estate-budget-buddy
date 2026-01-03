@@ -1200,7 +1200,7 @@ const handler = async (req: Request): Promise<Response> => {
     const requestId = crypto.randomUUID().substring(0, 8);
     console.log(`[${requestId}] Email request received`);
     console.log(
-      `[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}`,
+      `[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}, csvData: ${data.csvData ? "present" : "missing"}`,
     );
 
     // Generate two versions: one for client, one for advisor (with client info section)
@@ -1215,8 +1215,9 @@ const handler = async (req: Request): Promise<Response> => {
     const attachments = data.csvData
       ? [
         {
-          filename: `amortization-table-${data.recipientName.replace(/\s+/g, "-").toLowerCase()}.csv`,
-          content: btoa(unescape(encodeURIComponent(data.csvData))),
+          filename: `amortization-table.csv`,
+          content: btoa(data.csvData),
+          content_type: "text/csv",
         },
       ]
       : [];
