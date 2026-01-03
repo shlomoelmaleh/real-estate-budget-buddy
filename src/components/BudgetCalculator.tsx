@@ -186,10 +186,12 @@ export function BudgetCalculator() {
         }
 
         // Generate CSV data for the full amortization table
+        // Always use ASCII headers to avoid encoding issues with email attachments
+        const asciiHeaders = ['Month', 'Opening', 'Payment', 'Principal', 'Interest', 'Closing'];
         const isRTL = language === 'he';
-        const headers = isRTL
-          ? [t.th_close, t.th_int, t.th_princ, t.th_pay, t.th_open, t.th_month]
-          : [t.th_month, t.th_open, t.th_pay, t.th_princ, t.th_int, t.th_close];
+        
+        // For RTL languages, reverse column order for better Excel viewing
+        const headers = isRTL ? [...asciiHeaders].reverse() : asciiHeaders;
 
         const csvHeader = headers.join(",") + "\n";
         const csvRows = amortRows.map(row => {
