@@ -1229,10 +1229,16 @@ const handler = async (req: Request): Promise<Response> => {
     const advisorHtml = advisorContent.html;
     const advisorSubject = advisorContent.subject;
 
+    const csvFilenames: Record<string, string> = {
+      he: "לוח-סילוקין.csv",
+      en: "amortization-table.csv",
+      fr: "tableau-amortissement.csv",
+    };
+
     const attachments = data.csvData
       ? [
         {
-          filename: `amortization-table.csv`,
+          filename: csvFilenames[data.language] || "amortization-table.csv",
           content: btoa(data.csvData),
           content_type: "text/csv",
         },
@@ -1305,13 +1311,13 @@ const handler = async (req: Request): Promise<Response> => {
     const errorId = crypto.randomUUID().substring(0, 8);
     // Log full error details for debugging (server-side only)
     console.error(`[${errorId}] Error in send-report-email function:`, error.message);
-    
+
     // Return generic error message to client to prevent information leakage
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: "An error occurred while sending the report. Please try again later.",
-        errorId 
-      }), 
+        errorId
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

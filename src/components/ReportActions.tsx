@@ -159,10 +159,18 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
       }
 
       // Generate CSV data for the full amortization table
-      const csvHeader = "Month,Opening Balance,Monthly Payment,Principal,Interest,Closing Balance\n";
-      const csvRows = amortization.map(row =>
-        `${row.month},${row.opening.toFixed(2)},${row.payment.toFixed(2)},${row.principal.toFixed(2)},${row.interest.toFixed(2)},${row.closing.toFixed(2)}`
-      ).join("\n");
+      const isRTL = language === 'he';
+      const headers = isRTL
+        ? [t.th_close, t.th_int, t.th_princ, t.th_pay, t.th_open, t.th_month]
+        : [t.th_month, t.th_open, t.th_pay, t.th_princ, t.th_int, t.th_close];
+
+      const csvHeader = headers.join(",") + "\n";
+      const csvRows = amortization.map(row => {
+        const values = isRTL
+          ? [row.closing, row.interest, row.principal, row.payment, row.opening, row.month]
+          : [row.month, row.opening, row.payment, row.principal, row.interest, row.closing];
+        return values.map(v => typeof v === 'number' ? v.toFixed(2) : v).join(",");
+      }).join("\n");
       const csvData = csvHeader + csvRows;
 
       const { data, error } = await supabase.functions.invoke('send-report-email', {
