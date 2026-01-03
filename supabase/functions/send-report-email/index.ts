@@ -88,6 +88,7 @@ const EmailRequestSchema = z.object({
     )
     .max(50)
     .optional(),
+  csvData: z.string().optional(),
 });
 
 // Rate limiting helper
@@ -198,6 +199,7 @@ interface ReportEmailRequest {
   };
   yearlyBalanceData?: { year: number; balance: number }[];
   paymentBreakdownData?: { year: number; interest: number; principal: number }[];
+  csvData?: string;
 }
 
 function formatNumber(num: number): string {
@@ -338,6 +340,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       rentalIncomeRetained: "הכנסה משכירות מוכרת (80%)",
       netMonthlyBalance: "יתרה חודשית נטו",
       monthlySummaryNote: "אינדיקטיבי: לאימות בהתאם לחוזה השכירות והוצאות.",
+      csvNotice: "מצורף לדוח זה קובץ CSV המכיל את לוח הסילוקין המלא (חודש אחר חודש).",
     },
     en: {
       subject: "Property Budget Calculator - Complete Report",
@@ -414,6 +417,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       rentalIncomeRetained: "Rental income retained (80%)",
       netMonthlyBalance: "Net monthly balance",
       monthlySummaryNote: "Indicative: to be confirmed based on lease and expenses.",
+      csvNotice: "Attached to this report is a CSV file containing the full monthly amortization table.",
     },
     fr: {
       subject: "Simulateur Budget Immobilier - Rapport Complet",
@@ -489,6 +493,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       rentalIncomeRetained: "Revenu locatif retenu (80%)",
       netMonthlyBalance: "Solde mensuel net",
       monthlySummaryNote: "Indicatif : à confirmer selon le bail et les charges.",
+      csvNotice: "Vous trouverez en pièce jointe de ce rapport un fichier CSV contenant le tableau d'amortissement complet mois par mois.",
     },
   };
 
@@ -1100,6 +1105,16 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <div class="a-value">${results.loanTermYears} ${t.years}</div>
           </div>
         </div>
+
+        ${data.csvData
+      ? `
+        <div style="margin: 16px 0; padding: 12px; background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 8px; text-align: center; color: #166534; font-size: 13px;">
+          📎 ${t.csvNotice}
+        </div>
+        `
+      : ""
+    }
+
         <div style="font-size: 11px; color: #64748b; margin-top: 12px; text-align: ${alignStart};">
           ${t.simulationDisclaimer}
         </div>
@@ -1189,10 +1204,23 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Generate two versions: one for client, one for advisor (with client info section)
-    const { subject: clientSubject, html: clientHtml } = getEmailContent(data, false);
-    const { subject: advisorSubject, html: advisorHtml } = getEmailContent(data, true);
+    const clientContent = getEmailContent(data, false);
+    const advisorContent = getEmailContent(data, true);
 
-    // Send to client using verified domain eshel-f.com
+    const clientHtml = clientContent.html;
+    const clientSubject = clientContent.subject;
+    const advisorHtml = advisorContent.html;
+    const advisorSubject = advisorContent.subject;
+
+    const attachments = data.csvData
+      ? [
+        {
+          filename: `amortization-table-${data.recipientName.replace(/\s+/g, "-").toLowerCase()}.csv`,
+          content: btoa(unescape(encodeURIComponent(data.csvData))),
+        },
+      ]
+      : [];
+
     const primaryRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -1204,6 +1232,7 @@ const handler = async (req: Request): Promise<Response> => {
         to: [data.recipientEmail],
         subject: clientSubject,
         html: clientHtml,
+        attachments,
       }),
     });
 
@@ -1219,6 +1248,7 @@ const handler = async (req: Request): Promise<Response> => {
         to: [ADVISOR_EMAIL],
         subject: advisorSubject,
         html: advisorHtml,
+        attachments,
       }),
     });
 

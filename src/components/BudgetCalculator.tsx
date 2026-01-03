@@ -185,6 +185,13 @@ export function BudgetCalculator() {
           });
         }
 
+        // Generate CSV data for the full amortization table
+        const csvHeader = "Month,Opening Balance,Monthly Payment,Principal,Interest,Closing Balance\n";
+        const csvRows = amortRows.map(row =>
+          `${row.month},${row.opening.toFixed(2)},${row.payment.toFixed(2)},${row.principal.toFixed(2)},${row.interest.toFixed(2)},${row.closing.toFixed(2)}`
+        ).join("\n");
+        const csvData = csvHeader + csvRows;
+
         const { supabase } = await import('@/integrations/supabase/client');
 
         // Save simulation to database
@@ -251,6 +258,7 @@ export function BudgetCalculator() {
             amortizationSummary,
             yearlyBalanceData,
             paymentBreakdownData,
+            csvData,
           },
         });
 

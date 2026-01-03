@@ -44,7 +44,7 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
 
   const handleDownloadPDF = async () => {
     setIsGeneratingPDF(true);
-    
+
     try {
       const reportContent = document.getElementById('report-content');
       if (!reportContent) {
@@ -59,10 +59,10 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
         originalStyles[index] = (section as HTMLElement).style.cssText;
         (section as HTMLElement).style.cssText = 'display: block !important;';
       });
-      
+
       // Wait for DOM to update
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const canvas = await html2canvas(reportContent, {
         scale: 2,
         useCORS: true,
@@ -80,7 +80,7 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
       const imgWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
+
       const pdf = new jsPDF('p', 'mm', 'a4');
       let heightLeft = imgHeight;
       let position = 0;
@@ -97,7 +97,7 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
 
       const fileName = `property-budget-report-${clientName || 'client'}-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
-      
+
       toast.success(t.pdfSuccess);
     } catch (error) {
       toast.error(t.pdfError);
@@ -117,14 +117,14 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
     }
 
     setIsSendingEmail(true);
-    
+
     try {
       const amortizationSummary = {
         totalMonths: amortization.length,
-        firstPayment: amortization.length > 0 
+        firstPayment: amortization.length > 0
           ? { principal: amortization[0].principal, interest: amortization[0].interest }
           : { principal: 0, interest: 0 },
-        lastPayment: amortization.length > 0 
+        lastPayment: amortization.length > 0
           ? { principal: amortization[amortization.length - 1].principal, interest: amortization[amortization.length - 1].interest }
           : { principal: 0, interest: 0 },
       };
@@ -158,6 +158,13 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
         });
       }
 
+      // Generate CSV data for the full amortization table
+      const csvHeader = "Month,Opening Balance,Monthly Payment,Principal,Interest,Closing Balance\n";
+      const csvRows = amortization.map(row =>
+        `${row.month},${row.opening.toFixed(2)},${row.payment.toFixed(2)},${row.principal.toFixed(2)},${row.interest.toFixed(2)},${row.closing.toFixed(2)}`
+      ).join("\n");
+      const csvData = csvHeader + csvRows;
+
       const { data, error } = await supabase.functions.invoke('send-report-email', {
         body: {
           recipientEmail: clientEmail,
@@ -181,11 +188,12 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
           amortizationSummary,
           yearlyBalanceData,
           paymentBreakdownData,
+          csvData,
         },
       });
 
       if (error) throw error;
-      
+
       toast.success(t.emailSuccess);
     } catch (error) {
       toast.error(t.emailError);
@@ -209,7 +217,7 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
         )}
         {t.downloadPDF}
       </Button>
-      
+
       <Button
         variant="outline"
         onClick={handlePrint}
@@ -218,7 +226,7 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
         <Printer className="w-4 h-4" />
         {t.printReport}
       </Button>
-      
+
       <Button
         variant="default"
         onClick={handleSendEmail}
