@@ -1204,11 +1204,6 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Insert simulation into database using service role (bypasses RLS)
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
     const { error: insertError } = await supabaseAdmin.from("simulations").insert({
       client_name: data.recipientName,
       email: data.recipientEmail,
