@@ -219,6 +219,18 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
+// Helper to safely encode UTF-8 string to Base64 for Deno/Supabase
+function toBase64(str: string): string {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  let binary = "";
+  const bytes = new Uint8Array(data);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = false): { subject: string; html: string } {
   const {
     language,
@@ -1230,7 +1242,7 @@ const handler = async (req: Request): Promise<Response> => {
     const advisorSubject = advisorContent.subject;
 
     const csvFilenames: Record<string, string> = {
-      he: "לוח-סילוקין.csv",
+      he: "loach-silkukin.csv", // Use ASCII for filename to avoid encoding issues
       en: "amortization-table.csv",
       fr: "tableau-amortissement.csv",
     };
@@ -1238,9 +1250,9 @@ const handler = async (req: Request): Promise<Response> => {
     const attachments = data.csvData
       ? [
         {
-          filename: csvFilenames[data.language] || "amortization-table.csv",
-          // Use UTF-8 BOM for Excel compatibility and safe base64 encoding for Hebrew
-          content: btoa(unescape(encodeURIComponent("\uFEFF" + data.csvData))),
+          filename: csvFilenames[data.language] || "report.csv",
+          // Use UTF-8 BOM for Excel compatibility and robust base64 encoding
+          content: toBase64("\uFEFF" + data.csvData),
           content_type: "text/csv; charset=utf-8",
         },
       ]
