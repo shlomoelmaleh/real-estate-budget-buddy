@@ -237,15 +237,7 @@ export function BudgetCalculator() {
           brokerFeeTTC: calcResults.brokerFeeTTC,
         };
 
-        // Insert simulation into database
-        await supabase.from('simulations').insert({
-          client_name: fullName,
-          email: email,
-          phone: phone,
-          language: language,
-          inputs: simulationInputs,
-          results: simulationResults,
-        });
+        // Database insert is handled by the edge function (rate-limited)
 
         const { error } = await supabase.functions.invoke('send-report-email', {
           body: {
