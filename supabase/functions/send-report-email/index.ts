@@ -1203,6 +1203,28 @@ const handler = async (req: Request): Promise<Response> => {
       `[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}, csvData: ${data.csvData ? "present" : "missing"}`,
     );
 
+    // Insert simulation into database using service role (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { error: insertError } = await supabaseAdmin.from("simulations").insert({
+      client_name: data.recipientName,
+      email: data.recipientEmail,
+      phone: data.recipientPhone,
+      language: data.language,
+      inputs: data.inputs,
+      results: data.results,
+    });
+
+    if (insertError) {
+      console.error(`[${requestId}] Database insert failed:`, insertError.message);
+      // Continue with email sending even if insert fails - don't block user
+    } else {
+      console.log(`[${requestId}] Simulation saved to database`);
+    }
+
     // Generate two versions: one for client, one for advisor (with client info section)
     const clientContent = getEmailContent(data, false);
     const advisorContent = getEmailContent(data, true);
