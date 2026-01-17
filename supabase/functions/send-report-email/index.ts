@@ -15,8 +15,15 @@ const corsHeaders = {
 // Input validation schema with strict character set restrictions
 const EmailRequestSchema = z.object({
   recipientEmail: z.string().email().max(254),
-  recipientName: z.string().min(1).max(100).regex(/^[\p{L}\p{N}\s\-'.,]+$/u, "Name contains invalid characters"),
-  recipientPhone: z.string().max(30).regex(/^[+0-9\s\-()]*$/, "Phone contains invalid characters"),
+  recipientName: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[\p{L}\p{N}\s\-'.,]+$/u, "Name contains invalid characters"),
+  recipientPhone: z
+    .string()
+    .max(30)
+    .regex(/^[+0-9\s\-()]*$/, "Phone contains invalid characters"),
   language: z.enum(["he", "en", "fr"]),
   inputs: z.object({
     equity: z.string().max(30),
@@ -127,13 +134,7 @@ async function checkMultiLayerRateLimit(
   recipientEmail: string,
 ): Promise<{ allowed: boolean; reason?: string }> {
   // Layer 1: IP-based rate limit (10 emails per hour from same IP)
-  const ipCheck = await checkRateLimitAtomic(
-    supabaseAdmin,
-    `ip:${clientIP}`,
-    "send-report-email",
-    10,
-    60,
-  );
+  const ipCheck = await checkRateLimitAtomic(supabaseAdmin, `ip:${clientIP}`, "send-report-email", 10, 60);
 
   if (!ipCheck.allowed) {
     return { allowed: false, reason: "ip_limit" };
@@ -312,8 +313,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       lawyerLabel: 'עו"ד (1% + מע"מ)',
       brokerLabel: 'תיווך (2% + מע"מ)',
       advisorFeeLabel: "שכר יועץ משכנתאות",
-      advisorFeeDisclaimer:
-        "????? ???? ??????? ????? ???????? ????. ????? ????? ???? ????? ????? ?????? ????.",
+      advisorFeeDisclaimer: "????? ???? ??????? ????? ???????? ????. ????? ????? ???? ????? ????? ?????? ????.",
       other: "שונות",
       transactionTotal: "סך עלויות רכישה",
       taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
@@ -395,8 +395,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       lawyerLabel: "Lawyer (1% + VAT)",
       brokerLabel: "Agency (2% + VAT)",
       advisorFeeLabel: "Mortgage Advisor Fee",
-      advisorFeeDisclaimer:
-        "Price may vary based on case complexity. The displayed amount is an estimated average.",
+      advisorFeeDisclaimer: "Price may vary based on case complexity. The displayed amount is an estimated average.",
       other: "Other",
       transactionTotal: "Total Transaction Costs",
       taxDisclaimer:
@@ -476,7 +475,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       brokerLabel: "Frais d'agence (2% H.T)",
       advisorFeeLabel: "Frais de conseiller hypothécaire",
       advisorFeeDisclaimer:
-        "Le prix peut varier selon la complexit? du dossier. Le montant affich? est une moyenne estim?e.",
+        "Le prix peut varier selon la complexité du dossier. Le montant affiché est une moyenne estimée.",
       other: "Divers",
       transactionTotal: "Total des frais de transaction",
       taxDisclaimer: "Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d'un avocat.",
@@ -527,7 +526,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       rentalIncomeRetained: "Revenu locatif retenu (80%)",
       netMonthlyBalance: "Solde mensuel net",
       monthlySummaryNote: "Indicatif : à confirmer selon le bail et les charges.",
-      csvNotice: "Vous trouverez en pièce jointe de ce rapport un fichier CSV contenant le tableau d'amortissement complet mois par mois.",
+      csvNotice:
+        "Vous trouverez en pièce jointe de ce rapport un fichier CSV contenant le tableau d'amortissement complet mois par mois.",
     },
   };
 
@@ -853,8 +853,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         ${recipientName ? `${t.greeting} ${recipientName},` : `${t.greeting},`}
       </div>
 
-      ${isAdvisorCopy
-      ? `
+      ${
+        isAdvisorCopy
+          ? `
       <!-- CLIENT INFO SECTION (Advisor Only) -->
       <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? "5px solid #3b82f6" : "none"}; border-left: ${isRTL ? "none" : "5px solid #3b82f6"};">
         <div class="section-title" style="color: #1d4ed8;">👤 ${t.clientInfoTitle}</div>
@@ -872,8 +873,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         </div>
       </div>
       `
-      : ""
-    }
+          : ""
+      }
 
       <!-- SECTION 1: Hero - Maximum Purchasing Power -->
       <div class="section hero-section">
@@ -955,17 +956,19 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="label">${t.monthlyPaymentUsed}</span>
             <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
           </div>
-          ${parseNumber(inputs.budgetCap) > 0
-      ? `
+          ${
+            parseNumber(inputs.budgetCap) > 0
+              ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
             <span class="value">₪ ${inputs.budgetCap}</span>
           </div>
           `
-      : ""
-    }
-          ${inputs.isRented
-      ? `
+              : ""
+          }
+          ${
+            inputs.isRented
+              ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.estimatedRentalIncome}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
@@ -979,62 +982,64 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
           `
-      : ""
-    }
+              : ""
+          }
           <div style="font-size: 10px; color: #64748b; margin-top: 8px; font-style: italic;">${t.monthlySummaryNote}</div>
         </div>
         
         <!-- Charts -->
-        ${yearlyBalanceData && yearlyBalanceData.length > 0
-      ? `
+        ${
+          yearlyBalanceData && yearlyBalanceData.length > 0
+            ? `
         <div class="chart-container">
           <div class="chart-title-small">📉 ${t.chartBalanceTitle}</div>
           ${(() => {
-        const CHART_H = 120;
-        const maxBalance = Math.max(...yearlyBalanceData.map((d) => d.balance));
-        return `
+            const CHART_H = 120;
+            const maxBalance = Math.max(...yearlyBalanceData.map((d) => d.balance));
+            return `
               <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   ${yearlyBalanceData
-            .slice()
-            .sort((a, b) => a.year - b.year)
-            .map((d) => {
-              const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
-              return `
+                    .slice()
+                    .sort((a, b) => a.year - b.year)
+                    .map((d) => {
+                      const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
+                      return `
                         <td>
                           <div class="vbar vbar-balance" style="height: ${barH}px;"></div>
                           <div class="vlabel" dir="ltr">${d.year}</div>
                         </td>
                       `;
-            })
-            .join("")}
+                    })
+                    .join("")}
                 </tr>
               </table>
             `;
-      })()}
+          })()}
         </div>
         `
-      : ""
-    }
+            : ""
+        }
         
-        ${paymentBreakdownData && paymentBreakdownData.length > 0
-      ? `
+        ${
+          paymentBreakdownData && paymentBreakdownData.length > 0
+            ? `
         <div class="chart-container">
           <div class="chart-title-small">📊 ${t.chartPaymentTitle}</div>
           ${(() => {
-        const CHART_H = 120;
-        const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
-        const maxTotal = Math.max(...rows.map((d) => d.principal + d.interest));
-        return `
+            const CHART_H = 120;
+            const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
+            const maxTotal = Math.max(...rows.map((d) => d.principal + d.interest));
+            return `
               <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   ${rows
-            .map((d) => {
-              const total = d.principal + d.interest;
-              const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
-              const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
-              const principalH = Math.max(1, totalH - interestH);
-              return `
+                    .map((d) => {
+                      const total = d.principal + d.interest;
+                      const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
+                      const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
+                      const principalH = Math.max(1, totalH - interestH);
+                      return `
                         <td>
                           <div class="vstack" style="height: ${totalH}px;">
                             <div class="vbar vbar-interest" style="height: ${interestH}px;"></div>
@@ -1043,12 +1048,12 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
                           <div class="vlabel" dir="ltr">${d.year}</div>
                         </td>
                       `;
-            })
-            .join("")}
+                    })
+                    .join("")}
                 </tr>
               </table>
             `;
-      })()}
+          })()}
           <div class="chart-legend">
             <div class="chart-legend-item">
               <div class="chart-legend-color" style="background: linear-gradient(180deg, #10b981, #34d399);"></div>
@@ -1061,8 +1066,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
         </div>
         `
-      : ""
-    }
+            : ""
+        }
 
         <!-- Amortization Summary Block -->
         <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
@@ -1079,17 +1084,19 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="label">${t.totalInterestLabel}</span>
             <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
           </div>
-          ${results.loanAmount > 0 && results.totalInterest >= 0
-      ? `
+          ${
+            results.loanAmount > 0 && results.totalInterest >= 0
+              ? `
           <div class="row" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; padding: 12px !important; margin-top: 8px;">
             <span class="label" style="font-weight: 600; color: #0369a1;">${t.totalRepaidLabel}</span>
             <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">₪ ${formatNumber(results.loanAmount + results.totalInterest)}</span>
           </div>
           `
-      : ""
-    }
-          ${amortizationSummary.firstPayment && amortizationSummary.lastPayment
-      ? `
+              : ""
+          }
+          ${
+            amortizationSummary.firstPayment && amortizationSummary.lastPayment
+              ? `
           <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
               <div style="font-size: 11px; color: #64748b;">${t.firstPaymentLabel}</div>
@@ -1109,8 +1116,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             </div>
           </div>
           `
-      : ""
-    }
+              : ""
+          }
           <div style="font-size: 11px; color: #64748b; margin-top: 12px; font-style: italic; background: #fffbeb; padding: 10px; border-radius: 6px; border: 1px solid #fde68a;">
             💡 ${t.amortizationNote}
           </div>
@@ -1151,14 +1158,15 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
         </div>
 
-        ${data.csvData
-      ? `
+        ${
+          data.csvData
+            ? `
         <div style="margin: 16px 0; padding: 12px; background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 8px; text-align: center; color: #166534; font-size: 13px;">
           📎 ${t.csvNotice}
         </div>
         `
-      : ""
-    }
+            : ""
+        }
 
         <div style="font-size: 11px; color: #64748b; margin-top: 12px; text-align: ${alignStart};">
           ${t.simulationDisclaimer}
@@ -1232,9 +1240,10 @@ const handler = async (req: Request): Promise<Response> => {
     const rateCheck = await checkMultiLayerRateLimit(supabaseAdmin, clientIP, data.recipientEmail);
 
     if (!rateCheck.allowed) {
-      const errorMsg = rateCheck.reason === "email_limit" 
-        ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
-        : "Rate limit exceeded. Maximum 10 emails per hour.";
+      const errorMsg =
+        rateCheck.reason === "email_limit"
+          ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
+          : "Rate limit exceeded. Maximum 10 emails per hour.";
       console.warn(`Rate limit exceeded: ${rateCheck.reason} for IP: ${clientIP}, email: ${data.recipientEmail}`);
       return new Response(
         JSON.stringify({
@@ -1289,13 +1298,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     const attachments = data.csvData
       ? [
-        {
-          filename: csvFilenames[data.language] || "report.csv",
-          // Use UTF-8 BOM for Excel compatibility and robust base64 encoding
-          content: toBase64("\uFEFF" + data.csvData),
-          content_type: "text/csv; charset=utf-8",
-        },
-      ]
+          {
+            filename: csvFilenames[data.language] || "report.csv",
+            // Use UTF-8 BOM for Excel compatibility and robust base64 encoding
+            content: toBase64("\uFEFF" + data.csvData),
+            content_type: "text/csv; charset=utf-8",
+          },
+        ]
       : [];
 
     const primaryRes = await fetch("https://api.resend.com/emails", {
@@ -1369,12 +1378,12 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({
         error: "An error occurred while sending the report. Please try again later.",
-        errorId
+        errorId,
       }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      },
     );
   }
 };
