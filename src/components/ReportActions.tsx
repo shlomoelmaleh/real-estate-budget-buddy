@@ -179,7 +179,10 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
           recipientName: clientName || 'Client',
           recipientPhone: clientPhone,
           language,
-          inputs,
+          inputs: {
+            ...inputs,
+            advisorFee: inputs.advisorFee,
+          },
           results: {
             maxPropertyValue: results.maxPropertyValue,
             loanAmount: results.loanAmount,

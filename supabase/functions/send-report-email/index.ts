@@ -259,6 +259,10 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
   const monthlyPayment = results.monthlyPayment;
   const equityInitial = parseNumber(inputs.equity);
   const equityRemaining = results.equityRemaining;
+  const advisorFeeValue = parseNumber(inputs.advisorFee);
+  const otherFeeValue = parseNumber(inputs.otherFee);
+  const closingCostsTotal =
+    results.purchaseTax + results.lawyerFeeTTC + results.brokerFeeTTC + advisorFeeValue + otherFeeValue;
 
   // Normalize DTI max allowed (could be 33 or 0.33)
   let dtiMaxAllowedRaw = parseFloat(inputs.ratio) || 0;
@@ -300,7 +304,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       brokerLabel: 'תיווך (2% + מע"מ)',
       advisorFeeLabel: "שכר יועץ משכנתאות",
       advisorFeeDisclaimer:
-        "המחיר עשוי להשתנות בהתאם למורכבות התיק. הסכום המוצג הינו ממוצע לצורך החישוב בלבד.",
+        "????? ???? ??????? ????? ???????? ????. ????? ????? ???? ????? ????? ?????? ????.",
       other: "שונות",
       transactionTotal: "סך עלויות רכישה",
       taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
@@ -690,8 +694,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           padding-${alignStart}: 0;
         }
         .advisor-disclaimer {
-          font-size: 11px;
-          color: #94a3b8;
+          font-size: 10px;
+          color: #666;
+          font-style: italic;
           margin-top: 4px;
         }
         .total-row {
@@ -912,7 +917,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         </div>
         <div class="row total-row">
           <span class="label">${t.transactionTotal}</span>
-          <span class="value">₪ ${formatNumber(results.closingCosts)}</span>
+          <span class="value">₪ ${formatNumber(closingCostsTotal)}</span>
         </div>
       </div>
 
@@ -1214,6 +1219,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Parse and validate input
     const rawBody = await req.json();
+    const rawAdvisorFee = rawBody?.inputs?.advisorFee;
     const parseResult = EmailRequestSchema.safeParse(rawBody);
 
     if (!parseResult.success) {
@@ -1228,6 +1234,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const data = parseResult.data as ReportEmailRequest;
+    data.inputs.advisorFee = data.inputs.advisorFee || rawAdvisorFee || "0";
     const requestId = crypto.randomUUID().substring(0, 8);
     console.log(`[${requestId}] Email request received`);
     console.log(
