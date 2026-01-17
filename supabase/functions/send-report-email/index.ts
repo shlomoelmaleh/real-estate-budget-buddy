@@ -91,60 +91,69 @@ const EmailRequestSchema = z.object({
   csvData: z.string().optional(),
 });
 
-// Rate limiting helper
-async function checkRateLimit(
+// Atomic rate limiting helper using database function to prevent race conditions
+async function checkRateLimitAtomic(
   supabaseAdmin: any,
   identifier: string,
   endpoint: string,
   maxRequests: number,
   windowMinutes: number,
 ): Promise<{ allowed: boolean; remaining: number }> {
-  const { data, error } = await supabaseAdmin
-    .from("rate_limits")
-    .select("request_count, window_start")
-    .eq("identifier", identifier)
-    .eq("endpoint", endpoint)
-    .single();
+  const { data, error } = await supabaseAdmin.rpc("atomic_rate_limit", {
+    p_identifier: identifier,
+    p_endpoint: endpoint,
+    p_max_requests: maxRequests,
+    p_window_minutes: windowMinutes,
+  });
 
-  const now = new Date();
-
-  if (!data || error) {
-    // First request - create record
-    await supabaseAdmin.from("rate_limits").insert({
-      identifier,
-      endpoint,
-      request_count: 1,
-      window_start: now.toISOString(),
-    });
-    return { allowed: true, remaining: maxRequests - 1 };
+  if (error) {
+    console.error("Rate limit check error:", error);
+    // On error, allow but log for monitoring
+    return { allowed: true, remaining: 0 };
   }
 
-  const windowStart = new Date((data as any).window_start);
-  const minutesElapsed = (now.getTime() - windowStart.getTime()) / 60000;
+  // The function returns an array with one row
+  const result = Array.isArray(data) ? data[0] : data;
+  return {
+    allowed: result?.allowed ?? true,
+    remaining: result?.remaining ?? 0,
+  };
+}
 
-  if (minutesElapsed >= windowMinutes) {
-    // Reset window
-    await supabaseAdmin
-      .from("rate_limits")
-      .update({ request_count: 1, window_start: now.toISOString() })
-      .eq("identifier", identifier)
-      .eq("endpoint", endpoint);
-    return { allowed: true, remaining: maxRequests - 1 };
+// Multi-layer rate limiting: checks both IP and email limits
+async function checkMultiLayerRateLimit(
+  supabaseAdmin: any,
+  clientIP: string,
+  recipientEmail: string,
+): Promise<{ allowed: boolean; reason?: string }> {
+  // Layer 1: IP-based rate limit (10 emails per hour from same IP)
+  const ipCheck = await checkRateLimitAtomic(
+    supabaseAdmin,
+    `ip:${clientIP}`,
+    "send-report-email",
+    10,
+    60,
+  );
+
+  if (!ipCheck.allowed) {
+    return { allowed: false, reason: "ip_limit" };
   }
 
-  const currentCount = (data as any).request_count;
-  if (currentCount >= maxRequests) {
-    return { allowed: false, remaining: 0 };
+  // Layer 2: Email-based rate limit (5 emails per hour to same address)
+  // This prevents IP spoofing attacks since email address is harder to forge
+  const emailCheck = await checkRateLimitAtomic(
+    supabaseAdmin,
+    `email:${recipientEmail.toLowerCase()}`,
+    "send-report-email",
+    5,
+    60,
+  );
+
+  if (!emailCheck.allowed) {
+    return { allowed: false, reason: "email_limit" };
   }
 
-  // Increment counter
-  await supabaseAdmin
-    .from("rate_limits")
-    .update({ request_count: currentCount + 1 })
-    .eq("identifier", identifier)
-    .eq("endpoint", endpoint);
-
-  return { allowed: true, remaining: maxRequests - currentCount - 1 };
+  return { allowed: true };
 }
 
 interface ReportEmailRequest {
@@ -1197,27 +1206,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Initialize Supabase admin client for rate limiting
     const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    // Rate limit by IP address - 10 emails per hour
-    const clientIP =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-
-    const rateCheck = await checkRateLimit(supabaseAdmin, clientIP, "send-report-email", 10, 60);
-
-    if (!rateCheck.allowed) {
-      console.warn("Rate limit exceeded for IP:", clientIP);
-      return new Response(
-        JSON.stringify({
-          error: "Rate limit exceeded. Maximum 10 emails per hour.",
-          retryAfter: 3600,
-        }),
-        {
-          status: 429,
-          headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders },
-        },
-      );
-    }
-
-    // Parse and validate input
+    // Parse and validate input first (needed for email-based rate limiting)
     const rawBody = await req.json();
     const rawAdvisorFee = rawBody?.inputs?.advisorFee;
     const parseResult = EmailRequestSchema.safeParse(rawBody);
@@ -1235,6 +1224,31 @@ const handler = async (req: Request): Promise<Response> => {
 
     const data = parseResult.data as ReportEmailRequest;
     data.inputs.advisorFee = data.inputs.advisorFee || rawAdvisorFee || "0";
+
+    // Multi-layer rate limiting: IP + email-based (defense in depth)
+    const clientIP =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
+
+    const rateCheck = await checkMultiLayerRateLimit(supabaseAdmin, clientIP, data.recipientEmail);
+
+    if (!rateCheck.allowed) {
+      const errorMsg = rateCheck.reason === "email_limit" 
+        ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
+        : "Rate limit exceeded. Maximum 10 emails per hour.";
+      console.warn(`Rate limit exceeded: ${rateCheck.reason} for IP: ${clientIP}, email: ${data.recipientEmail}`);
+      return new Response(
+        JSON.stringify({
+          error: errorMsg,
+          retryAfter: 3600,
+        }),
+        {
+          status: 429,
+          headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders },
+        },
+      );
+    }
+
+    // Continue with validated data
     const requestId = crypto.randomUUID().substring(0, 8);
     console.log(`[${requestId}] Email request received`);
     console.log(

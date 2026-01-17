@@ -76,7 +76,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      atomic_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_identifier: string
+          p_max_requests: number
+          p_window_minutes: number
+        }
+        Returns: {
+          allowed: boolean
+          current_count: number
+          remaining: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
