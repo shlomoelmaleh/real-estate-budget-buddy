@@ -298,6 +298,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       purchaseTax: "מס רכישה",
       lawyerLabel: 'עו"ד (1% + מע"מ)',
       brokerLabel: 'תיווך (2% + מע"מ)',
+      advisorFeeLabel: "שכר יועץ משכנתאות",
+      advisorFeeDisclaimer:
+        "המחיר עשוי להשתנות בהתאם למורכבות התיק. הסכום המוצג הינו ממוצע לצורך החישוב בלבד.",
       other: "שונות",
       transactionTotal: "סך עלויות רכישה",
       taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
@@ -378,6 +381,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       purchaseTax: "Purchase Tax",
       lawyerLabel: "Lawyer (1% + VAT)",
       brokerLabel: "Agency (2% + VAT)",
+      advisorFeeLabel: "Mortgage Advisor Fee",
+      advisorFeeDisclaimer:
+        "Price may vary based on case complexity. The displayed amount is an estimated average.",
       other: "Other",
       transactionTotal: "Total Transaction Costs",
       taxDisclaimer:
@@ -455,6 +461,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       purchaseTax: "Taxe d'acquisition",
       lawyerLabel: "Avocat (1% H.T)",
       brokerLabel: "Frais d'agence (2% H.T)",
+      advisorFeeLabel: "Frais de conseiller hypothécaire",
+      advisorFeeDisclaimer:
+        "Le prix peut varier selon la complexit? du dossier. Le montant affich? est une moyenne estim?e.",
       other: "Divers",
       transactionTotal: "Total des frais de transaction",
       taxDisclaimer: "Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d'un avocat.",
@@ -680,6 +689,11 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           margin-top: 4px;
           padding-${alignStart}: 0;
         }
+        .advisor-disclaimer {
+          font-size: 11px;
+          color: #94a3b8;
+          margin-top: 4px;
+        }
         .total-row {
           background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
           border-radius: 8px;
@@ -887,6 +901,11 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="label">${t.brokerLabel}</span>
           <span class="value">₪ ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
         </div>
+        <div class="row">
+          <span class="label">${t.advisorFeeLabel}</span>
+          <span class="value">₪ ${inputs.advisorFee || "0"}</span>
+        </div>
+        <div class="advisor-disclaimer">${t.advisorFeeDisclaimer}</div>
         <div class="row">
           <span class="label">${t.other}</span>
           <span class="value">₪ ${inputs.otherFee || "0"}</span>

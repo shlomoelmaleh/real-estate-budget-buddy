@@ -55,7 +55,7 @@ export function BudgetCalculator() {
   const [lawyerPct, setLawyerPct] = useState('1.0');
   const [brokerPct, setBrokerPct] = useState('2.0');
   const [vatPct, setVatPct] = useState('18');
-  const [advisorFee, setAdvisorFee] = useState('15,000');
+  const [advisorFee, setAdvisorFee] = useState('9,000');
   const [otherFee, setOtherFee] = useState('3,000');
 
   // Results
