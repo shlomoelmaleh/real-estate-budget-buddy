@@ -546,7 +546,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
   const alignStart = isRTL ? "right" : "left";
   const alignEnd = isRTL ? "left" : "right";
 
-  // Compute limiting factor - analyze all potential constraints
+  // Compute limiting factors - analyze ALL potential constraints and list them all
   let limitingFactor: string;
   const hasCriticalData = equityInitial > 0 && incomeNet > 0 && monthlyPayment > 0;
 
@@ -574,18 +574,28 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
     const ageRestrictedTerm = maxAgeAtEnd - userAge;
     const isAgeLimited = ageRestrictedTerm < maxPossibleTerm && actualLoanTerm <= ageRestrictedTerm;
 
-    // Determine the primary limiting factor
-    // Priority: Cash > Payment Cap > DTI > Age > Comfortable
+    // Collect ALL active limiting factors
+    const limitingFactors: string[] = [];
+    
     if (isEquityLimited) {
-      limitingFactor = t.limitingCash;
-    } else if (isPaymentCapLimited) {
-      limitingFactor = t.limitingPaymentCap;
-    } else if (isDTILimited) {
-      limitingFactor = t.limitingIncome;
-    } else if (isAgeLimited) {
-      limitingFactor = t.limitingAge;
-    } else {
+      limitingFactors.push(t.limitingCash);
+    }
+    if (isPaymentCapLimited) {
+      limitingFactors.push(t.limitingPaymentCap);
+    }
+    if (isDTILimited) {
+      limitingFactors.push(t.limitingIncome);
+    }
+    if (isAgeLimited) {
+      limitingFactors.push(t.limitingAge);
+    }
+
+    // If no limiting factors detected, profile is comfortable
+    if (limitingFactors.length === 0) {
       limitingFactor = t.limitingComfortable;
+    } else {
+      // Join all limiting factors with " + "
+      limitingFactor = limitingFactors.join(" + ");
     }
   }
 
