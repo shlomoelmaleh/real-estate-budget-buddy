@@ -300,6 +300,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       limitingFactorLabel: "גורם מגביל לתקציב",
       limitingCash: "מוגבל לפי ההון העצמי (Cash)",
       limitingIncome: "מוגבל לפי הכנסה (יחס החזר)",
+      limitingPaymentCap: "מוגבל לפי תקרת משכנתא (יכולת תזרימית)",
+      limitingAge: "מוגבל לפי גיל (משך הלוואה מקוצר)",
       limitingComfortable: "פרופיל נוח (מרווח זמין)",
       limitingInsufficient: "נתונים חסרים (לאימות)",
       // Section 2 - Funding
@@ -385,6 +387,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       limitingFactorLabel: "Budget Limiting Factor",
       limitingCash: "Limited by Equity (Cash)",
       limitingIncome: "Limited by Income (DTI)",
+      limitingPaymentCap: "Limited by Payment Cap (Cash Flow)",
+      limitingAge: "Limited by Age (Shorter Loan Term)",
       limitingComfortable: "Comfortable Profile (Margin Available)",
       limitingInsufficient: "Insufficient Data (To Confirm)",
       fundingTitle: "Funding Breakdown",
@@ -464,7 +468,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       maxPropertyLabel: "Valeur Max du Bien",
       limitingFactorLabel: "Facteur déterminant du budget",
       limitingCash: "Limité par l'apport (Cash)",
-      limitingIncome: "Limité par la mensualité (Revenus)",
+      limitingIncome: "Limité par les revenus (DTI bancaire)",
+      limitingPaymentCap: "Limité par le plafond mensualité",
+      limitingAge: "Limité par l'âge (durée de prêt réduite)",
       limitingComfortable: "Profil confortable (marge disponible)",
       limitingInsufficient: "Données insuffisantes (à confirmer)",
       fundingTitle: "Le montage financier",
@@ -540,18 +546,47 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
   const alignStart = isRTL ? "right" : "left";
   const alignEnd = isRTL ? "left" : "right";
 
-  // Compute limiting factor
+  // Compute limiting factor - analyze all potential constraints
   let limitingFactor: string;
   const hasCriticalData = equityInitial > 0 && incomeNet > 0 && monthlyPayment > 0;
 
   if (!hasCriticalData) {
     limitingFactor = t.limitingInsufficient;
-  } else if (equityRemaining <= 0.01 * equityInitial) {
-    limitingFactor = t.limitingCash;
-  } else if (dtiMaxAllowed > 0 && dtiEstimated !== null && dtiEstimated >= dtiMaxAllowed - thresholdDelta) {
-    limitingFactor = t.limitingIncome;
   } else {
-    limitingFactor = t.limitingComfortable;
+    // Calculate all limiting factor metrics
+    const equityUsageRatio = equityRemaining / equityInitial; // Low = equity is the limit
+    const isEquityLimited = equityUsageRatio <= 0.02; // Less than 2% remaining
+
+    // DTI constraint check
+    const isDTILimited = dtiMaxAllowed > 0 && dtiEstimated !== null && dtiEstimated >= dtiMaxAllowed - thresholdDelta;
+
+    // Budget cap constraint check
+    const budgetCapValue = parseNumber(inputs.budgetCap);
+    const rentIncome = results.rentIncome || 0;
+    const effectiveBudgetCap = budgetCapValue > 0 ? budgetCapValue + rentIncome : 0;
+    const isPaymentCapLimited = budgetCapValue > 0 && monthlyPayment >= effectiveBudgetCap - 50; // Within 50 ILS
+
+    // Age constraint check - if loan term is shorter than max possible (30 years)
+    const userAge = parseInt(inputs.age) || 30;
+    const maxAgeAtEnd = parseInt(inputs.maxAge) || 75;
+    const maxPossibleTerm = 30; // Standard max in Israel
+    const actualLoanTerm = results.loanTermYears;
+    const ageRestrictedTerm = maxAgeAtEnd - userAge;
+    const isAgeLimited = ageRestrictedTerm < maxPossibleTerm && actualLoanTerm <= ageRestrictedTerm;
+
+    // Determine the primary limiting factor
+    // Priority: Cash > Payment Cap > DTI > Age > Comfortable
+    if (isEquityLimited) {
+      limitingFactor = t.limitingCash;
+    } else if (isPaymentCapLimited) {
+      limitingFactor = t.limitingPaymentCap;
+    } else if (isDTILimited) {
+      limitingFactor = t.limitingIncome;
+    } else if (isAgeLimited) {
+      limitingFactor = t.limitingAge;
+    } else {
+      limitingFactor = t.limitingComfortable;
+    }
   }
 
   // Computed values
