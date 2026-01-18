@@ -153,9 +153,9 @@ function solveMaximumBudget(
     netIncome,
     ratio,
     rentalYield,
-    rentRecognition,
     budgetCap,
     isRented,
+    isFirstProperty,
     lawyerPct,
     brokerPct,
     vatPct,
@@ -182,16 +182,25 @@ function solveMaximumBudget(
     );
 
     // 2. Calculate Max Loan Allowed
-    // a. Income Constraint (DTI)
-    // Rent calculation: price * yield * recognition
+    // a. Income Constraint (DTI) - Israeli Banking Regulations
+    // Estimated monthly rent from property
     const estimatedRent = isRented ? (price * (rentalYield / 100)) / 12 : 0;
-    const recognizedRent = estimatedRent * (rentRecognition / 100);
-    const maxMonthlyPaymentByIncome = (netIncome + recognizedRent) * (ratio / 100);
+    
+    // Bank Regulatory Limit:
+    // - First Property: Bank IGNORES rental income completely
+    // - Investment Property: Bank recognizes 80% of rental income
+    const bankRecognizedIncome = isFirstProperty 
+      ? netIncome 
+      : netIncome + (estimatedRent * 0.8);
+    const bankMaxPayment = bankRecognizedIncome * (ratio / 100);
 
-    // b. Budget Cap (User Defined Max Payment)
-    const maxPayment = (budgetCap && budgetCap > 0)
-      ? Math.min(maxMonthlyPaymentByIncome, budgetCap)
-      : maxMonthlyPaymentByIncome;
+    // b. User Cash Flow Limit: budgetCap (out-of-pocket limit) + full rent received
+    const userEffectiveLimit = (budgetCap && budgetCap > 0)
+      ? budgetCap + estimatedRent
+      : Infinity;
+
+    // c. Final allowed monthly payment is the minimum of both limits
+    const maxPayment = Math.min(bankMaxPayment, userEffectiveLimit);
 
     const maxLoanByPayment = maxPayment / amortizationFactor;
 
