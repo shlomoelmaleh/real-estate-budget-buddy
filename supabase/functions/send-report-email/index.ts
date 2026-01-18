@@ -344,6 +344,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       taxResident: "תושב מס",
       firstProperty: "נכס ראשון",
       netIncome: "הכנסה פנויה",
+      initialEquity: "הון עצמי ראשוני",
       interestRate: "ריבית שנתית",
       loanTerm: "משך ההלוואה",
       years: "שנים",
@@ -425,6 +426,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       taxResident: "Tax Resident",
       firstProperty: "First Property",
       netIncome: "Net Income",
+      initialEquity: "Initial Equity",
       interestRate: "Annual Interest",
       loanTerm: "Loan Term",
       years: "years",
@@ -504,6 +506,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       taxResident: "Résident fiscal",
       firstProperty: "Premier bien",
       netIncome: "Revenu Net",
+      initialEquity: "Apport initial",
       interestRate: "Taux d'intérêt annuel",
       loanTerm: "Durée du Prêt",
       years: "ans",
@@ -973,10 +976,16 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="label">${t.estimatedRentalIncome}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
           </div>
+          ${
+            !inputs.isFirstProperty
+              ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.rentalIncomeRetained}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
+          `
+              : ""
+          }
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.netMonthlyBalance}</span>
             <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome)}</span>
@@ -1147,6 +1156,10 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <div class="assumption-item">
             <div class="a-label">${t.netIncome}</div>
             <div class="a-value">₪ ${inputs.netIncome}</div>
+          </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.initialEquity}</div>
+            <div class="a-value">₪ ${inputs.equity}</div>
           </div>
           <div class="assumption-item">
             <div class="a-label">${t.interestRate}</div>
