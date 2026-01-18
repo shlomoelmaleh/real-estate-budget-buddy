@@ -979,7 +979,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.netMonthlyBalance}</span>
-            <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome)}</span>
           </div>
           `
               : ""
