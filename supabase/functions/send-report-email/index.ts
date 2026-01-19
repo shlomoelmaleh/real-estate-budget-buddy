@@ -965,7 +965,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="value">₪ ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
-          <span class="label">${t.advisorFeeLabel}</span>
+          <span class="label">${t.advisorFeeLabel} (${t.ttc})</span>
           <span class="value">₪ ${inputs.advisorFee || "0"}</span>
         </div>
         <div class="advisor-disclaimer">${t.advisorFeeDisclaimer}</div>
