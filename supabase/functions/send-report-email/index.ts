@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
@@ -284,95 +284,94 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
   const texts = {
     he: {
-      subject: "׳“׳•׳— ׳׳—׳©׳‘׳•׳ ׳×׳§׳¦׳™׳‘ ׳¨׳›׳™׳©׳× ׳ ׳›׳¡",
-      subjectWithName: "׳“׳•׳— ׳×׳™׳§ ׳©׳",
+      subject: "דוח מחשבון תקציב רכישת נכס",
+      subjectWithName: "דוח תיק של",
       // Greeting
-      greeting: "׳©׳׳•׳",
+      greeting: "שלום",
       // Section 1 - Hero
-      heroTitle: '׳¡׳™׳›׳•׳ ׳₪׳¨׳•׳™׳§׳˜ ׳”׳ ׳“׳"׳ ׳©׳׳',
-      heroTitleWithName: "׳“׳•׳— ׳×׳™׳§ ׳©׳",
+      heroTitle: 'סיכום פרויקט הנדל"ן שלך',
+      heroTitleWithName: "דוח תיק של",
       // Client info for advisor copy
-      clientInfoTitle: "׳₪׳¨׳˜׳™ ׳”׳׳§׳•׳—",
-      clientName: "׳©׳",
-      clientPhone: "׳˜׳׳₪׳•׳",
-      clientEmail: "׳׳™׳׳™׳™׳",
-      maxPropertyLabel: "׳©׳•׳•׳™ ׳ ׳›׳¡ ׳׳§׳¡׳™׳׳׳™",
-      limitingFactorLabel: "׳’׳•׳¨׳ ׳׳’׳‘׳™׳ ׳׳×׳§׳¦׳™׳‘",
-      limitingCash: "׳׳•׳’׳‘׳ ׳׳₪׳™ ׳”׳”׳•׳ ׳”׳¢׳¦׳׳™ (Cash)",
-      limitingIncome: "׳׳•׳’׳‘׳ ׳׳₪׳™ ׳”׳›׳ ׳¡׳” (׳™׳—׳¡ ׳”׳—׳–׳¨)",
-      limitingPaymentCap: "׳׳•׳’׳‘׳ ׳׳₪׳™ ׳×׳§׳¨׳× ׳׳©׳›׳ ׳×׳ (׳™׳›׳•׳׳× ׳×׳–׳¨׳™׳׳™׳×)",
-      limitingAge: "׳׳•׳’׳‘׳ ׳׳₪׳™ ׳’׳™׳ (׳׳©׳ ׳”׳׳•׳•׳׳” ׳׳§׳•׳¦׳¨)",
-      limitingComfortable: "׳₪׳¨׳•׳₪׳™׳ ׳ ׳•׳— (׳׳¨׳•׳•׳— ׳–׳׳™׳)",
-      limitingInsufficient: "׳ ׳×׳•׳ ׳™׳ ׳—׳¡׳¨׳™׳ (׳׳׳™׳׳•׳×)",
+      clientInfoTitle: "פרטי הלקוח",
+      clientName: "שם",
+      clientPhone: "טלפון",
+      clientEmail: "אימייל",
+      maxPropertyLabel: "שווי נכס מקסימלי",
+      limitingFactorLabel: "גורם מגביל לתקציב",
+      limitingCash: "מוגבל לפי ההון העצמי (Cash)",
+      limitingIncome: "מוגבל לפי הכנסה (יחס החזר)",
+      limitingPaymentCap: "מוגבל לפי תקרת משכנתא (יכולת תזרימית)",
+      limitingAge: "מוגבל לפי גיל (משך הלוואה מקוצר)",
+      limitingComfortable: "פרופיל נוח (מרווח זמין)",
+      limitingInsufficient: "נתונים חסרים (לאימות)",
       // Section 2 - Funding
-      fundingTitle: "׳₪׳™׳¨׳•׳˜ ׳׳™׳׳•׳",
-      loanAmount: "׳¡׳›׳•׳ ׳׳©׳›׳ ׳×׳",
-      equityOnProperty: "׳”׳•׳ ׳¢׳¦׳׳™ ׳¢׳ ׳”׳ ׳›׳¡",
-      fundingNote: "׳”׳׳•׳•׳׳” + ׳”׳•׳ ׳¢׳¦׳׳™ = ׳׳—׳™׳¨ ׳”׳ ׳›׳¡",
+      fundingTitle: "פירוט מימון",
+      loanAmount: "סכום משכנתא",
+      equityOnProperty: "הון עצמי על הנכס",
+      fundingNote: "הלוואה + הון עצמי = מחיר הנכס",
       // Section 3 - Transaction
-      transactionTitle: "׳₪׳™׳¨׳•׳˜ ׳¢׳׳•׳™׳•׳× ׳¨׳›׳™׳©׳”",
-      purchaseTax: "׳׳¡ ׳¨׳›׳™׳©׳”",
-      lawyerLabel: '׳¢׳•"׳“ (1% + ׳׳¢"׳)',
-      brokerLabel: '׳×׳™׳•׳•׳ (2% + ׳׳¢"׳)',
-      advisorFeeLabel: "׳©׳›׳¨ ׳™׳•׳¢׳¥ ׳׳©׳›׳ ׳×׳׳•׳×",
-      advisorFeeDisclaimer: "׳”׳׳—׳™׳¨ ׳¢׳©׳•׳™ ׳׳”׳©׳×׳ ׳•׳× ׳‘׳”׳×׳׳ ׳׳׳•׳¨׳›׳‘׳•׳× ׳”׳×׳™׳§. ׳”׳¡׳›׳•׳ ׳”׳׳•׳¦׳’ ׳”׳•׳ ׳׳׳•׳¦׳¢ ׳׳©׳•׳¢׳¨.",
-      other: "׳©׳•׳ ׳•׳×",
-      transactionTotal: "׳¡׳ ׳¢׳׳•׳™׳•׳× ׳¨׳›׳™׳©׳”",
-      taxDisclaimer: '׳׳¡ ׳¨׳›׳™׳©׳” ׳׳—׳•׳©׳‘ ׳׳₪׳™ ׳׳“׳¨׳’׳•׳× ׳¡׳˜׳ ׳“׳¨׳˜׳™׳•׳× ׳‘׳׳‘׳“; ׳”׳˜׳‘׳•׳× ׳׳™׳•׳—׳“׳•׳× ׳׳ ׳ ׳›׳׳׳•׳×. ׳™׳© ׳׳׳׳× ׳¢׳ ׳¢׳•"׳“.',
-      ttc: '׳›׳•׳׳ ׳׳¢"׳',
-      incVat: '(כולל מע״מ)',
+      transactionTitle: "פירוט עלויות רכישה",
+      purchaseTax: "מס רכישה",
+      lawyerLabel: 'עו"ד (1% + מע"מ)',
+      brokerLabel: 'תיווך (2% + מע"מ)',
+      advisorFeeLabel: "שכר יועץ משכנתאות",
+      advisorFeeDisclaimer: "המחיר עשוי להשתנות בהתאם למורכבות התיק. הסכום המוצג הוא ממוצע משוער.",
+      other: "שונות",
+      transactionTotal: "סך עלויות רכישה",
+      taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
+      ttc: 'כולל מע"מ',
       // Section 5 - Feasibility
-      feasibilityTitle: "׳ ׳™׳×׳•׳— ׳”׳™׳×׳›׳ ׳•׳×",
-      ltvRatio: "׳™׳—׳¡ ׳׳™׳׳•׳ (LTV)",
-      dtiMaxLabel: "׳™׳—׳¡ ׳”׳—׳–׳¨ ׳׳§׳¡׳™׳׳׳™",
-      dtiEstimatedLabel: "׳™׳—׳¡ ׳”׳—׳–׳¨ ׳׳©׳•׳¢׳¨",
-      notAvailable: "׳׳ ׳–׳׳™׳",
-      chartBalanceTitle: "׳™׳×׳¨׳× ׳”׳׳•׳•׳׳” ׳׳׳•׳¨׳ ׳–׳׳",
-      chartPaymentTitle: "׳₪׳™׳¨׳•׳˜ ׳×׳©׳׳•׳׳™׳ ׳©׳ ׳×׳™",
-      principal: "׳§׳¨׳",
-      interestLabel: "׳¨׳™׳‘׳™׳×",
+      feasibilityTitle: "ניתוח היתכנות",
+      ltvRatio: "יחס מימון (LTV)",
+      dtiMaxLabel: "יחס החזר מקסימלי",
+      dtiEstimatedLabel: "יחס החזר משוער",
+      notAvailable: "לא זמין",
+      chartBalanceTitle: "יתרת הלוואה לאורך זמן",
+      chartPaymentTitle: "פירוט תשלומים שנתי",
+      principal: "קרן",
+      interestLabel: "ריבית",
       // Amortization Summary
-      amortizationSummaryTitle: "׳¡׳™׳›׳•׳ ׳׳•׳— ׳¡׳™׳׳•׳§׳™׳",
-      loanTermLabel: "׳׳©׳ ׳”׳”׳׳•׳•׳׳”",
-      monthlyPaymentLabel: "׳×׳©׳׳•׳ ׳—׳•׳“׳©׳™ ׳׳©׳•׳¢׳¨",
-      totalInterestLabel: '׳¡׳”"׳› ׳¨׳™׳‘׳™׳×',
-      totalRepaidLabel: '׳¡׳”"׳› ׳׳”׳—׳–׳¨',
-      firstPaymentLabel: "׳×׳©׳׳•׳ ׳¨׳׳©׳•׳",
-      lastPaymentLabel: "׳×׳©׳׳•׳ ׳׳—׳¨׳•׳",
-      amortizationNote: "׳˜׳™׳₪: ׳”׳¡׳›׳•׳ ׳”׳¡׳•׳₪׳™ ׳×׳׳•׳™ ׳‘׳׳™׳“׳” ׳¨׳‘׳” ׳‘׳¨׳™׳‘׳™׳× ׳•׳‘׳׳©׳ ׳”׳”׳׳•׳•׳׳” ג€“ ׳™׳™׳¢׳•׳ ׳”׳׳™׳׳•׳ ׳™׳›׳•׳ ׳׳”׳₪׳—׳™׳× ׳׳•׳×׳•.",
+      amortizationSummaryTitle: "סיכום לוח סילוקין",
+      loanTermLabel: "משך ההלוואה",
+      monthlyPaymentLabel: "תשלום חודשי משוער",
+      totalInterestLabel: 'סה"כ ריבית',
+      totalRepaidLabel: 'סה"כ להחזר',
+      firstPaymentLabel: "תשלום ראשון",
+      lastPaymentLabel: "תשלום אחרון",
+      amortizationNote: "טיפ: הסכום הסופי תלוי במידה רבה בריבית ובמשך ההלוואה – ייעול המימון יכול להפחית אותו.",
       // Section 6 - Assumptions
-      assumptionsTitle: "׳₪׳¨׳׳˜׳¨׳™׳ ׳׳¡׳™׳׳•׳׳¦׳™׳”",
-      age: "׳’׳™׳ ׳׳•׳•׳”",
-      citizenship: "׳׳–׳¨׳—׳•׳× ׳™׳©׳¨׳׳׳™׳×",
-      taxResident: "׳×׳•׳©׳‘ ׳׳¡",
-      firstProperty: "׳ ׳›׳¡ ׳¨׳׳©׳•׳",
-      netIncome: "׳”׳›׳ ׳¡׳” ׳₪׳ ׳•׳™׳”",
-      initialEquity: "׳”׳•׳ ׳¢׳¦׳׳™ ׳¨׳׳©׳•׳ ׳™",
-      interestRate: "׳¨׳™׳‘׳™׳× ׳©׳ ׳×׳™׳×",
-      loanTerm: "׳׳©׳ ׳”׳”׳׳•׳•׳׳”",
-      years: "׳©׳ ׳™׳",
-      yes: "׳›׳",
-      no: "׳׳",
+      assumptionsTitle: "פרמטרים לסימולציה",
+      age: "גיל לווה",
+      citizenship: "אזרחות ישראלית",
+      taxResident: "תושב מס",
+      firstProperty: "נכס ראשון",
+      netIncome: "הכנסה פנויה",
+      initialEquity: "הון עצמי ראשוני",
+      interestRate: "ריבית שנתית",
+      loanTerm: "משך ההלוואה",
+      years: "שנים",
+      yes: "כן",
+      no: "לא",
       // CTA
-      ctaTitle: "׳™׳© ׳׳ ׳©׳׳׳•׳×? ׳׳ ׳™ ׳›׳׳ ׳׳¢׳–׳•׳¨!",
-      ctaWhatsApp: "נ“ ׳׳§׳‘׳™׳¢׳× ׳₪׳’׳™׳©׳”",
-      ctaEmail: "ג‰ן¸ ׳׳©׳׳׳•׳× ׳ ׳•׳¡׳₪׳•׳×",
+      ctaTitle: "יש לך שאלות? אני כאן לעזור!",
+      ctaWhatsApp: "📞 לקביעת פגישה",
+      ctaEmail: "✉️ לשאלות נוספות",
       // Footer
-      footer: "Property Budget Pro - ׳›׳׳™ ׳׳§׳¦׳•׳¢׳™ ׳׳×׳›׳ ׳•׳ ׳¨׳›׳™׳©׳× ׳ ׳“׳׳´׳",
-      note: "׳”׳ ׳×׳•׳ ׳™׳ ׳”׳׳•׳¦׳’׳™׳ ׳׳”׳•׳•׳™׳ ׳¡׳™׳׳•׳׳¦׳™׳” ׳‘׳׳‘׳“ ׳•׳׳™׳ ׳ ׳׳”׳•׳•׳™׳ ׳”׳¦׳¢׳” ׳׳—׳™׳™׳‘׳× ׳׳• ׳™׳™׳¢׳•׳¥. ׳”׳¨׳™׳‘׳™׳× ׳•׳”׳ ׳×׳•׳ ׳™׳ ׳”׳¡׳•׳₪׳™׳™׳ ׳™׳™׳§׳‘׳¢׳• ׳¢׳ ׳™׳“׳™ ׳”׳’׳•׳£ ׳”׳׳׳•׳•׳” ׳‘׳׳‘׳“.",
-      simulationDisclaimer: "׳”׳¡׳™׳׳•׳׳¦׳™׳” ׳”׳™׳ ׳”׳¢׳¨׳›׳” ׳׳¦׳•׳¨׳ ׳§׳‘׳׳× ׳¡׳“׳¨ ׳’׳•׳“׳ ׳¨׳׳©׳•׳ ׳™ ׳•׳×׳—׳™׳׳× ׳”׳×׳”׳׳™׳.",
-      advisorName: "׳©׳׳׳” ׳׳׳׳׳™׳—",
+      footer: "Property Budget Pro - כלי מקצועי לתכנון רכישת נדל״ן",
+      note: "הנתונים המוצגים מהווים סימולציה בלבד ואינם מהווים הצעה מחייבת או ייעוץ. הריבית והנתונים הסופיים ייקבעו על ידי הגוף המלווה בלבד.",
+      simulationDisclaimer: "הסימולציה היא הערכה לצורך קבלת סדר גודל ראשוני ותחילת התהליך.",
+      advisorName: "שלמה אלמליח",
       advisorPhone: "054-9997711",
       advisorEmail: "shlomo.elmaleh@gmail.com",
       // Monthly Summary
-      monthlySummary: "׳¡׳™׳›׳•׳ ׳—׳•׳“׳©׳™",
-      monthlyPaymentUsed: "׳”׳—׳–׳¨ ׳—׳•׳“׳©׳™ ׳‘׳¡׳™׳׳•׳׳¦׳™׳”",
-      monthlyPaymentCap: "׳×׳§׳¨׳× ׳”׳—׳–׳¨ ׳—׳•׳“׳©׳™ (׳׳•׳₪׳¦׳™׳•׳ ׳׳™)",
-      estimatedRentalIncome: "׳”׳›׳ ׳¡׳” ׳׳©׳›׳™׳¨׳•׳× ׳׳©׳•׳¢׳¨׳× (3% ׳©׳ ׳×׳™)",
-      rentalIncomeRetained: "׳”׳›׳ ׳¡׳” ׳׳©׳›׳™׳¨׳•׳× ׳׳•׳›׳¨׳× (80%)",
-      netMonthlyBalance: "׳™׳×׳¨׳” ׳—׳•׳“׳©׳™׳× ׳ ׳˜׳•",
-      monthlySummaryNote: "׳׳™׳ ׳“׳™׳§׳˜׳™׳‘׳™: ׳׳׳™׳׳•׳× ׳‘׳”׳×׳׳ ׳׳—׳•׳–׳” ׳”׳©׳›׳™׳¨׳•׳× ׳•׳”׳•׳¦׳׳•׳×.",
-      csvNotice: "׳׳¦׳•׳¨׳£ ׳׳“׳•׳— ׳–׳” ׳§׳•׳‘׳¥ CSV ׳”׳׳›׳™׳ ׳׳× ׳׳•׳— ׳”׳¡׳™׳׳•׳§׳™׳ ׳”׳׳׳ (׳—׳•׳“׳© ׳׳—׳¨ ׳—׳•׳“׳©).",
+      monthlySummary: "סיכום חודשי",
+      monthlyPaymentUsed: "החזר חודשי בסימולציה",
+      monthlyPaymentCap: "תקרת החזר חודשי (אופציונלי)",
+      estimatedRentalIncome: "הכנסה משכירות משוערת (3% שנתי)",
+      rentalIncomeRetained: "הכנסה משכירות מוכרת (80%)",
+      netMonthlyBalance: "יתרה חודשית נטו",
+      monthlySummaryNote: "אינדיקטיבי: לאימות בהתאם לחוזה השכירות והוצאות.",
+      csvNotice: "מצורף לדוח זה קובץ CSV המכיל את לוח הסילוקין המלא (חודש אחר חודש).",
     },
     en: {
       subject: "Property Budget Calculator - Complete Report",
@@ -407,7 +406,6 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       taxDisclaimer:
         "Tax calculated using standard brackets only; special exemptions not included. Verify with attorney.",
       ttc: "incl. VAT",
-      incVat: "(Inc. VAT)",
       feasibilityTitle: "Feasibility Analysis",
       ltvRatio: "LTV Ratio",
       dtiMaxLabel: "Max DTI Allowed",
@@ -425,7 +423,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       firstPaymentLabel: "First Payment",
       lastPaymentLabel: "Last Payment",
       amortizationNote:
-        "Quick read: this total depends heavily on the rate and term ג€” optimizing the structure can reduce it.",
+        "Quick read: this total depends heavily on the rate and term — optimizing the structure can reduce it.",
       assumptionsTitle: "Simulation Assumptions",
       age: "Borrower Age",
       citizenship: "Israeli Citizenship",
@@ -439,8 +437,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       yes: "Yes",
       no: "No",
       ctaTitle: "Have questions? I am here to help!",
-      ctaWhatsApp: "נ“ Book an Appointment",
-      ctaEmail: "ג‰ן¸ Ask a Question",
+      ctaWhatsApp: "📞 Book an Appointment",
+      ctaEmail: "✉️ Ask a Question",
       footer: "Property Budget Pro - Professional Real Estate Planning Tool",
       note: "This simulation is for illustrative purposes only and does not constitute a binding offer. Final rates and terms are subject to lender approval.",
       simulationDisclaimer: "This simulation is an estimate to give an initial ballpark and start the process.",
@@ -461,85 +459,84 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       subject: "Simulateur Budget Immobilier - Rapport Complet",
       subjectWithName: "Rapport du dossier de",
       greeting: "Bonjour",
-      heroTitle: "Synthֳ¨se de votre projet immobilier",
+      heroTitle: "Synthèse de votre projet immobilier",
       heroTitleWithName: "Rapport du dossier de",
-      clientInfoTitle: "Coordonnֳ©es du client",
+      clientInfoTitle: "Coordonnées du client",
       clientName: "Nom",
-      clientPhone: "Tֳ©lֳ©phone",
+      clientPhone: "Téléphone",
       clientEmail: "Email",
       maxPropertyLabel: "Valeur Max du Bien",
-      limitingFactorLabel: "Facteur dֳ©terminant du budget",
-      limitingCash: "Limitֳ© par l'apport (Cash)",
-      limitingIncome: "Limitֳ© par les revenus (DTI bancaire)",
-      limitingPaymentCap: "Limitֳ© par le plafond mensualitֳ©",
-      limitingAge: "Limitֳ© par l'ֳ¢ge (durֳ©e de prֳ×t rֳ©duite)",
+      limitingFactorLabel: "Facteur déterminant du budget",
+      limitingCash: "Limité par l'apport (Cash)",
+      limitingIncome: "Limité par les revenus (DTI bancaire)",
+      limitingPaymentCap: "Limité par le plafond mensualité",
+      limitingAge: "Limité par l'âge (durée de prêt réduite)",
       limitingComfortable: "Profil confortable (marge disponible)",
-      limitingInsufficient: "Donnֳ©es insuffisantes (ֳ  confirmer)",
+      limitingInsufficient: "Données insuffisantes (à confirmer)",
       fundingTitle: "Le montage financier",
-      loanAmount: "Montant du Prֳ×t",
+      loanAmount: "Montant du Prêt",
       equityOnProperty: "Apport net sur le prix du bien",
-      fundingNote: "Prֳ×t + Apport = Prix du bien",
-      transactionTitle: "Dֳ©tail des frais de transaction",
+      fundingNote: "Prêt + Apport = Prix du bien",
+      transactionTitle: "Détail des frais de transaction",
       purchaseTax: "Taxe d'acquisition",
       lawyerLabel: "Avocat (1% H.T)",
       brokerLabel: "Frais d'agence (2% H.T)",
-      advisorFeeLabel: "Frais de conseiller hypothֳ©caire",
+      advisorFeeLabel: "Frais de conseiller hypothécaire",
       advisorFeeDisclaimer:
-        "Le prix peut varier selon la complexitֳ© du dossier. Le montant affichֳ© est une moyenne estimֳ©e.",
+        "Le prix peut varier selon la complexité du dossier. Le montant affiché est une moyenne estimée.",
       other: "Divers",
       transactionTotal: "Total des frais de transaction",
-      taxDisclaimer: "Barֳ¨mes standards uniquement ; exonֳ©rations non incluses. Vֳ©rifiez auprֳ¨s d'un avocat.",
+      taxDisclaimer: "Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d'un avocat.",
       ttc: "T.T.C",
-      incVat: "(TTC)",
-      feasibilityTitle: "Analyse de faisabilitֳ©",
+      feasibilityTitle: "Analyse de faisabilité",
       ltvRatio: "Ratio LTV",
-      dtiMaxLabel: "DTI Max autorisֳ©",
-      dtiEstimatedLabel: "DTI Estimֳ©",
+      dtiMaxLabel: "DTI Max autorisé",
+      dtiEstimatedLabel: "DTI Estimé",
       notAvailable: "N/A",
-      chartBalanceTitle: "Solde du Prֳ×t dans le Temps",
-      chartPaymentTitle: "Rֳ©partition Annuelle des Paiements",
+      chartBalanceTitle: "Solde du Prêt dans le Temps",
+      chartPaymentTitle: "Répartition Annuelle des Paiements",
       principal: "Capital",
-      interestLabel: "Intֳ©rֳ×ts",
-      amortizationSummaryTitle: "Rֳ©sumֳ© du tableau d'amortissement",
-      loanTermLabel: "Durֳ©e du prֳ×t",
-      monthlyPaymentLabel: "Mensualitֳ© estimֳ©e",
-      totalInterestLabel: "Total des intֳ©rֳ×ts",
-      totalRepaidLabel: "Montant total remboursֳ©",
-      firstPaymentLabel: "Premiֳ¨re mensualitֳ©",
-      lastPaymentLabel: "Derniֳ¨re mensualitֳ©",
+      interestLabel: "Intérêts",
+      amortizationSummaryTitle: "Résumé du tableau d'amortissement",
+      loanTermLabel: "Durée du prêt",
+      monthlyPaymentLabel: "Mensualité estimée",
+      totalInterestLabel: "Total des intérêts",
+      totalRepaidLabel: "Montant total remboursé",
+      firstPaymentLabel: "Première mensualité",
+      lastPaymentLabel: "Dernière mensualité",
       amortizationNote:
-        "Lecture rapide : ce total dֳ©pend fortement du taux et de la durֳ©e ג€” l'optimisation du montage peut le rֳ©duire.",
-      assumptionsTitle: "Hypothֳ¨ses de la simulation",
-      age: "ֳ‚ge de l'emprunteur",
-      citizenship: "Nationalitֳ© israֳ©lienne",
-      taxResident: "Rֳ©sident fiscal",
+        "Lecture rapide : ce total dépend fortement du taux et de la durée — l'optimisation du montage peut le réduire.",
+      assumptionsTitle: "Hypothèses de la simulation",
+      age: "Âge de l'emprunteur",
+      citizenship: "Nationalité israélienne",
+      taxResident: "Résident fiscal",
       firstProperty: "Premier bien",
       netIncome: "Revenu Net",
       initialEquity: "Apport initial",
-      interestRate: "Taux d'intֳ©rֳ×t annuel",
-      loanTerm: "Durֳ©e du Prֳ×t",
+      interestRate: "Taux d'intérêt annuel",
+      loanTerm: "Durée du Prêt",
       years: "ans",
       yes: "Oui",
       no: "Non",
-      ctaTitle: "Vous avez des questions ? Je suis lֳ  pour vous aider !",
-      ctaWhatsApp: "נ“ Prendre RDV",
-      ctaEmail: "ג‰ן¸ Poser une question",
-      footer: "Property Budget Pro - Outil Professionnel de Planification Immobiliֳ¨re",
-      note: "Cette simulation est fournie ֳ  titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions dֳ©finitifs dֳ©pendent de l'organisme prֳ×teur.",
-      simulationDisclaimer: "Cette simulation est une estimation pour donner un ordre d'idֳ©e et dֳ©marrer le projet.",
+      ctaTitle: "Vous avez des questions ? Je suis là pour vous aider !",
+      ctaWhatsApp: "📞 Prendre RDV",
+      ctaEmail: "✉️ Poser une question",
+      footer: "Property Budget Pro - Outil Professionnel de Planification Immobilière",
+      note: "Cette simulation est fournie à titre indicatif uniquement et ne constitue pas une offre contractuelle. Les taux et conditions définitifs dépendent de l'organisme prêteur.",
+      simulationDisclaimer: "Cette simulation est une estimation pour donner un ordre d'idée et démarrer le projet.",
       advisorName: "Shlomo Elmaleh",
       advisorPhone: "+972-054-9997711",
       advisorEmail: "shlomo.elmaleh@gmail.com",
       // Monthly Summary
-      monthlySummary: "Rֳ©capitulatif mensuel",
-      monthlyPaymentUsed: "Mensualitֳ© utilisֳ©e dans la simulation",
-      monthlyPaymentCap: "Plafond de mensualitֳ© (optionnel)",
-      estimatedRentalIncome: "Revenu locatif estimֳ© (3% annuel)",
+      monthlySummary: "Récapitulatif mensuel",
+      monthlyPaymentUsed: "Mensualité utilisée dans la simulation",
+      monthlyPaymentCap: "Plafond de mensualité (optionnel)",
+      estimatedRentalIncome: "Revenu locatif estimé (3% annuel)",
       rentalIncomeRetained: "Revenu locatif retenu (80%)",
       netMonthlyBalance: "Solde mensuel net",
-      monthlySummaryNote: "Indicatif : ֳ  confirmer selon le bail et les charges.",
+      monthlySummaryNote: "Indicatif : à confirmer selon le bail et les charges.",
       csvNotice:
-        "Vous trouverez en piֳ¨ce jointe de ce rapport un fichier CSV contenant le tableau d'amortissement complet mois par mois.",
+        "Vous trouverez en pièce jointe de ce rapport un fichier CSV contenant le tableau d'amortissement complet mois par mois.",
     },
   };
 
@@ -891,12 +888,12 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         <div class="header-info">
           <div style="text-align: ${alignStart}; ${isRTL ? "direction: rtl;" : ""}">
             <p style="font-weight: 700; font-size: 16px; margin: 0 0 4px 0;">${t.advisorName}</p>
-            <p>נ“ <a href="https://wa.me/972549997711" target="_blank">${t.advisorPhone}</a></p>
-            <p>ג‰ן¸ <a href="mailto:${t.advisorEmail}">${t.advisorEmail}</a></p>
+            <p>📞 <a href="https://wa.me/972549997711" target="_blank">${t.advisorPhone}</a></p>
+            <p>✉️ <a href="mailto:${t.advisorEmail}">${t.advisorEmail}</a></p>
           </div>
-          <p style="font-size: 12px; margin: 0;">נ“… ${new Date().toLocaleDateString()}</p>
+          <p style="font-size: 12px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
         </div>
-        <h1>נ  ${t.heroTitleWithName} ${recipientName}</h1>
+        <h1>🏠 ${t.heroTitleWithName} ${recipientName}</h1>
       </div>
 
       <!-- Personalized Greeting -->
@@ -909,7 +906,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           ? `
       <!-- CLIENT INFO SECTION (Advisor Only) -->
       <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? "5px solid #3b82f6" : "none"}; border-left: ${isRTL ? "none" : "5px solid #3b82f6"};">
-        <div class="section-title" style="color: #1d4ed8;">נ‘₪ ${t.clientInfoTitle}</div>
+        <div class="section-title" style="color: #1d4ed8;">👤 ${t.clientInfoTitle}</div>
         <div class="row">
           <span class="label">${t.clientName}</span>
           <span class="value" style="font-weight: 700;">${recipientName}</span>
@@ -929,9 +926,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
       <!-- SECTION 1: Hero - Maximum Purchasing Power -->
       <div class="section hero-section">
-        <div class="section-title">נ’ ${t.heroTitle}</div>
+        <div class="section-title">💎 ${t.heroTitle}</div>
         <div style="font-size: 13px; color: #047857; margin-bottom: 4px;">${t.maxPropertyLabel}</div>
-        <div class="hero-value">ג‚× ${formatNumber(results.maxPropertyValue)}</div>
+        <div class="hero-value">₪ ${formatNumber(results.maxPropertyValue)}</div>
         <div class="hero-factor">
           <span class="hero-factor-label">${t.limitingFactorLabel}:</span> ${limitingFactor}
         </div>
@@ -939,46 +936,46 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
       <!-- SECTION 2: Funding Breakdown -->
       <div class="section funding-section">
-        <div class="section-title">נ¦ ${t.fundingTitle}</div>
+        <div class="section-title">🏦 ${t.fundingTitle}</div>
         <div class="row">
           <span class="label">${t.loanAmount}</span>
-          <span class="value">ג‚× ${formatNumber(results.loanAmount)}</span>
+          <span class="value">₪ ${formatNumber(results.loanAmount)}</span>
         </div>
         <div class="row">
           <span class="label">${t.equityOnProperty}</span>
-          <span class="value">ג‚× ${formatNumber(equityOnProperty)}</span>
+          <span class="value">₪ ${formatNumber(equityOnProperty)}</span>
         </div>
-        <div class="funding-note">נ’¡ ${t.fundingNote}</div>
+        <div class="funding-note">💡 ${t.fundingNote}</div>
       </div>
 
       <!-- SECTION 3: Transaction Envelope -->
       <div class="section transaction-section">
-        <div class="section-title">נ“‘ ${t.transactionTitle}</div>
+        <div class="section-title">📑 ${t.transactionTitle}</div>
         <div class="row">
           <span class="label">${t.purchaseTax}</span>
-          <span class="value">ג‚× ${formatNumber(results.purchaseTax)}</span>
+          <span class="value">₪ ${formatNumber(results.purchaseTax)}</span>
         </div>
         <div class="tax-disclaimer">${t.taxDisclaimer}</div>
         <div class="row">
           <span class="label">${t.lawyerLabel}</span>
-          <span class="value">ג‚× ${formatNumber(results.lawyerFeeTTC)} ${t.ttc}</span>
+          <span class="value">₪ ${formatNumber(results.lawyerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
           <span class="label">${t.brokerLabel}</span>
-          <span class="value">ג‚× ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
+          <span class="value">₪ ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
-          <span class="label">${t.advisorFeeLabel}<span style="font-size: 12px; color: #666; font-weight: normal;"> ${t.incVat}</span></span>
-          <span class="value">ג‚× ${inputs.advisorFee || "0"}</span>
+          <span class="label">${t.advisorFeeLabel}</span>
+          <span class="value">₪ ${inputs.advisorFee || "0"}</span>
         </div>
         <div class="advisor-disclaimer">${t.advisorFeeDisclaimer}</div>
         <div class="row">
           <span class="label">${t.other}</span>
-          <span class="value">ג‚× ${inputs.otherFee || "0"}</span>
+          <span class="value">₪ ${inputs.otherFee || "0"}</span>
         </div>
         <div class="row total-row">
           <span class="label">${t.transactionTotal}</span>
-          <span class="value">ג‚× ${formatNumber(closingCostsTotal)}</span>
+          <span class="value">₪ ${formatNumber(closingCostsTotal)}</span>
         </div>
       </div>
 
@@ -986,7 +983,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
       <!-- SECTION 5: Feasibility & Analysis -->
       <div class="section feasibility-section">
-        <div class="section-title">נ“ ${t.feasibilityTitle}</div>
+        <div class="section-title">📊 ${t.feasibilityTitle}</div>
         <div class="row">
           <span class="label">${t.ltvRatio}</span>
           <span class="value">${results.actualLTV.toFixed(1)}%</span>
@@ -1002,17 +999,17 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
         <!-- Monthly Summary Block -->
         <div style="margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 8px; border: 1px solid #86efac;">
-          <div style="font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 10px;">נ“‹ ${t.monthlySummary}</div>
+          <div style="font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 10px;">📋 ${t.monthlySummary}</div>
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentUsed}</span>
-            <span class="value">ג‚× ${formatNumber(results.monthlyPayment)}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
           </div>
           ${
             parseNumber(inputs.budgetCap) > 0
               ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
-            <span class="value">ג‚× ${inputs.budgetCap}</span>
+            <span class="value">₪ ${inputs.budgetCap}</span>
           </div>
           `
               : ""
@@ -1022,21 +1019,21 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
               ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.estimatedRentalIncome}</span>
-            <span class="value">ג‚× ${formatNumber(results.rentIncome)}</span>
+            <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
           </div>
           ${
             !inputs.isFirstProperty
               ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.rentalIncomeRetained}</span>
-            <span class="value">ג‚× ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
+            <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
           `
               : ""
           }
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.netMonthlyBalance}</span>
-            <span class="value">ג‚× ${formatNumber(results.monthlyPayment - results.rentIncome)}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome)}</span>
           </div>
           `
               : ""
@@ -1049,7 +1046,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           yearlyBalanceData && yearlyBalanceData.length > 0
             ? `
         <div class="chart-container">
-          <div class="chart-title-small">נ“‰ ${t.chartBalanceTitle}</div>
+          <div class="chart-title-small">📉 ${t.chartBalanceTitle}</div>
           ${(() => {
             const CHART_H = 120;
             const maxBalance = Math.max(...yearlyBalanceData.map((d) => d.balance));
@@ -1082,7 +1079,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           paymentBreakdownData && paymentBreakdownData.length > 0
             ? `
         <div class="chart-container">
-          <div class="chart-title-small">נ“ ${t.chartPaymentTitle}</div>
+          <div class="chart-title-small">📊 ${t.chartPaymentTitle}</div>
           ${(() => {
             const CHART_H = 120;
             const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
@@ -1128,25 +1125,25 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
         <!-- Amortization Summary Block -->
         <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
-          <div class="section-title" style="font-size: 14px; margin-bottom: 12px;">נ“‹ ${t.amortizationSummaryTitle}</div>
+          <div class="section-title" style="font-size: 14px; margin-bottom: 12px;">📋 ${t.amortizationSummaryTitle}</div>
           <div class="row">
             <span class="label">${t.loanTermLabel}</span>
             <span class="value">${results.loanTermYears} ${t.years}</span>
           </div>
           <div class="row">
             <span class="label">${t.monthlyPaymentLabel}</span>
-            <span class="value">ג‚× ${formatNumber(results.monthlyPayment)}</span>
+            <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
           </div>
           <div class="row">
             <span class="label">${t.totalInterestLabel}</span>
-            <span class="value">ג‚× ${formatNumber(results.totalInterest)}</span>
+            <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
           </div>
           ${
             results.loanAmount > 0 && results.totalInterest >= 0
               ? `
           <div class="row" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; padding: 12px !important; margin-top: 8px;">
             <span class="label" style="font-weight: 600; color: #0369a1;">${t.totalRepaidLabel}</span>
-            <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">ג‚× ${formatNumber(results.loanAmount + results.totalInterest)}</span>
+            <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">₪ ${formatNumber(results.loanAmount + results.totalInterest)}</span>
           </div>
           `
               : ""
@@ -1158,17 +1155,17 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
               <div style="font-size: 11px; color: #64748b;">${t.firstPaymentLabel}</div>
               <div style="font-size: 12px; margin-top: 4px;">
-                <span style="color: #10b981; font-weight: 600;">${t.principal}: ג‚×${formatNumber(amortizationSummary.firstPayment.principal)}</span>
+                <span style="color: #10b981; font-weight: 600;">${t.principal}: ₪${formatNumber(amortizationSummary.firstPayment.principal)}</span>
                 <span style="color: #64748b; margin: 0 4px;">|</span>
-                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ג‚×${formatNumber(amortizationSummary.firstPayment.interest)}</span>
+                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ₪${formatNumber(amortizationSummary.firstPayment.interest)}</span>
               </div>
             </div>
             <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
               <div style="font-size: 11px; color: #64748b;">${t.lastPaymentLabel}</div>
               <div style="font-size: 12px; margin-top: 4px;">
-                <span style="color: #10b981; font-weight: 600;">${t.principal}: ג‚×${formatNumber(amortizationSummary.lastPayment.principal)}</span>
+                <span style="color: #10b981; font-weight: 600;">${t.principal}: ₪${formatNumber(amortizationSummary.lastPayment.principal)}</span>
                 <span style="color: #64748b; margin: 0 4px;">|</span>
-                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ג‚×${formatNumber(amortizationSummary.lastPayment.interest)}</span>
+                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ₪${formatNumber(amortizationSummary.lastPayment.interest)}</span>
               </div>
             </div>
           </div>
@@ -1176,14 +1173,14 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
               : ""
           }
           <div style="font-size: 11px; color: #64748b; margin-top: 12px; font-style: italic; background: #fffbeb; padding: 10px; border-radius: 6px; border: 1px solid #fde68a;">
-            נ’¡ ${t.amortizationNote}
+            💡 ${t.amortizationNote}
           </div>
         </div>
       </div>
 
       <!-- SECTION 6: Simulation Assumptions -->
       <div class="section assumptions-section">
-        <div class="section-title">ג™ן¸ ${t.assumptionsTitle}</div>
+        <div class="section-title">⚙️ ${t.assumptionsTitle}</div>
         <div class="assumptions-grid">
           <div class="assumption-item">
             <div class="a-label">${t.age}</div>
@@ -1203,11 +1200,11 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
           <div class="assumption-item">
             <div class="a-label">${t.netIncome}</div>
-            <div class="a-value">ג‚× ${inputs.netIncome}</div>
+            <div class="a-value">₪ ${inputs.netIncome}</div>
           </div>
           <div class="assumption-item">
             <div class="a-label">${t.initialEquity}</div>
-            <div class="a-value">ג‚× ${inputs.equity}</div>
+            <div class="a-value">₪ ${inputs.equity}</div>
           </div>
           <div class="assumption-item">
             <div class="a-label">${t.interestRate}</div>
@@ -1223,7 +1220,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           data.csvData
             ? `
         <div style="margin: 16px 0; padding: 12px; background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 8px; text-align: center; color: #166534; font-size: 13px;">
-          נ“ ${t.csvNotice}
+          📎 ${t.csvNotice}
         </div>
         `
             : ""
@@ -1239,17 +1236,17 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         <h3>${t.ctaTitle}</h3>
         <div class="cta-buttons">
           <a href="https://wa.me/972549997711?text=${encodeURIComponent(`Bonjour ${t.advisorName}, je viens d'utiliser votre simulateur et j'aimerais en discuter.`)}" class="cta-button cta-whatsapp" target="_blank">${t.ctaWhatsApp}</a>
-          <a href="mailto:${t.advisorEmail}?subject=${encodeURIComponent(`Question suite ֳ  ma simulation`)}" class="cta-button cta-email">${t.ctaEmail}</a>
+          <a href="mailto:${t.advisorEmail}?subject=${encodeURIComponent(`Question suite à ma simulation`)}" class="cta-button cta-email">${t.ctaEmail}</a>
         </div>
       </div>
 
       <div class="note">
-        ג ן¸ ${t.note}
+        ⚠️ ${t.note}
       </div>
 
       <div class="footer">
         <p>${t.footer}</p>
-        <p>ֲ© ${new Date().getFullYear()}</p>
+        <p>© ${new Date().getFullYear()}</p>
       </div>
     </body>
     </html>
@@ -1450,4 +1447,3 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
-
