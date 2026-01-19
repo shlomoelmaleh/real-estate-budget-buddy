@@ -1,1 +1,4 @@
 project_id = "qtjbzvwgnqvtvykvjvgq"
+
+[functions.calculate-budget]
+verify_jwt = false
