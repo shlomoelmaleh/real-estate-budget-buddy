@@ -320,6 +320,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       transactionTotal: "סך עלויות רכישה",
       taxDisclaimer: 'מס רכישה מחושב לפי מדרגות סטנדרטיות בלבד; הטבות מיוחדות לא נכללות. יש לאמת עם עו"ד.',
       ttc: 'כולל מע"מ',
+      incVat: '(כולל מע״מ)',
       // Section 5 - Feasibility
       feasibilityTitle: "ניתוח היתכנות",
       ltvRatio: "יחס מימון (LTV)",
@@ -406,6 +407,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       taxDisclaimer:
         "Tax calculated using standard brackets only; special exemptions not included. Verify with attorney.",
       ttc: "incl. VAT",
+      incVat: "(Inc. VAT)",
       feasibilityTitle: "Feasibility Analysis",
       ltvRatio: "LTV Ratio",
       dtiMaxLabel: "Max DTI Allowed",
@@ -488,6 +490,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       transactionTotal: "Total des frais de transaction",
       taxDisclaimer: "Barèmes standards uniquement ; exonérations non incluses. Vérifiez auprès d'un avocat.",
       ttc: "T.T.C",
+      incVat: "(TTC)",
       feasibilityTitle: "Analyse de faisabilité",
       ltvRatio: "Ratio LTV",
       dtiMaxLabel: "DTI Max autorisé",
@@ -965,7 +968,10 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="value">₪ ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
-          <span class="label">${t.advisorFeeLabel}</span>
+          <span class="label">
+            ${t.advisorFeeLabel}
+            <span style="font-size: 12px; color: #666; font-weight: normal;"> ${t.incVat}</span>
+          </span>
           <span class="value">₪ ${inputs.advisorFee || "0"}</span>
         </div>
         <div class="advisor-disclaimer">${t.advisorFeeDisclaimer}</div>
