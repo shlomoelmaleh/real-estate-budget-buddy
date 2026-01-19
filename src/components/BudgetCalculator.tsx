@@ -13,8 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import {
-  calculate,
-  generateAmortizationTable,
   parseFormattedNumber,
   CalculatorResults,
   AmortizationRow
@@ -22,7 +20,6 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import logoEshel from '@/assets/logo-eshel.png';
-
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
@@ -126,20 +123,38 @@ export function BudgetCalculator() {
       otherFee: parseFormattedNumber(otherFee),
     };
 
-    const calcResults = calculate(inputs);
-
-    if (calcResults) {
-
-      setResults(calcResults);
-      const amortRows = generateAmortizationTable(
-        calcResults.loanAmount,
-        inputs.interest,
-        calcResults.loanTermYears
+    try {
+      // Call secure server-side edge function for calculation
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-budget`,
+        {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+          },
+          body: JSON.stringify(inputs),
+        }
       );
-      setAmortization(amortRows);
 
-      // Send email automatically
-      try {
+      if (response.status === 429) {
+        toast.error(t.rateLimitError || 'Too many requests. Please wait a moment.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Calculation failed');
+      }
+
+      const { results: calcResults, amortization: amortRows } = await response.json();
+
+      if (calcResults) {
+        setResults(calcResults);
+        setAmortization(amortRows || []);
+
+        // Send email automatically
         const amortizationSummary = {
           totalMonths: amortRows.length,
           firstPayment:
@@ -195,7 +210,7 @@ export function BudgetCalculator() {
         const headers = isRTL ? [...asciiHeaders].reverse() : asciiHeaders;
 
         const csvHeader = headers.join(",") + "\n";
-        const csvRows = amortRows.map(row => {
+        const csvRows = amortRows.map((row: AmortizationRow) => {
           const values = isRTL
             ? [row.closing, row.interest, row.principal, row.payment, row.opening, row.month]
             : [row.month, row.opening, row.payment, row.principal, row.interest, row.closing];
@@ -250,7 +265,7 @@ export function BudgetCalculator() {
 
         // Database insert is handled by the edge function (rate-limited)
 
-        const { error } = await supabase.functions.invoke('send-report-email', {
+        const { error: emailError } = await supabase.functions.invoke('send-report-email', {
           body: {
             recipientEmail: email,
             recipientName: fullName || 'Client',
@@ -265,13 +280,14 @@ export function BudgetCalculator() {
           },
         });
 
-        if (error) throw error;
+        if (emailError) throw emailError;
         setShowConfirmation(true);
-      } catch (error) {
-        toast.error(t.emailError);
+      } else {
+        toast.error('Please check your input values');
       }
-    } else {
-      toast.error('Please check your input values');
+    } catch (error) {
+      console.error('Calculation or email error:', error);
+      toast.error(t.emailError || 'An error occurred. Please try again.');
     }
 
     setIsSubmitting(false);

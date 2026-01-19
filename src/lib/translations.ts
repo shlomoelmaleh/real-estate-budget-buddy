@@ -84,6 +84,7 @@ export interface Translations {
   confirmationTitle: string;
   confirmationMessage: string;
   requiredField: string;
+  rateLimitError: string;
   isFirstProperty: string;
   isIsraeliCitizen: string;
   isIsraeliTaxResident: string;
@@ -189,6 +190,7 @@ export const translations: Record<Language, Translations> = {
     confirmationTitle: "תודה רבה!",
     confirmationMessage: "הדוח נשלח לכתובת האימייל שלך. נציג יצור איתך קשר בהקדם.",
     requiredField: "שדה חובה",
+    rateLimitError: "בקשות רבות מדי. אנא נסה שוב בעוד דקה.",
     isFirstProperty: "נכס ראשון בישראל?",
     isIsraeliCitizen: "בעל אזרחות ישראלית?",
     isIsraeliTaxResident: "האם תושב מס בישראל?",
@@ -292,6 +294,7 @@ export const translations: Record<Language, Translations> = {
     confirmationTitle: "Thank You!",
     confirmationMessage: "The report has been sent to your email. A representative will contact you shortly.",
     requiredField: "Required field",
+    rateLimitError: "Too many requests. Please try again in a moment.",
     isFirstProperty: "First property in Israel?",
     isIsraeliCitizen: "Israeli citizenship?",
     isIsraeliTaxResident: "Israeli tax resident?",
@@ -395,6 +398,7 @@ export const translations: Record<Language, Translations> = {
     confirmationTitle: "Merci !",
     confirmationMessage: "Le rapport a été envoyé à votre adresse email. Un conseiller vous contactera prochainement.",
     requiredField: "Champ obligatoire",
+    rateLimitError: "Trop de requêtes. Veuillez réessayer dans un moment.",
     isFirstProperty: "Votre premier bien en Israël ?",
     isIsraeliCitizen: "Avez-vous la nationalité israélienne ?",
     isIsraeliTaxResident: "Êtes-vous résident fiscal israélien ?",
