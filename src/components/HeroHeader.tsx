@@ -7,7 +7,7 @@ export function HeroHeader() {
   const { t } = useLanguage();
 
   return (
-    <header className="relative overflow-hidden min-h-[220px] md:min-h-[260px]">
+    <header className="relative overflow-hidden min-h-[280px] md:min-h-[320px]">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -25,7 +25,7 @@ export function HeroHeader() {
           <img 
             src={logoEshel} 
             alt="Eshel Finances - אשל פיננסים" 
-            className="h-24 md:h-32 lg:h-36 w-auto object-contain drop-shadow-lg"
+            className="h-32 md:h-44 lg:h-52 w-auto object-contain drop-shadow-lg"
           />
         </div>
         
