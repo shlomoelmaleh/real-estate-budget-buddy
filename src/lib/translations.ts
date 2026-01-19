@@ -78,6 +78,8 @@ export interface Translations {
   advisorName: string;
   advisorPhone: string;
   advisorEmail: string;
+  advisorTitle: string;
+  companyName: string;
   // Client version
   confirmationTitle: string;
   confirmationMessage: string;
@@ -182,6 +184,8 @@ export const translations: Record<Language, Translations> = {
     advisorName: "שלמה אלמליח",
     advisorPhone: "054-9997711",
     advisorEmail: "shlomo.elmaleh@gmail.com",
+    advisorTitle: "יעוץ משכנתא | כלכלת המשפחה",
+    companyName: "אשל פיננסים",
     confirmationTitle: "תודה רבה!",
     confirmationMessage: "הדוח נשלח לכתובת האימייל שלך. נציג יצור איתך קשר בהקדם.",
     requiredField: "שדה חובה",
@@ -283,6 +287,8 @@ export const translations: Record<Language, Translations> = {
     advisorName: "Shlomo Elmaleh",
     advisorPhone: "+972-054-9997711",
     advisorEmail: "shlomo.elmaleh@gmail.com",
+    advisorTitle: "Mortgage Consulting | Family Finance",
+    companyName: "Eshel Finances",
     confirmationTitle: "Thank You!",
     confirmationMessage: "The report has been sent to your email. A representative will contact you shortly.",
     requiredField: "Required field",
@@ -384,6 +390,8 @@ export const translations: Record<Language, Translations> = {
     advisorName: "Shlomo Elmaleh",
     advisorPhone: "+972-054-9997711",
     advisorEmail: "shlomo.elmaleh@gmail.com",
+    advisorTitle: "Conseil Hypothécaire | Finances Familiales",
+    companyName: "Eshel Finances",
     confirmationTitle: "Merci !",
     confirmationMessage: "Le rapport a été envoyé à votre adresse email. Un conseiller vous contactera prochainement.",
     requiredField: "Champ obligatoire",

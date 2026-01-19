@@ -1,12 +1,13 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import heroBg from '@/assets/hero-bg.jpg';
+import logoEshel from '@/assets/logo-eshel.png';
 
 export function HeroHeader() {
   const { t } = useLanguage();
 
   return (
-    <header className="relative overflow-hidden min-h-[160px] md:min-h-[200px]">
+    <header className="relative overflow-hidden min-h-[220px] md:min-h-[260px]">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -14,17 +15,26 @@ export function HeroHeader() {
       />
       
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/75 to-background/95" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background/95" />
       
-      <div className="relative z-10 text-center py-6 md:py-8 px-4 space-y-4 md:space-y-6">
+      <div className="relative z-10 text-center py-6 md:py-8 px-4 space-y-4 md:space-y-5">
         <LanguageSwitcher />
         
+        {/* Logo */}
+        <div className="flex justify-center pt-2">
+          <img 
+            src={logoEshel} 
+            alt="Eshel Finances - אשל פיננסים" 
+            className="h-24 md:h-32 lg:h-36 w-auto object-contain drop-shadow-lg"
+          />
+        </div>
+        
         {/* Title Section */}
-        <div className="space-y-2 pt-2">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-foreground tracking-tight drop-shadow-sm">
+        <div className="space-y-2">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-foreground tracking-tight drop-shadow-sm">
             {t.mainTitle}
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg lg:text-xl max-w-2xl mx-auto font-medium">
+          <p className="text-muted-foreground text-sm md:text-base lg:text-lg max-w-2xl mx-auto font-medium">
             {t.subtitle}
           </p>
         </div>

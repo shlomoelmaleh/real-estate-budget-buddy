@@ -21,6 +21,7 @@ import {
 } from '@/lib/calculator';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import logoEshel from '@/assets/logo-eshel.png';
 
 
 export function BudgetCalculator() {
@@ -568,27 +569,46 @@ export function BudgetCalculator() {
         )}
 
         {/* Footer */}
-        <footer className="text-center text-sm text-muted-foreground pt-8 pb-4">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="h-px w-8 bg-border" />
-            <span className="text-xs uppercase tracking-wider">Property Budget Pro</span>
-            <div className="h-px w-8 bg-border" />
-          </div>
-
-          {/* Advisor Contact - Elegant footer */}
-          <div className="flex flex-col items-center gap-2 mb-4 text-muted-foreground">
-            <p className="font-medium text-foreground/80">{t.advisorName}</p>
-            <div className="flex items-center gap-4 text-xs">
-              <a href="https://wa.me/972549997711" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                <WhatsAppIcon size={12} /> {t.advisorPhone}
+        <footer className="text-center text-sm text-muted-foreground pt-8 pb-6 border-t border-border/50">
+          <div className="flex flex-col items-center gap-4">
+            {/* Mini Logo */}
+            <img 
+              src={logoEshel} 
+              alt="Eshel Finances" 
+              className="h-14 w-auto object-contain opacity-90"
+            />
+            
+            {/* Advisor Info */}
+            <div className="flex flex-col items-center gap-1">
+              <p className="font-semibold text-foreground">{t.advisorName}</p>
+              <p className="text-xs text-muted-foreground">{t.advisorTitle}</p>
+            </div>
+            
+            {/* Contact Links */}
+            <div className="flex items-center gap-6 text-sm">
+              <a 
+                href="https://wa.me/972549997711" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <WhatsAppIcon size={16} className="text-green-600" />
+                <span>{t.advisorPhone}</span>
               </a>
-              <a href={`mailto:${t.advisorEmail}`} className="flex items-center gap-1 hover:text-foreground transition-colors">
-                <Mail className="w-3 h-3" /> {t.advisorEmail}
+              <a 
+                href={`mailto:${t.advisorEmail}`} 
+                className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Mail className="w-4 h-4 text-primary" />
+                <span>{t.advisorEmail}</span>
               </a>
             </div>
+            
+            {/* Copyright */}
+            <p className="text-xs text-muted-foreground/70 pt-2">
+              © {new Date().getFullYear()} {t.companyName}
+            </p>
           </div>
-
-          <p className="text-xs">© {new Date().getFullYear()} All rights reserved</p>
         </footer>
       </main>
     </div>
