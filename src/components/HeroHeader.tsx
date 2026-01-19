@@ -15,17 +15,17 @@ export function HeroHeader() {
       />
       
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background/95" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/75 via-background/65 to-background/85" />
       
       <div className="relative z-10 text-center py-6 md:py-8 px-4 space-y-4 md:space-y-5">
         <LanguageSwitcher />
         
         {/* Logo */}
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-3 md:pt-4">
           <img 
             src={logoEshel} 
             alt="Eshel Finances - אשל פיננסים" 
-            className="h-32 md:h-44 lg:h-52 w-auto object-contain drop-shadow-lg"
+            className="h-44 md:h-64 lg:h-80 xl:h-96 w-auto max-w-[90vw] md:max-w-[72vw] lg:max-w-[60vw] object-contain drop-shadow-xl"
           />
         </div>
         
