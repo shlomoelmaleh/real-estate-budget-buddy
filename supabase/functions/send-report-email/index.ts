@@ -579,7 +579,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
     // Collect ALL active limiting factors
     const limitingFactors: string[] = [];
-    
+
     if (isEquityLimited) {
       limitingFactors.push(t.limitingCash);
     }
@@ -904,9 +904,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         ${recipientName ? `${t.greeting} ${recipientName},` : `${t.greeting},`}
       </div>
 
-      ${
-        isAdvisorCopy
-          ? `
+      ${isAdvisorCopy
+      ? `
       <!-- CLIENT INFO SECTION (Advisor Only) -->
       <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? "5px solid #3b82f6" : "none"}; border-left: ${isRTL ? "none" : "5px solid #3b82f6"};">
         <div class="section-title" style="color: #1d4ed8;">👤 ${t.clientInfoTitle}</div>
@@ -924,8 +923,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         </div>
       </div>
       `
-          : ""
-      }
+      : ""
+    }
 
       <!-- SECTION 1: Hero - Maximum Purchasing Power -->
       <div class="section hero-section">
@@ -968,11 +967,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="value">₪ ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
-          <span class="label">
-            ${t.advisorFeeLabel}
-            <span style="font-size: 12px; color: #666; font-weight: normal;"> ${t.incVat}</span>
-          </span>
-          <span class="value">₪ ${inputs.advisorFee || "0"}</span>
+          <span class="label">${t.advisorFeeLabel}</span>
+          <span class="value">₪ ${inputs.advisorFee || "0"} ${t.incVat}</span>
         </div>
         <div class="advisor-disclaimer">${t.advisorFeeDisclaimer}</div>
         <div class="row">
@@ -1010,96 +1006,91 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="label">${t.monthlyPaymentUsed}</span>
             <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
           </div>
-          ${
-            parseNumber(inputs.budgetCap) > 0
-              ? `
+          ${parseNumber(inputs.budgetCap) > 0
+      ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
             <span class="value">₪ ${inputs.budgetCap}</span>
           </div>
           `
-              : ""
-          }
-          ${
-            inputs.isRented
-              ? `
+      : ""
+    }
+          ${inputs.isRented
+      ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.estimatedRentalIncome}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
           </div>
-          ${
-            !inputs.isFirstProperty
-              ? `
+          ${!inputs.isFirstProperty
+        ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.rentalIncomeRetained}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
           `
-              : ""
-          }
+        : ""
+      }
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.netMonthlyBalance}</span>
             <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome)}</span>
           </div>
           `
-              : ""
-          }
+      : ""
+    }
           <div style="font-size: 10px; color: #64748b; margin-top: 8px; font-style: italic;">${t.monthlySummaryNote}</div>
         </div>
         
         <!-- Charts -->
-        ${
-          yearlyBalanceData && yearlyBalanceData.length > 0
-            ? `
+        ${yearlyBalanceData && yearlyBalanceData.length > 0
+      ? `
         <div class="chart-container">
           <div class="chart-title-small">📉 ${t.chartBalanceTitle}</div>
           ${(() => {
-            const CHART_H = 120;
-            const maxBalance = Math.max(...yearlyBalanceData.map((d) => d.balance));
-            return `
+        const CHART_H = 120;
+        const maxBalance = Math.max(...yearlyBalanceData.map((d) => d.balance));
+        return `
               <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   ${yearlyBalanceData
-                    .slice()
-                    .sort((a, b) => a.year - b.year)
-                    .map((d) => {
-                      const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
-                      return `
+            .slice()
+            .sort((a, b) => a.year - b.year)
+            .map((d) => {
+              const barH = Math.max(4, Math.round((d.balance / maxBalance) * CHART_H));
+              return `
                         <td>
                           <div class="vbar vbar-balance" style="height: ${barH}px;"></div>
                           <div class="vlabel" dir="ltr">${d.year}</div>
                         </td>
                       `;
-                    })
-                    .join("")}
+            })
+            .join("")}
                 </tr>
               </table>
             `;
-          })()}
+      })()}
         </div>
         `
-            : ""
-        }
+      : ""
+    }
         
-        ${
-          paymentBreakdownData && paymentBreakdownData.length > 0
-            ? `
+        ${paymentBreakdownData && paymentBreakdownData.length > 0
+      ? `
         <div class="chart-container">
           <div class="chart-title-small">📊 ${t.chartPaymentTitle}</div>
           ${(() => {
-            const CHART_H = 120;
-            const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
-            const maxTotal = Math.max(...rows.map((d) => d.principal + d.interest));
-            return `
+        const CHART_H = 120;
+        const rows = paymentBreakdownData.slice().sort((a, b) => a.year - b.year);
+        const maxTotal = Math.max(...rows.map((d) => d.principal + d.interest));
+        return `
               <table class="vchart" role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   ${rows
-                    .map((d) => {
-                      const total = d.principal + d.interest;
-                      const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
-                      const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
-                      const principalH = Math.max(1, totalH - interestH);
-                      return `
+            .map((d) => {
+              const total = d.principal + d.interest;
+              const totalH = Math.max(4, Math.round((total / maxTotal) * CHART_H));
+              const interestH = Math.max(1, Math.round((d.interest / total) * totalH));
+              const principalH = Math.max(1, totalH - interestH);
+              return `
                         <td>
                           <div class="vstack" style="height: ${totalH}px;">
                             <div class="vbar vbar-interest" style="height: ${interestH}px;"></div>
@@ -1108,12 +1099,12 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
                           <div class="vlabel" dir="ltr">${d.year}</div>
                         </td>
                       `;
-                    })
-                    .join("")}
+            })
+            .join("")}
                 </tr>
               </table>
             `;
-          })()}
+      })()}
           <div class="chart-legend">
             <div class="chart-legend-item">
               <div class="chart-legend-color" style="background: linear-gradient(180deg, #10b981, #34d399);"></div>
@@ -1126,8 +1117,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
         </div>
         `
-            : ""
-        }
+      : ""
+    }
 
         <!-- Amortization Summary Block -->
         <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0;">
@@ -1144,19 +1135,17 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             <span class="label">${t.totalInterestLabel}</span>
             <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
           </div>
-          ${
-            results.loanAmount > 0 && results.totalInterest >= 0
-              ? `
+          ${results.loanAmount > 0 && results.totalInterest >= 0
+      ? `
           <div class="row" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; padding: 12px !important; margin-top: 8px;">
             <span class="label" style="font-weight: 600; color: #0369a1;">${t.totalRepaidLabel}</span>
             <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">₪ ${formatNumber(results.loanAmount + results.totalInterest)}</span>
           </div>
           `
-              : ""
-          }
-          ${
-            amortizationSummary.firstPayment && amortizationSummary.lastPayment
-              ? `
+      : ""
+    }
+          ${amortizationSummary.firstPayment && amortizationSummary.lastPayment
+      ? `
           <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
               <div style="font-size: 11px; color: #64748b;">${t.firstPaymentLabel}</div>
@@ -1176,8 +1165,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
             </div>
           </div>
           `
-              : ""
-          }
+      : ""
+    }
           <div style="font-size: 11px; color: #64748b; margin-top: 12px; font-style: italic; background: #fffbeb; padding: 10px; border-radius: 6px; border: 1px solid #fde68a;">
             💡 ${t.amortizationNote}
           </div>
@@ -1222,15 +1211,14 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           </div>
         </div>
 
-        ${
-          data.csvData
-            ? `
+        ${data.csvData
+      ? `
         <div style="margin: 16px 0; padding: 12px; background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 8px; text-align: center; color: #166534; font-size: 13px;">
           📎 ${t.csvNotice}
         </div>
         `
-            : ""
-        }
+      : ""
+    }
 
         <div style="font-size: 11px; color: #64748b; margin-top: 12px; text-align: ${alignStart};">
           ${t.simulationDisclaimer}
@@ -1362,13 +1350,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     const attachments = data.csvData
       ? [
-          {
-            filename: csvFilenames[data.language] || "report.csv",
-            // Use UTF-8 BOM for Excel compatibility and robust base64 encoding
-            content: toBase64("\uFEFF" + data.csvData),
-            content_type: "text/csv; charset=utf-8",
-          },
-        ]
+        {
+          filename: csvFilenames[data.language] || "report.csv",
+          // Use UTF-8 BOM for Excel compatibility and robust base64 encoding
+          content: toBase64("\uFEFF" + data.csvData),
+          content_type: "text/csv; charset=utf-8",
+        },
+      ]
       : [];
 
     const primaryRes = await fetch("https://api.resend.com/emails", {
