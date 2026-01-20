@@ -5,6 +5,12 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADVISOR_EMAIL = "shlomo.elmaleh@gmail.com";
 
+// Whitelist of emails exempt from rate limiting (for testing)
+const WHITELISTED_EMAILS = [
+  "office@eshel-f.com",
+  "shlomo.elmaleh@gmail.com",
+];
+
 // CORS headers - allow all origins for this public calculator
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -133,6 +139,12 @@ async function checkMultiLayerRateLimit(
   clientIP: string,
   recipientEmail: string,
 ): Promise<{ allowed: boolean; reason?: string }> {
+  // Skip rate limiting for whitelisted emails (testing accounts)
+  if (WHITELISTED_EMAILS.includes(recipientEmail.toLowerCase())) {
+    console.log(`Whitelisted email bypassing rate limit: ${recipientEmail}`);
+    return { allowed: true };
+  }
+
   // Layer 1: IP-based rate limit (10 emails per hour from same IP)
   const ipCheck = await checkRateLimitAtomic(supabaseAdmin, `ip:${clientIP}`, "send-report-email", 10, 60);
 
