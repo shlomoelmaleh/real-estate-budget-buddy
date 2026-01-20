@@ -413,9 +413,10 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       recognizedRentLabel: "שכירות מוכרת (80%)",
       // Financial Dashboard
       financialDashboardTitle: "ניתוח פיננסי",
-      grossYield: "תשואה שנתית ברוטו",
+      grossYield: "תשואה שנתית גולמית",
       netCashFlow: "תזרים חודשי נטו",
-      cashOnCash: "תשואה על ההון (ROI)",
+      cashOnCash: "תשואה שנתית על ההון (ROI)",
+      cashOnCashSubtitle: "*ביחס להון העצמי וההוצאות שהושקעו בפועל",
       notRelevant: "לא רלוונטי",
       positiveBalance: "עודף חודשי",
       negativeBalance: "גרעון חודשי",
@@ -510,7 +511,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       financialDashboardTitle: "Financial Analysis",
       grossYield: "Gross Annual Yield",
       netCashFlow: "Net Monthly Cash Flow",
-      cashOnCash: "Cash-on-Cash Return (ROI)",
+      cashOnCash: "Annual Cash-on-Cash Return (ROI)",
+      cashOnCashSubtitle: "*Based on actual equity and costs invested",
       notRelevant: "N/A",
       positiveBalance: "Monthly surplus",
       negativeBalance: "Monthly deficit",
@@ -604,9 +606,10 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       recognizedRentLabel: "Loyer retenu (80%)",
       // Financial Dashboard
       financialDashboardTitle: "Analyse Financière",
-      grossYield: "Rendement Brut Annuel",
-      netCashFlow: "Cash Flow Mensuel Net",
-      cashOnCash: "Retour sur Investissement (ROI)",
+      grossYield: "Rendement Locatif Brut",
+      netCashFlow: "Cash-flow Mensuel Net",
+      cashOnCash: "Rendement Annuel sur Fonds Propres (ROI)",
+      cashOnCashSubtitle: "*Basé sur l'apport et les frais investis",
       notRelevant: "N/A",
       positiveBalance: "Excédent mensuel",
       negativeBalance: "Déficit mensuel",
@@ -1071,9 +1074,10 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="label">${t.netCashFlow}</span>
           <span class="value" style="color: ${netCashFlow < 0 ? '#dc2626' : '#0f172a'}; font-weight: 700;">${netCashFlow < 0 ? `-₪ ${formatNumber(Math.abs(netCashFlow))}` : `₪ ${formatNumber(netCashFlow)}`}</span>
         </div>
-        <div class="row">
+        <div class="row" style="flex-wrap: wrap;">
           <span class="label">${t.cashOnCash}</span>
           <span class="value" style="${cashOnCash === null ? 'color: #9ca3af;' : cashOnCash < 0 ? 'color: #dc2626; font-weight: 700;' : ''}">${cashOnCash !== null ? `${cashOnCash < 0 ? '' : ''}${(cashOnCash * 100).toFixed(2)}%` : t.notRelevant}</span>
+          <span style="display: block; width: 100%; font-size: 12px; color: #666666; margin-top: 4px; text-align: ${alignEnd};">${t.cashOnCashSubtitle}</span>
         </div>
         <div style="font-size: 10px; color: #64748b; margin-top: 12px; font-style: italic; padding: 8px; background: #e0e7ff; border-radius: 6px;">
           💡 ${language === 'he' ? 'התשואות מחושבות על בסיס ההנחות בסימולציה בלבד.' : language === 'fr' ? 'Rendements calculés sur la base des hypothèses de la simulation uniquement.' : 'Yields are calculated based on simulation assumptions only.'}
