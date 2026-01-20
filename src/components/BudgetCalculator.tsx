@@ -48,6 +48,7 @@ export function BudgetCalculator() {
   const [rentalYield, setRentalYield] = useState('3.0');
   const [rentRecognition, setRentRecognition] = useState('80');
   const [budgetCap, setBudgetCap] = useState('');
+  const [expectedRent, setExpectedRent] = useState('');
 
   // Expenses (purchase tax is now calculated automatically)
   const [lawyerPct, setLawyerPct] = useState('1.0');
@@ -115,6 +116,8 @@ export function BudgetCalculator() {
       // Pass property status for automatic tax calculation
       isFirstProperty: isFirstProperty ?? false,
       isIsraeliTaxResident: isIsraeliTaxResident ?? false,
+      // Expected rent (fixed amount) - null means use 3% yield formula
+      expectedRent: expectedRent ? parseFormattedNumber(expectedRent) : null,
       // Other costs
       lawyerPct: parseFloat(lawyerPct) || 0,
       brokerPct: parseFloat(brokerPct) || 0,
@@ -230,6 +233,7 @@ export function BudgetCalculator() {
           netIncome,
           ratio,
           age,
+          expectedRent,
           maxAge,
           interest,
           isRented,
@@ -428,6 +432,21 @@ export function BudgetCalculator() {
                   {t.helperRentEstimate}
                 </p>
               </div>
+
+              {/* Expected Monthly Rent - only visible for investment properties */}
+              {isFirstProperty === false && (
+                <div className="space-y-2">
+                  <FormInput
+                    label={t.expectedRent}
+                    icon={<Banknote className="w-4 h-4" />}
+                    suffix="₪"
+                    placeholder={t.expectedRentPlaceholder}
+                    value={expectedRent}
+                    onChange={setExpectedRent}
+                    formatNumber
+                  />
+                </div>
+              )}
 
               {/* Rental yield and bank recognition are hidden - using default values */}
 

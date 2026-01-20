@@ -106,6 +106,8 @@ export interface Translations {
   helperBudgetCap: string;
   helperNetIncome: string;
   netIncomeLabel: string;
+  expectedRent: string;
+  expectedRentPlaceholder: string;
   helperSimulation: string;
 }
 
@@ -212,6 +214,8 @@ export const translations: Record<Language, Translations> = {
     helperBudgetCap: "אופציונלי: לחישוב לפי נוחות החזר חודשית.",
     helperNetIncome: "סכום שכבר מנוכה מהחזרי הלוואות קיימות (אם יש).",
     netIncomeLabel: "הכנסה נטו פנויה",
+    expectedRent: "שכירות חודשית צפויה",
+    expectedRentPlaceholder: "השאר ריק לחישוב אוטומטי (3% תשואה שנתית)",
     helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים."
   },
   en: {
@@ -316,6 +320,8 @@ export const translations: Record<Language, Translations> = {
     helperBudgetCap: "Optional: to calculate based on your comfort limit.",
     helperNetIncome: "Net income already reduced by existing loan payments (if any).",
     netIncomeLabel: "Available net income",
+    expectedRent: "Expected Monthly Rent",
+    expectedRentPlaceholder: "Leave empty for auto-calc (3% annual yield)",
     helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details."
   },
   fr: {
@@ -420,6 +426,8 @@ export const translations: Record<Language, Translations> = {
     helperBudgetCap: "Optionnel : pour calculer selon votre confort mensuel.",
     helperNetIncome: "Montant déjà déduit de vos crédits existants (si vous en avez).",
     netIncomeLabel: "Revenu net disponible",
+    expectedRent: "Loyer mensuel attendu",
+    expectedRentPlaceholder: "Laissez vide pour calcul auto (3% rendement annuel)",
     helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation."
   }
 };
