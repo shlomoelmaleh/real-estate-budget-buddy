@@ -1078,7 +1078,7 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="label">${t.cashOnCash}</span>
           <span class="value" style="${cashOnCash === null ? 'color: #9ca3af;' : cashOnCash < 0 ? 'color: #dc2626; font-weight: 700;' : ''}">${cashOnCash !== null ? `${cashOnCash < 0 ? '' : ''}${(cashOnCash * 100).toFixed(2)}%` : t.notRelevant}</span>
         </div>
-        <div style="font-size: 12px; color: #666666; text-align: ${alignEnd}; padding: 0 16px 8px 16px;">
+        <div style="font-size: 12px; color: #666666; text-align: ${alignStart}; padding: 0 16px 8px 16px;">
           ${t.cashOnCashSubtitle}
         </div>
         <div style="font-size: 10px; color: #64748b; margin-top: 12px; font-style: italic; padding: 8px; background: #e0e7ff; border-radius: 6px;">
