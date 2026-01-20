@@ -779,6 +779,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           color: #0f172a;
           font-size: 14px;
           text-align: ${alignEnd} !important;
+          /* Keep minus signs/currency/percent glued to the number across RTL/LTR */
+          direction: ltr !important;
+          unicode-bidi: isolate;
           vertical-align: middle;
         }
         
@@ -1078,8 +1081,12 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="label">${t.cashOnCash}</span>
           <span class="value" style="${cashOnCash === null ? 'color: #9ca3af;' : cashOnCash < 0 ? 'color: #dc2626; font-weight: 700;' : ''}">${cashOnCash !== null ? `${cashOnCash < 0 ? '' : ''}${(cashOnCash * 100).toFixed(2)}%` : t.notRelevant}</span>
         </div>
-        <div style="font-size: 12px; color: #666666; text-align: ${alignStart}; padding: 0 16px 8px 16px;">
-          ${t.cashOnCashSubtitle}
+        <!-- ROI subtitle: force it to sit under the label column (not under the value) -->
+        <div class="row" style="border-bottom: none; padding-top: 0; padding-bottom: 6px;">
+          <span class="label" style="font-size: 12px; color: #666666; font-weight: 400;">
+            ${t.cashOnCashSubtitle}
+          </span>
+          <span class="value" style="font-size: 12px; color: transparent;">.</span>
         </div>
         <div style="font-size: 10px; color: #64748b; margin-top: 12px; font-style: italic; padding: 8px; background: #e0e7ff; border-radius: 6px;">
           💡 ${language === 'he' ? 'התשואות מחושבות על בסיס ההנחות בסימולציה בלבד.' : language === 'fr' ? 'Rendements calculés sur la base des hypothèses de la simulation uniquement.' : 'Yields are calculated based on simulation assumptions only.'}
