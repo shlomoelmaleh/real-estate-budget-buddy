@@ -433,8 +433,8 @@ export function BudgetCalculator() {
                 </p>
               </div>
 
-              {/* Expected Monthly Rent - only visible for investment properties */}
-              {isFirstProperty === false && (
+              {/* Expected Monthly Rent - only visible when property will be rented */}
+              {isRented && (
                 <div className="space-y-2">
                   <FormInput
                     label={t.expectedRent}
