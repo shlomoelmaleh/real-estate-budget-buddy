@@ -294,6 +294,28 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
   const dtiEstimated = incomeNet > 0 ? monthlyPayment / incomeNet : null;
   const thresholdDelta = 0.01;
 
+  // Calculate adjusted income for DTI when rental income is applicable
+  const rentRecognitionPct = parseNumber(inputs.rentRecognition) || 80;
+  const recognizedRent = !inputs.isFirstProperty && inputs.isRented ? results.rentIncome * (rentRecognitionPct / 100) : 0;
+  const adjustedIncomeForDTI = incomeNet + recognizedRent;
+  
+  // Calculate correct DTI using adjusted income (income + recognized rent)
+  const dtiEstimatedCorrected = adjustedIncomeForDTI > 0 ? monthlyPayment / adjustedIncomeForDTI : null;
+
+  // Financial Dashboard calculations
+  const monthlyRent = results.rentIncome || 0;
+  const propertyPrice = results.maxPropertyValue || 0;
+  const totalCashInvested = results.equityUsed || (equityInitial - results.equityRemaining);
+  
+  // Gross Annual Yield: (Monthly Rent * 12) / Property Price
+  const grossYield = monthlyRent > 0 && propertyPrice > 0 ? (monthlyRent * 12) / propertyPrice : null;
+  
+  // Net Monthly Cash Flow: Monthly Rent - Monthly Mortgage Payment
+  const netCashFlow = monthlyRent - monthlyPayment;
+  
+  // Cash-on-Cash Return (ROI): (Net Cash Flow * 12) / Total Cash Invested
+  const cashOnCash = monthlyRent > 0 && totalCashInvested > 0 ? (netCashFlow * 12) / totalCashInvested : null;
+
   const texts = {
     he: {
       subject: "דוח מחשבון תקציב רכישת נכס",
@@ -385,6 +407,18 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       netMonthlyBalance: "יתרה חודשית נטו",
       monthlySummaryNote: "אינדיקטיבי: לאימות בהתאם לחוזה השכירות והוצאות.",
       csvNotice: "מצורף לדוח זה קובץ CSV המכיל את לוח הסילוקין המלא (חודש אחר חודש).",
+      // DTI adjusted income
+      adjustedIncomeForDTI: "הכנסה לחישוב DTI (כולל 80% שכירות)",
+      incomeLabel: "הכנסה פנויה",
+      recognizedRentLabel: "שכירות מוכרת (80%)",
+      // Financial Dashboard
+      financialDashboardTitle: "ניתוח פיננסי",
+      grossYield: "תשואה שנתית ברוטו",
+      netCashFlow: "תזרים חודשי נטו",
+      cashOnCash: "תשואה על ההון (ROI)",
+      notRelevant: "לא רלוונטי",
+      positiveBalance: "עודף חודשי",
+      negativeBalance: "גרעון חודשי",
     },
     en: {
       subject: "Property Budget Calculator - Complete Report",
@@ -468,6 +502,18 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       netMonthlyBalance: "Net monthly balance",
       monthlySummaryNote: "Indicative: to be confirmed based on lease and expenses.",
       csvNotice: "Attached to this report is a CSV file containing the full monthly amortization table.",
+      // DTI adjusted income
+      adjustedIncomeForDTI: "Income for DTI calculation (incl. 80% rent)",
+      incomeLabel: "Net Income",
+      recognizedRentLabel: "Recognized Rent (80%)",
+      // Financial Dashboard
+      financialDashboardTitle: "Financial Analysis",
+      grossYield: "Gross Annual Yield",
+      netCashFlow: "Net Monthly Cash Flow",
+      cashOnCash: "Cash-on-Cash Return (ROI)",
+      notRelevant: "N/A",
+      positiveBalance: "Monthly surplus",
+      negativeBalance: "Monthly deficit",
     },
     fr: {
       subject: "Simulateur Budget Immobilier - Rapport Complet",
@@ -552,6 +598,18 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       monthlySummaryNote: "Indicatif : à confirmer selon le bail et les charges.",
       csvNotice:
         "Vous trouverez en pièce jointe de ce rapport un fichier CSV contenant le tableau d'amortissement complet mois par mois.",
+      // DTI adjusted income
+      adjustedIncomeForDTI: "Revenu pour calcul DTI (incl. 80% loyer)",
+      incomeLabel: "Revenu net",
+      recognizedRentLabel: "Loyer retenu (80%)",
+      // Financial Dashboard
+      financialDashboardTitle: "Analyse Financière",
+      grossYield: "Rendement Brut Annuel",
+      netCashFlow: "Cash Flow Mensuel Net",
+      cashOnCash: "Retour sur Investissement (ROI)",
+      notRelevant: "N/A",
+      positiveBalance: "Excédent mensuel",
+      negativeBalance: "Déficit mensuel",
     },
   };
 
@@ -616,7 +674,16 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
 
   // Computed values
   const equityOnProperty = results.maxPropertyValue - results.loanAmount;
-  const dtiEstimatedDisplay = dtiEstimated !== null ? `${(dtiEstimated * 100).toFixed(1)}%` : t.notAvailable;
+  // Use corrected DTI (with recognized rent for investment properties)
+  const dtiEstimatedDisplay = dtiEstimatedCorrected !== null ? `${(dtiEstimatedCorrected * 100).toFixed(1)}%` : t.notAvailable;
+  
+  // Net balance calculation (rent - payment; negative means out-of-pocket expense)
+  const netMonthlyBalanceValue = results.rentIncome - results.monthlyPayment;
+  const isNetBalancePositive = netMonthlyBalanceValue >= 0;
+  const netBalanceColor = isNetBalancePositive ? "#10b981" : "#dc2626"; // Green or Red
+  const netBalanceFormatted = isNetBalancePositive 
+    ? `₪ ${formatNumber(netMonthlyBalanceValue)}` 
+    : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   const html = `
     <!DOCTYPE html>
@@ -993,7 +1060,25 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
         </div>
       </div>
 
-
+      <!-- FINANCIAL DASHBOARD SECTION - Always displayed -->
+      <div class="section" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-${alignStart}: 5px solid #6366f1;">
+        <div class="section-title" style="color: #4f46e5;">📈 ${t.financialDashboardTitle}</div>
+        <div class="row">
+          <span class="label">${t.grossYield}</span>
+          <span class="value" style="${grossYield === null ? 'color: #9ca3af;' : ''}">${grossYield !== null ? `${(grossYield * 100).toFixed(2)}%` : t.notRelevant}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.netCashFlow}</span>
+          <span class="value" style="color: ${netCashFlow < 0 ? '#dc2626' : '#0f172a'}; font-weight: 700;">${netCashFlow < 0 ? `-₪ ${formatNumber(Math.abs(netCashFlow))}` : `₪ ${formatNumber(netCashFlow)}`}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.cashOnCash}</span>
+          <span class="value" style="${cashOnCash === null ? 'color: #9ca3af;' : cashOnCash < 0 ? 'color: #dc2626; font-weight: 700;' : ''}">${cashOnCash !== null ? `${cashOnCash < 0 ? '' : ''}${(cashOnCash * 100).toFixed(2)}%` : t.notRelevant}</span>
+        </div>
+        <div style="font-size: 10px; color: #64748b; margin-top: 12px; font-style: italic; padding: 8px; background: #e0e7ff; border-radius: 6px;">
+          💡 ${language === 'he' ? 'התשואות מחושבות על בסיס ההנחות בסימולציה בלבד.' : language === 'fr' ? 'Rendements calculés sur la base des hypothèses de la simulation uniquement.' : 'Yields are calculated based on simulation assumptions only.'}
+        </div>
+      </div>
 
       <!-- SECTION 5: Feasibility & Analysis -->
       <div class="section feasibility-section">
@@ -1002,6 +1087,15 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           <span class="label">${t.ltvRatio}</span>
           <span class="value">${results.actualLTV.toFixed(1)}%</span>
         </div>
+        ${recognizedRent > 0 ? `
+        <div class="row" style="background: #fef3c7; border-radius: 6px; padding: 8px !important; margin: 8px 0;">
+          <span class="label" style="color: #92400e; font-weight: 600;">${t.adjustedIncomeForDTI}</span>
+          <span class="value" style="color: #b45309; font-weight: 700;">₪ ${formatNumber(adjustedIncomeForDTI)}</span>
+        </div>
+        <div style="font-size: 10px; color: #92400e; margin-bottom: 8px; padding-${alignStart}: 8px;">
+          ${t.incomeLabel}: ₪${formatNumber(incomeNet)} + ${t.recognizedRentLabel}: ₪${formatNumber(recognizedRent)}
+        </div>
+        ` : ''}
         <div class="row">
           <span class="label">${t.dtiMaxLabel}</span>
           <span class="value">${dtiMaxAllowed > 0 ? `${(dtiMaxAllowed * 100).toFixed(0)}%` : t.notAvailable}</span>
@@ -1042,9 +1136,12 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
           `
         : ""
       }
-          <div class="row" style="margin-bottom: 4px;">
-            <span class="label">${t.netMonthlyBalance}</span>
-            <span class="value">₪ ${formatNumber(results.monthlyPayment - results.rentIncome)}</span>
+          <div class="row" style="margin-bottom: 4px; background: ${isNetBalancePositive ? '#dcfce7' : '#fee2e2'}; border-radius: 6px; padding: 10px !important;">
+            <span class="label" style="font-weight: 600; color: ${isNetBalancePositive ? '#166534' : '#991b1b'};">${t.netMonthlyBalance}</span>
+            <span class="value" style="font-weight: 700; color: ${netBalanceColor}; font-size: 15px;">${netBalanceFormatted}</span>
+          </div>
+          <div style="font-size: 10px; color: ${isNetBalancePositive ? '#166534' : '#991b1b'}; margin-top: 4px; font-style: italic;">
+            ${isNetBalancePositive ? (language === 'he' ? '✅ ' + t.positiveBalance : language === 'fr' ? '✅ ' + t.positiveBalance : '✅ ' + t.positiveBalance) : (language === 'he' ? '⚠️ ' + t.negativeBalance : language === 'fr' ? '⚠️ ' + t.negativeBalance : '⚠️ ' + t.negativeBalance)}
           </div>
           `
       : ""
