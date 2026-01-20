@@ -2,9 +2,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import heroBg from '@/assets/hero-bg.jpg';
 import logoEshel from '@/assets/logo-eshel.png';
+import { usePartner } from '@/contexts/PartnerContext';
 
 export function HeroHeader() {
   const { t } = useLanguage();
+  const { partner } = usePartner();
 
   return (
     <header className="relative overflow-hidden min-h-[280px] md:min-h-[320px]">
@@ -21,12 +23,20 @@ export function HeroHeader() {
         <LanguageSwitcher />
         
         {/* Logo */}
-        <div className="flex justify-center pt-3 md:pt-4">
-          <img 
-            src={logoEshel} 
-            alt="Eshel Finances - אשל פיננסים" 
-            className="h-44 md:h-64 lg:h-80 xl:h-96 w-auto max-w-[90vw] md:max-w-[72vw] lg:max-w-[60vw] object-contain drop-shadow-xl"
+        <div className="flex flex-col items-center justify-center pt-3 md:pt-4 gap-2">
+          <img
+            src={partner?.logo_url || logoEshel}
+            alt={partner?.name ? `${partner.name} logo` : 'Eshel Finances - אשל פיננסים'}
+            className={
+              partner?.logo_url
+                ? "w-auto max-w-[90vw] object-contain drop-shadow-sm"
+                : "h-44 md:h-64 lg:h-80 xl:h-96 w-auto max-w-[90vw] md:max-w-[72vw] lg:max-w-[60vw] object-contain drop-shadow-xl"
+            }
+            style={partner?.logo_url ? { maxHeight: 40, objectFit: 'contain' } : undefined}
           />
+          {partner?.name ? (
+            <span className="text-xs text-muted-foreground">Partenaire: {partner.name}</span>
+          ) : null}
         </div>
         
         {/* Title Section */}
