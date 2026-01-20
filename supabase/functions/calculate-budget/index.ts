@@ -25,6 +25,8 @@ const CalculatorInputSchema = z.object({
   budgetCap: z.number().nonnegative().max(1e9).nullable(),
   isFirstProperty: z.boolean(),
   isIsraeliTaxResident: z.boolean(),
+  // Expected rent: null = use 3% yield formula; positive number = fixed rent amount
+  expectedRent: z.number().nonnegative().max(1e9).nullable(),
   lawyerPct: z.number().min(0).max(10),
   brokerPct: z.number().min(0).max(10),
   vatPct: z.number().min(0).max(50),
@@ -145,6 +147,10 @@ function calculateClosingCosts(
  * - Investment Property: Bank recognizes 80% of rental income
  * - User Limit: budgetCap + 100% of actual rent
  * - Final limit is MIN(Bank Limit, User Limit)
+ * 
+ * RENTAL INCOME MODES:
+ * - Scenario A (expectedRent > 0): Fixed rent amount, added as additional income
+ * - Scenario B (expectedRent null/0): Dynamic rent based on 3% annual yield of property price
  */
 function solveMaximumBudget(
   inputs: CalculatorInputs,
@@ -161,6 +167,7 @@ function solveMaximumBudget(
     budgetCap,
     isRented,
     isFirstProperty,
+    expectedRent,
     lawyerPct,
     brokerPct,
     vatPct,
@@ -168,6 +175,95 @@ function solveMaximumBudget(
     otherFee,
     interest
   } = inputs;
+
+  // Scenario A: Fixed rent - solve directly without binary search for price
+  // When expectedRent is provided, it's a FIXED additional income
+  const hasFixedRent = expectedRent !== null && expectedRent > 0;
+  
+  if (hasFixedRent && !isFirstProperty) {
+    // SCENARIO A: Fixed rent amount
+    // The rental income is known upfront, so we can calculate max payment capacity directly
+    // Then solve for max property price based on LTV and equity constraints
+    
+    const fixedRent = expectedRent;
+    
+    // Bank Regulatory Limit with fixed rent:
+    // Investment Property: Bank recognizes 80% of rental income
+    const bankRecognizedIncome = netIncome + (fixedRent * 0.8);
+    const bankMaxPayment = bankRecognizedIncome * (ratio / 100);
+    
+    // User Cash Flow Limit: budgetCap + 100% of fixed rent
+    const userEffectiveLimit = (budgetCap && budgetCap > 0)
+      ? budgetCap + fixedRent
+      : Infinity;
+    
+    // Final allowed monthly payment
+    const maxPayment = Math.min(bankMaxPayment, userEffectiveLimit);
+    
+    // Maximum loan based on payment capacity
+    const maxLoanByPayment = maxPayment / amortizationFactor;
+    
+    // Now solve for max price using binary search (constrained by LTV and equity)
+    let low = 0;
+    let high = equity * 20;
+    let iterations = 0;
+    let bestResult: CalculatorResults | null = null;
+    
+    while (high - low > TOLERANCE && iterations < MAX_ITERATIONS) {
+      iterations++;
+      const price = (low + high) / 2;
+      
+      const purchaseTax = computePurchaseTax(price, taxProfile);
+      const closingCosts = calculateClosingCosts(
+        price, purchaseTax, lawyerPct, brokerPct, vatPct, advisorFee, otherFee
+      );
+      
+      // LTV constraint
+      const maxLoanByLTV = price * (ltv / 100);
+      
+      // Final max loan for this price
+      const maxLoan = Math.min(maxLoanByPayment, maxLoanByLTV);
+      
+      // Required equity
+      const requiredEquity = price + closingCosts - maxLoan;
+      
+      if (requiredEquity <= equity + TOLERANCE) {
+        low = price;
+        
+        const loan = maxLoan;
+        const payment = loan * amortizationFactor;
+        
+        const lawyerFeeTTC = price * (lawyerPct / 100) * (1 + vatPct / 100);
+        const brokerFeeTTC = price * (brokerPct / 100) * (1 + vatPct / 100);
+        
+        bestResult = {
+          maxPropertyValue: price,
+          loanAmount: loan,
+          actualLTV: (loan / price) * 100,
+          monthlyPayment: payment,
+          rentIncome: fixedRent,
+          netPayment: payment - fixedRent,
+          closingCosts: closingCosts,
+          totalInterest: (payment * maxLoanTermMonths) - loan,
+          totalCost: payment * maxLoanTermMonths,
+          loanTermYears: maxLoanTermMonths / 12,
+          purchaseTax,
+          taxProfile,
+          equityUsed: price + closingCosts - loan,
+          equityRemaining: equity - (price + closingCosts - loan),
+          lawyerFeeTTC,
+          brokerFeeTTC
+        };
+      } else {
+        high = price;
+      }
+    }
+    
+    return bestResult;
+  }
+  
+  // SCENARIO B: Dynamic rent (original logic)
+  // Rent is calculated as (PropertyPrice * 3%) / 12
 
   let low = 0;
   let high = equity * 20; // Sufficiently high upper bound
@@ -188,7 +284,7 @@ function solveMaximumBudget(
 
     // 2. Calculate Max Loan Allowed
     // a. Income Constraint (DTI) - Israeli Banking Regulations
-    // Estimated monthly rent from property
+    // Estimated monthly rent from property (dynamic based on price)
     const estimatedRent = isRented ? (price * (rentalYield / 100)) / 12 : 0;
     
     // Bank Regulatory Limit:
