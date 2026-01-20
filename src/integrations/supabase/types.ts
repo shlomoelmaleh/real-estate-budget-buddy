@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          description: string
+          event_type: Database["public"]["Enums"]["partner_event_type"]
+          id: string
+          metadata: Json
+          partner_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          description: string
+          event_type: Database["public"]["Enums"]["partner_event_type"]
+          id?: string
+          metadata?: Json
+          partner_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          description?: string
+          event_type?: Database["public"]["Enums"]["partner_event_type"]
+          id?: string
+          metadata?: Json
+          partner_id?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partners: {
+        Row: {
+          brand_color: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          phone: string | null
+          slug: string
+          whatsapp: string | null
+        }
+        Insert: {
+          brand_color?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          slug: string
+          whatsapp?: string | null
+        }
+        Update: {
+          brand_color?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          slug?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           endpoint: string
@@ -91,7 +165,11 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      partner_event_type:
+        | "LEAD_SENT"
+        | "LEAD_FAILED"
+        | "STATUS_CHANGE"
+        | "PARTNER_CREATED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -218,6 +296,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      partner_event_type: [
+        "LEAD_SENT",
+        "LEAD_FAILED",
+        "STATUS_CHANGE",
+        "PARTNER_CREATED",
+      ],
+    },
   },
 } as const
