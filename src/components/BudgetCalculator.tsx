@@ -32,18 +32,36 @@ export function BudgetCalculator() {
   const displayTitle = partner?.name ? (partner?.name || t.advisorTitle) : t.advisorTitle;
   const displayLogo = partner?.logo_url || logoEshel;
 
+  const normalizeToWaMeDigits = (raw: string) => {
+    // WhatsApp wa.me requires an international number with country code (digits only).
+    const digitsOnly = (raw || "").replace(/[^0-9]/g, "");
+    if (!digitsOnly) return "";
+
+    // Convert international dialing prefix "00" -> ""
+    let d = digitsOnly.startsWith("00") ? digitsOnly.slice(2) : digitsOnly;
+
+    // Israel-friendly normalization:
+    // - Local mobile/landline often written as 0XXXXXXXXX  -> 972XXXXXXXXX
+    // - Sometimes written as 9720XXXXXXXXX              -> 972XXXXXXXXX
+    if (d.startsWith("9720")) d = `972${d.slice(4)}`;
+    else if (d.startsWith("0")) d = `972${d.slice(1)}`;
+    else if (d.length === 9 && d.startsWith("5")) d = `972${d}`; // e.g. 549997711
+
+    return d;
+  };
+
   const buildWhatsAppHref = () => {
     // Prefer an explicit partner.whatsapp value if provided.
-    const raw = partner?.whatsapp || "";
-    if (raw) {
-      if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-      const digits = raw.replace(/[^0-9]/g, "");
+    const rawWhatsApp = partner?.whatsapp || "";
+    if (rawWhatsApp) {
+      if (rawWhatsApp.startsWith("http://") || rawWhatsApp.startsWith("https://")) return rawWhatsApp;
+      const digits = normalizeToWaMeDigits(rawWhatsApp);
       if (digits) return `https://wa.me/${digits}`;
     }
 
     // Fallback: derive from phone.
-    const phoneDigits = (partner?.phone || "").replace(/[^0-9]/g, "");
-    if (phoneDigits) return `https://wa.me/${phoneDigits}`;
+    const digitsFromPhone = normalizeToWaMeDigits(partner?.phone || "");
+    if (digitsFromPhone) return `https://wa.me/${digitsFromPhone}`;
 
     // Default admin WhatsApp.
     return "https://wa.me/972549997711";
