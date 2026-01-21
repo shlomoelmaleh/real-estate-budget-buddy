@@ -5,6 +5,7 @@ import {
   TrendingUp, Percent, Clock, Lock, CheckCircle2, Flag, Wallet
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePartner } from '@/contexts/PartnerContext';
 import { HeroHeader } from './HeroHeader';
 import { FormSection } from './FormSection';
 import { FormInput } from './FormInput';
@@ -23,6 +24,7 @@ import logoEshel from '@/assets/logo-eshel.png';
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
+  const { partner } = usePartner();
 
   // Basic info
   const [fullName, setFullName] = useState('');
@@ -269,6 +271,10 @@ export function BudgetCalculator() {
 
         // Database insert is handled by the edge function (rate-limited)
 
+        // Log partner_id for debugging
+        const partnerId = partner?.id || null;
+        console.log('Sending email with partner_id:', partnerId);
+
         const { error: emailError } = await supabase.functions.invoke('send-report-email', {
           body: {
             recipientEmail: email,
@@ -281,6 +287,7 @@ export function BudgetCalculator() {
             yearlyBalanceData,
             paymentBreakdownData,
             csvData,
+            partnerId,
           },
         });
 
