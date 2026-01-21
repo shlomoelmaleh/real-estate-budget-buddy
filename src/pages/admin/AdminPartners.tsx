@@ -128,7 +128,7 @@ export default function AdminPartners() {
   };
 
   const copyLink = async (slug: string) => {
-    const url = `${window.location.origin}/?ref=${encodeURIComponent(slug)}`;
+    const url = `https://dream-deal-planner-29.lovable.app/?ref=${encodeURIComponent(slug)}`;
     await navigator.clipboard.writeText(url);
     toast.success("Copied");
   };
