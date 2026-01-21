@@ -296,15 +296,13 @@ export default function AdminPartners() {
                     <label className="text-xs font-medium">Email</label>
                     <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} type="email" />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium">Phone</label>
-                      <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium">WhatsApp</label>
-                      <Input value={form.whatsapp} onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))} />
-                    </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Phone</label>
+                    <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">WhatsApp</label>
+                    <Input value={form.whatsapp} onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))} className="w-full" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium">Brand Color (hex)</label>
