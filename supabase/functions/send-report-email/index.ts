@@ -1564,8 +1564,14 @@ const handler = async (req: Request): Promise<Response> => {
       ]
       : [];
 
-    // Build CC list for client email - include partner if available
-    const clientCc: string[] = partnerEmail ? [partnerEmail] : [];
+    // Build CC list for client email - include partner if available.
+    // IMPORTANT: if the "client" recipient is the admin/advisor (testing / internal),
+    // do NOT CC the partner (the admin explicitly requested this).
+    const isSendingToAdvisorInbox =
+      data.recipientEmail.toLowerCase() === ADVISOR_EMAIL.toLowerCase();
+
+    const clientCc: string[] =
+      partnerEmail && !isSendingToAdvisorInbox ? [partnerEmail] : [];
 
     const primaryRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
