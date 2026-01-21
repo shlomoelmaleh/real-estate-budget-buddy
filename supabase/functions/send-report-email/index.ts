@@ -102,6 +102,7 @@ const EmailRequestSchema = z.object({
     .max(50)
     .optional(),
   csvData: z.string().optional(),
+  partnerId: z.string().uuid().nullable().optional(),
 });
 
 // Atomic rate limiting helper using database function to prevent race conditions
@@ -222,6 +223,7 @@ interface ReportEmailRequest {
   yearlyBalanceData?: { year: number; balance: number }[];
   paymentBreakdownData?: { year: number; interest: number; principal: number }[];
   csvData?: string;
+  partnerId?: string | null;
 }
 
 function formatNumber(num: number): string {
@@ -1455,6 +1457,25 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`[${requestId}] Simulation saved to database`);
     }
 
+    // Fetch partner email for CC if partnerId is provided
+    let partnerEmail: string | null = null;
+    if (data.partnerId) {
+      const { data: partnerData, error: partnerError } = await supabaseAdmin
+        .from("partners")
+        .select("email, is_active")
+        .eq("id", data.partnerId)
+        .maybeSingle();
+      
+      if (partnerError) {
+        console.warn(`[${requestId}] Failed to fetch partner:`, partnerError.message);
+      } else if (partnerData && partnerData.is_active && partnerData.email) {
+        partnerEmail = partnerData.email;
+        console.log(`[${requestId}] Adding Partner CC:`, partnerEmail);
+      } else {
+        console.log(`[${requestId}] Partner not found, inactive, or no email configured`);
+      }
+    }
+
     // Generate two versions: one for client, one for advisor (with client info section)
     const clientContent = getEmailContent(data, false);
     const advisorContent = getEmailContent(data, true);
@@ -1481,6 +1502,9 @@ const handler = async (req: Request): Promise<Response> => {
       ]
       : [];
 
+    // Build CC list for client email - include partner if available
+    const clientCc: string[] = partnerEmail ? [partnerEmail] : [];
+
     const primaryRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -1490,6 +1514,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [data.recipientEmail],
+        cc: clientCc.length > 0 ? clientCc : undefined,
         subject: clientSubject,
         html: clientHtml,
         attachments,
