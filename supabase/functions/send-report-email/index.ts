@@ -635,14 +635,33 @@ function getEmailContent(
   const advisorPhone = partnerContact?.phone || t.advisorPhone;
   const advisorEmail = partnerContact?.email || t.advisorEmail;
 
+  const normalizeToWaMeDigits = (raw: string) => {
+    const digitsOnly = (raw || "").replace(/[^0-9]/g, "");
+    if (!digitsOnly) return "";
+
+    // Convert international dialing prefix "00" -> ""
+    let d = digitsOnly.startsWith("00") ? digitsOnly.slice(2) : digitsOnly;
+
+    // Israel-friendly normalization:
+    // - Local often written as 0XXXXXXXXX -> 972XXXXXXXXX
+    // - Sometimes written as 9720XXXXXXXXX -> 972XXXXXXXXX
+    if (d.startsWith("9720")) d = `972${d.slice(4)}`;
+    else if (d.startsWith("0")) d = `972${d.slice(1)}`;
+    else if (d.length === 9 && d.startsWith("5")) d = `972${d}`;
+
+    return d;
+  };
+
   const normalizeWhatsAppHref = (raw: string | null | undefined, fallbackPhone: string) => {
     if (raw) {
       if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-      const digits = raw.replace(/[^0-9]/g, "");
+      const digits = normalizeToWaMeDigits(raw);
       if (digits) return `https://wa.me/${digits}`;
     }
-    const phoneDigits = (fallbackPhone || "").replace(/[^0-9]/g, "");
+
+    const phoneDigits = normalizeToWaMeDigits(fallbackPhone || "");
     if (phoneDigits) return `https://wa.me/${phoneDigits}`;
+
     return "https://wa.me/972549997711";
   };
 
