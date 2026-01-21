@@ -26,6 +26,29 @@ export function BudgetCalculator() {
   const { t, language } = useLanguage();
   const { partner } = usePartner();
 
+  const displayName = partner?.name || t.advisorName;
+  const displayPhone = partner?.phone || t.advisorPhone;
+  const displayEmail = partner?.email || t.advisorEmail;
+  const displayTitle = partner?.name ? (partner?.name || t.advisorTitle) : t.advisorTitle;
+  const displayLogo = partner?.logo_url || logoEshel;
+
+  const buildWhatsAppHref = () => {
+    // Prefer an explicit partner.whatsapp value if provided.
+    const raw = partner?.whatsapp || "";
+    if (raw) {
+      if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+      const digits = raw.replace(/[^0-9]/g, "");
+      if (digits) return `https://wa.me/${digits}`;
+    }
+
+    // Fallback: derive from phone.
+    const phoneDigits = (partner?.phone || "").replace(/[^0-9]/g, "");
+    if (phoneDigits) return `https://wa.me/${phoneDigits}`;
+
+    // Default admin WhatsApp.
+    return "https://wa.me/972549997711";
+  };
+
   // Basic info
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -615,34 +638,34 @@ export function BudgetCalculator() {
           <div className="flex flex-col items-center gap-4">
             {/* Mini Logo */}
             <img 
-              src={logoEshel} 
-              alt="Eshel Finances" 
+              src={displayLogo} 
+              alt={partner?.name ? `${partner.name} logo` : "Eshel Finances"} 
               className="h-14 w-auto object-contain opacity-90"
             />
             
             {/* Advisor Info */}
             <div className="flex flex-col items-center gap-1">
-              <p className="font-semibold text-foreground">{t.advisorName}</p>
-              <p className="text-xs text-muted-foreground">{t.advisorTitle}</p>
+              <p className="font-semibold text-foreground">{displayName}</p>
+              <p className="text-xs text-muted-foreground">{displayTitle}</p>
             </div>
             
             {/* Contact Links */}
             <div className="flex items-center gap-6 text-sm">
               <a 
-                href="https://wa.me/972549997711" 
+                href={buildWhatsAppHref()} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
               >
                 <WhatsAppIcon size={16} className="text-green-600" />
-                <span>{t.advisorPhone}</span>
+                <span>{displayPhone}</span>
               </a>
               <a 
-                href={`mailto:${t.advisorEmail}`} 
+                href={`mailto:${displayEmail}`} 
                 className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
               >
                 <Mail className="w-4 h-4 text-primary" />
-                <span>{t.advisorEmail}</span>
+                <span>{displayEmail}</span>
               </a>
             </div>
             

@@ -255,7 +255,18 @@ function toBase64(str: string): string {
   return btoa(binary);
 }
 
-function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = false): { subject: string; html: string } {
+type PartnerContactOverride = {
+  name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  whatsapp?: string | null;
+};
+
+function getEmailContent(
+  data: ReportEmailRequest,
+  isAdvisorCopy: boolean = false,
+  partnerContact?: PartnerContactOverride,
+): { subject: string; html: string } {
   const {
     language,
     recipientName: rawRecipientName,
@@ -619,6 +630,28 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
   };
 
   const t = texts[language];
+
+  const advisorName = partnerContact?.name || t.advisorName;
+  const advisorPhone = partnerContact?.phone || t.advisorPhone;
+  const advisorEmail = partnerContact?.email || t.advisorEmail;
+
+  const normalizeWhatsAppHref = (raw: string | null | undefined, fallbackPhone: string) => {
+    if (raw) {
+      if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+      const digits = raw.replace(/[^0-9]/g, "");
+      if (digits) return `https://wa.me/${digits}`;
+    }
+    const phoneDigits = (fallbackPhone || "").replace(/[^0-9]/g, "");
+    if (phoneDigits) return `https://wa.me/${phoneDigits}`;
+    return "https://wa.me/972549997711";
+  };
+
+  const advisorWhatsAppHref = normalizeWhatsAppHref(partnerContact?.whatsapp, advisorPhone);
+
+  const withTextQuery = (baseHref: string, text: string) => {
+    const separator = baseHref.includes("?") ? "&" : "?";
+    return `${baseHref}${separator}text=${encodeURIComponent(text)}`;
+  };
   const dir = language === "he" ? "rtl" : "ltr";
   const isRTL = language === "he";
   const alignStart = isRTL ? "right" : "left";
@@ -977,9 +1010,9 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       <div class="header">
         <div class="header-info">
           <div style="text-align: ${alignStart}; ${isRTL ? "direction: rtl;" : ""}">
-            <p style="font-weight: 700; font-size: 16px; margin: 0 0 4px 0;">${t.advisorName}</p>
-            <p>📞 <a href="https://wa.me/972549997711" target="_blank">${t.advisorPhone}</a></p>
-            <p>✉️ <a href="mailto:${t.advisorEmail}">${t.advisorEmail}</a></p>
+            <p style="font-weight: 700; font-size: 16px; margin: 0 0 4px 0;">${advisorName}</p>
+            <p>📞 <a href="${advisorWhatsAppHref}" target="_blank">${advisorPhone}</a></p>
+            <p>✉️ <a href="mailto:${advisorEmail}">${advisorEmail}</a></p>
           </div>
           <p style="font-size: 12px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
         </div>
@@ -1353,8 +1386,8 @@ function getEmailContent(data: ReportEmailRequest, isAdvisorCopy: boolean = fals
       <div class="cta-section">
         <h3>${t.ctaTitle}</h3>
         <div class="cta-buttons">
-          <a href="https://wa.me/972549997711?text=${encodeURIComponent(`Bonjour ${t.advisorName}, je viens d'utiliser votre simulateur et j'aimerais en discuter.`)}" class="cta-button cta-whatsapp" target="_blank">${t.ctaWhatsApp}</a>
-          <a href="mailto:${t.advisorEmail}?subject=${encodeURIComponent(`Question suite à ma simulation`)}" class="cta-button cta-email">${t.ctaEmail}</a>
+          <a href="${withTextQuery(advisorWhatsAppHref, `Bonjour ${advisorName}, je viens d'utiliser votre simulateur et j'aimerais en discuter.`)}" class="cta-button cta-whatsapp" target="_blank">${t.ctaWhatsApp}</a>
+          <a href="mailto:${advisorEmail}?subject=${encodeURIComponent(`Question suite à ma simulation`)}" class="cta-button cta-email">${t.ctaEmail}</a>
         </div>
       </div>
 
@@ -1457,28 +1490,38 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`[${requestId}] Simulation saved to database`);
     }
 
-    // Fetch partner email for CC if partnerId is provided
+    // Fetch partner info for CC + advisor branding override if partnerId is provided
     let partnerEmail: string | null = null;
+    let partnerContact: PartnerContactOverride | undefined;
     if (data.partnerId) {
       const { data: partnerData, error: partnerError } = await supabaseAdmin
         .from("partners")
-        .select("email, is_active")
+        .select("name, phone, whatsapp, email, is_active")
         .eq("id", data.partnerId)
         .maybeSingle();
       
       if (partnerError) {
         console.warn(`[${requestId}] Failed to fetch partner:`, partnerError.message);
-      } else if (partnerData && partnerData.is_active && partnerData.email) {
-        partnerEmail = partnerData.email;
-        console.log(`[${requestId}] Adding Partner CC:`, partnerEmail);
+      } else if (partnerData && partnerData.is_active) {
+        partnerEmail = partnerData.email ?? null;
+        if (partnerEmail) {
+          console.log(`[${requestId}] Adding Partner CC:`, partnerEmail);
+        }
+
+        partnerContact = {
+          name: partnerData.name ?? null,
+          phone: partnerData.phone ?? null,
+          whatsapp: partnerData.whatsapp ?? null,
+          email: partnerData.email ?? null,
+        };
       } else {
         console.log(`[${requestId}] Partner not found, inactive, or no email configured`);
       }
     }
 
     // Generate two versions: one for client, one for advisor (with client info section)
-    const clientContent = getEmailContent(data, false);
-    const advisorContent = getEmailContent(data, true);
+    const clientContent = getEmailContent(data, false, partnerContact);
+    const advisorContent = getEmailContent(data, true, partnerContact);
 
     const clientHtml = clientContent.html;
     const clientSubject = clientContent.subject;
