@@ -31,9 +31,9 @@ function safeJsonParse<T>(raw: string | null): T | null {
 }
 
 async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
-  // Query partners table directly to avoid view filters
+  // Use partners_public view which is designed for public access and bypasses RLS
   const { data, error } = await supabase
-    .from("partners")
+    .from("partners_public")
     .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
     .eq("slug", slug)
     .maybeSingle();
@@ -42,9 +42,9 @@ async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
 }
 
 async function fetchPartnerById(id: string): Promise<Partner | null> {
-  // Query partners table directly to avoid view filters
+  // Use partners_public view which is designed for public access and bypasses RLS
   const { data, error } = await supabase
-    .from("partners")
+    .from("partners_public")
     .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
     .eq("id", id)
     .maybeSingle();
@@ -64,87 +64,77 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     applyPartnerBrandColor(null);
   };
 
-  // Detect ?ref=slug or ?partnerId=uuid
+  // Consolidated boot effect: Handle URL parameters and localStorage
   useEffect(() => {
     let cancelled = false;
 
     const run = async () => {
       const sp = new URLSearchParams(window.location.search);
-      const ref = sp.get("ref")?.trim() || "";
-      const queryPartnerId = sp.get("partnerId")?.trim() || sp.get("id")?.trim() || "";
+      const urlRef = sp.get("ref")?.trim() || sp.get("partner")?.trim() || "";
+      const urlId = sp.get("partnerId")?.trim() || sp.get("id")?.trim() || "";
 
-      if (!ref && !queryPartnerId) {
-        setIsLoading(false);
-        return;
+      const stored = safeJsonParse<PartnerBinding>(localStorage.getItem(STORAGE_KEY));
+      const hasStored = stored && stored.partnerId && stored.expiresAt && stored.expiresAt > Date.now();
+
+      // Case 1: URL has parameters (Primary)
+      if (urlRef || urlId) {
+        setIsLoading(true);
+        console.log(`[PartnerContext] Detecting from URL: slug="${urlRef}", id="${urlId}"`);
+
+        let p: Partner | null = null;
+        if (urlRef) p = await fetchPartnerBySlug(urlRef);
+        if (!p && urlId) p = await fetchPartnerById(urlId);
+
+        if (cancelled) return;
+
+        if (p && p.is_active) {
+          console.log(`[PartnerContext] URL Partner loaded: ${p.name}`);
+          const newBinding: PartnerBinding = { partnerId: p.id, slug: p.slug, expiresAt: Date.now() + THIRTY_DAYS_MS };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(newBinding));
+          setBinding(newBinding);
+          setPartner(p);
+          applyPartnerBrandColor(normalizeHexColor(p.brand_color));
+          setIsLoading(false);
+          return;
+        } else {
+          if (p && !p.is_active) {
+            console.warn(`[PartnerContext] URL Partner found (${p.name}) but is NOT ACTIVE. Falling back to Admin.`);
+          } else {
+            console.warn(`[PartnerContext] URL param provided but NO PARTNER FOUND. Clearing binding.`);
+          }
+          clearBinding();
+          setIsLoading(false);
+          return;
+        }
       }
 
-      setIsLoading(true);
-      console.log(`[PartnerContext] Detecting partner from URL: ref="${ref}", partnerId="${queryPartnerId}"`);
+      // Case 2: No URL params, try localStorage
+      if (hasStored) {
+        setIsLoading(true);
+        console.log(`[PartnerContext] Loading from localStorage: ${stored?.partnerId}`);
+        setBinding(stored);
 
-      let p: Partner | null = null;
+        const p = await fetchPartnerById(stored!.partnerId);
+        if (cancelled) return;
 
-      if (ref) {
-        p = await fetchPartnerBySlug(ref);
-      } else if (queryPartnerId) {
-        p = await fetchPartnerById(queryPartnerId);
-      }
-
-      if (cancelled) return;
-
-      if (!p) {
-        console.warn(`[PartnerContext] No partner found for URL parameters.`);
-        // Don't clear immediately if we already have a binding, unless this was an explicit (but invalid) attempt
-        if (ref || queryPartnerId) {
+        if (p && p.is_active) {
+          console.log(`[PartnerContext] Persistent Partner loaded: ${p.name}`);
+          setPartner(p);
+          applyPartnerBrandColor(normalizeHexColor(p.brand_color));
+        } else {
+          console.warn(`[PartnerContext] Stored partner no longer exists or is inactive. Clearing.`);
           clearBinding();
         }
         setIsLoading(false);
         return;
       }
 
-      console.log(`[PartnerContext] Partner loaded: ${p.name} (ID: ${p.id}, Active: ${p.is_active})`);
-
-      const newBinding: PartnerBinding = {
-        partnerId: p.id,
-        slug: p.slug,
-        expiresAt: Date.now() + THIRTY_DAYS_MS,
-      };
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newBinding));
-      setBinding(newBinding);
-      setPartner(p);
-      applyPartnerBrandColor(normalizeHexColor(p.brand_color));
+      // Case 3: Nothing found
+      console.log(`[PartnerContext] No partner binding active.`);
       setIsLoading(false);
     };
 
     void run();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Boot from localStorage
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const stored = safeJsonParse<PartnerBinding>(localStorage.getItem(STORAGE_KEY));
-      if (!stored || !stored.partnerId || !stored.expiresAt || stored.expiresAt < Date.now()) {
-        clearBinding();
-        setIsLoading(false);
-        return;
-      }
-      setBinding(stored);
-      const p = await fetchPartnerById(stored.partnerId);
-      if (cancelled) return;
-      if (!p) {
-        clearBinding();
-        setIsLoading(false);
-        return;
-      }
-      setPartner(p);
-      applyPartnerBrandColor(normalizeHexColor(p.brand_color));
-      setIsLoading(false);
-    })();
     return () => {
       cancelled = true;
     };
