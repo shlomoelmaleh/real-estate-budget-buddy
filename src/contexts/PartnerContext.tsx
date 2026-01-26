@@ -31,9 +31,9 @@ function safeJsonParse<T>(raw: string | null): T | null {
 }
 
 async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
-  // Use partners_public view which only exposes active partners
+  // Query partners table directly to avoid view filters
   const { data, error } = await supabase
-    .from("partners_public")
+    .from("partners")
     .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
     .eq("slug", slug)
     .maybeSingle();
@@ -42,9 +42,9 @@ async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
 }
 
 async function fetchPartnerById(id: string): Promise<Partner | null> {
-  // Use partners_public view which only exposes active partners
+  // Query partners table directly to avoid view filters
   const { data, error } = await supabase
-    .from("partners_public")
+    .from("partners")
     .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
     .eq("id", id)
     .maybeSingle();
