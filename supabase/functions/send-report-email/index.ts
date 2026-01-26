@@ -1588,91 +1588,75 @@ const handler = async (req: Request): Promise<Response> => {
     // Email 2: Admin/Partner email (always sent unless sending to advisor inbox)
     // - If partner exists: TO = partner, BCC = admin
     // - If no partner: TO = admin
-    let secondEmailRes: Response | null = null;
-    let secondEmailResponse: any = null;
+    let adminEmailRes: Response | null = null;
+    let adminEmailResponse: any = null;
+
+    let partnerEmailRes: Response | null = null;
+    let partnerEmailResponse: any = null;
 
     if (!isSendingToAdvisorInbox) {
-      // If partner exists, send TWO separate emails: one to partner, one to admin
-      // If no partner, send ONE email to admin
+      // 1. Send copy to Admin (ALWAYS)
+      const adminEmailPayload = {
+        from: "Property Budget Pro <noreply@eshel-f.com>",
+        to: [ADVISOR_EMAIL],
+        subject: clientSubject,
+        html: clientHtml,
+        attachments,
+      };
 
-      if (partnerEmail) {
-        // Email to Partner
-        const partnerEmailPayload = {
-          from: "Property Budget Pro <noreply@eshel-f.com>",
-          to: [partnerEmail],
-          subject: clientSubject,
-          html: clientHtml,
-          attachments,
-        };
+      adminEmailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify(adminEmailPayload),
+      });
 
-        const partnerEmailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify(partnerEmailPayload),
-        });
-
-        if (!partnerEmailRes.ok) {
-          const partnerEmailError = await partnerEmailRes.text();
-          console.warn(`[${requestId}] Partner email failed to send:`, partnerEmailError);
-        } else {
-          const partnerEmailResponse = await partnerEmailRes.json();
-          console.log(`[${requestId}] Partner email sent to ${partnerEmail}`);
-        }
-
-        // Email to Admin
-        const adminEmailPayload = {
-          from: "Property Budget Pro <noreply@eshel-f.com>",
-          to: [ADVISOR_EMAIL],
-          subject: clientSubject,
-          html: clientHtml,
-          attachments,
-        };
-
-        secondEmailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify(adminEmailPayload),
-        });
-
-        if (!secondEmailRes.ok) {
-          const secondEmailError = await secondEmailRes.text();
-          console.warn(`[${requestId}] Admin email failed to send:`, secondEmailError);
-        } else {
-          secondEmailResponse = await secondEmailRes.json();
-          console.log(`[${requestId}] Admin email sent to ${ADVISOR_EMAIL}`);
-        }
+      if (!adminEmailRes.ok) {
+        const adminError = await adminEmailRes.text();
+        console.warn(`[${requestId}] Admin email failed to send:`, adminError);
       } else {
-        // No partner: send ONE email to admin only
-        const adminEmailPayload = {
-          from: "Property Budget Pro <noreply@eshel-f.com>",
-          to: [ADVISOR_EMAIL],
-          subject: clientSubject,
-          html: clientHtml,
-          attachments,
-        };
+        adminEmailResponse = await adminEmailRes.json();
+        console.log(`[${requestId}] Admin email sent to ${ADVISOR_EMAIL}`);
+      }
 
-        secondEmailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-          body: JSON.stringify(adminEmailPayload),
-        });
+      // 2. Send copy to Partner (IF EXISTS)
+      if (partnerEmail) {
+        // Prevent sending duplicate if partner IS the advisor (testing scenario)
+        if (partnerEmail.toLowerCase() !== ADVISOR_EMAIL.toLowerCase()) {
+          const partnerEmailPayload = {
+            from: "Property Budget Pro <noreply@eshel-f.com>",
+            to: [partnerEmail],
+            subject: clientSubject,
+            html: clientHtml,
+            attachments,
+          };
 
-        if (!secondEmailRes.ok) {
-          const secondEmailError = await secondEmailRes.text();
-          console.warn(`[${requestId}] Admin email failed to send:`, secondEmailError);
+          partnerEmailRes = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${RESEND_API_KEY}`,
+            },
+            body: JSON.stringify(partnerEmailPayload),
+          });
+
+          if (!partnerEmailRes.ok) {
+            const partnerError = await partnerEmailRes.text();
+            console.warn(`[${requestId}] Partner email failed to send to ${partnerEmail}:`, partnerError);
+          } else {
+            partnerEmailResponse = await partnerEmailRes.json();
+            console.log(`[${requestId}] Partner email sent to ${partnerEmail}`);
+          }
         } else {
-          secondEmailResponse = await secondEmailRes.json();
-          console.log(`[${requestId}] Admin email sent to ${ADVISOR_EMAIL}`);
+          console.log(`[${requestId}] Partner email is same as admin (${partnerEmail}), skipping duplicate send.`);
+          // Mark as "sent" effectively since admin got it
+          partnerEmailRes = adminEmailRes;
+          partnerEmailResponse = adminEmailResponse;
         }
+      } else if (data.partnerId) {
+        console.warn(`[${requestId}] Partner ID ${data.partnerId} was provided but no email found (or inactive).`);
       }
     }
 
@@ -1690,10 +1674,11 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({
         requestId,
         deliveredToClient: true,
-        deliveredToPartner: partnerEmail && secondEmailRes ? secondEmailRes.ok : false,
-        deliveredToAdvisor: secondEmailRes ? secondEmailRes.ok : false,
+        deliveredToPartner: partnerEmailRes ? partnerEmailRes.ok : false,
+        deliveredToAdvisor: adminEmailRes ? adminEmailRes.ok : false,
         resendClient: clientEmailResponse,
-        resendSecondEmail: secondEmailResponse,
+        resendAdmin: adminEmailResponse,
+        resendPartner: partnerEmailResponse,
       }),
       {
         status: 200,
