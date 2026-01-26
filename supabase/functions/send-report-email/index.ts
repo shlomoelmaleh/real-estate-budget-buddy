@@ -146,25 +146,24 @@ async function checkMultiLayerRateLimit(
     return { allowed: true };
   }
 
-  // Layer 1: IP-based rate limit (Increased to 1000 for testing)
-  const ipCheck = await checkRateLimitAtomic(supabaseAdmin, `ip:${clientIP}`, "send-report-email", 1000, 60);
+  // Layer 1: IP-based rate limit (10 emails per hour from same IP)
+  const ipCheck = await checkRateLimitAtomic(supabaseAdmin, `ip:${clientIP}`, "send-report-email", 10, 60);
 
   if (!ipCheck.allowed) {
-    console.warn(`[RateLimit] IP Limit hit for ${clientIP}`);
     return { allowed: false, reason: "ip_limit" };
   }
 
-  // Layer 2: Email-based rate limit (Increased to 1000 for testing)
+  // Layer 2: Email-based rate limit (5 emails per hour to same address)
+  // This prevents IP spoofing attacks since email address is harder to forge
   const emailCheck = await checkRateLimitAtomic(
     supabaseAdmin,
     `email:${recipientEmail.toLowerCase()}`,
     "send-report-email",
-    1000,
+    5,
     60,
   );
 
   if (!emailCheck.allowed) {
-    console.warn(`[RateLimit] Email Limit hit for ${recipientEmail}`);
     return { allowed: false, reason: "email_limit" };
   }
 
@@ -312,7 +311,7 @@ function getEmailContent(
   const rentRecognitionPct = parseNumber(inputs.rentRecognition) || 80;
   const recognizedRent = !inputs.isFirstProperty && inputs.isRented ? results.rentIncome * (rentRecognitionPct / 100) : 0;
   const adjustedIncomeForDTI = incomeNet + recognizedRent;
-
+  
   // Calculate correct DTI using adjusted income (income + recognized rent)
   const dtiEstimatedCorrected = adjustedIncomeForDTI > 0 ? monthlyPayment / adjustedIncomeForDTI : null;
 
@@ -320,13 +319,13 @@ function getEmailContent(
   const monthlyRent = results.rentIncome || 0;
   const propertyPrice = results.maxPropertyValue || 0;
   const totalCashInvested = results.equityUsed || (equityInitial - results.equityRemaining);
-
+  
   // Gross Annual Yield: (Monthly Rent * 12) / Property Price
   const grossYield = monthlyRent > 0 && propertyPrice > 0 ? (monthlyRent * 12) / propertyPrice : null;
-
+  
   // Net Monthly Cash Flow: Monthly Rent - Monthly Mortgage Payment
   const netCashFlow = monthlyRent - monthlyPayment;
-
+  
   // Cash-on-Cash Return (ROI): (Net Cash Flow * 12) / Total Cash Invested
   const cashOnCash = monthlyRent > 0 && totalCashInvested > 0 ? (netCashFlow * 12) / totalCashInvested : null;
 
@@ -734,13 +733,13 @@ function getEmailContent(
   const equityOnProperty = results.maxPropertyValue - results.loanAmount;
   // Use corrected DTI (with recognized rent for investment properties)
   const dtiEstimatedDisplay = dtiEstimatedCorrected !== null ? `${(dtiEstimatedCorrected * 100).toFixed(1)}%` : t.notAvailable;
-
+  
   // Net balance calculation (rent - payment; negative means out-of-pocket expense)
   const netMonthlyBalanceValue = results.rentIncome - results.monthlyPayment;
   const isNetBalancePositive = netMonthlyBalanceValue >= 0;
   const netBalanceColor = isNetBalancePositive ? "#10b981" : "#dc2626"; // Green or Red
-  const netBalanceFormatted = isNetBalancePositive
-    ? `₪ ${formatNumber(netMonthlyBalanceValue)}`
+  const netBalanceFormatted = isNetBalancePositive 
+    ? `₪ ${formatNumber(netMonthlyBalanceValue)}` 
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   const html = `
@@ -1463,14 +1462,20 @@ const handler = async (req: Request): Promise<Response> => {
     data.inputs.advisorFee = data.inputs.advisorFee || rawAdvisorFee || "0";
 
     // Multi-layer rate limiting: IP + email-based (defense in depth)
-    // TEMPORARIPY DISABLED FOR TESTING
-    const rateCheck = { allowed: true };
+    const clientIP =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
+
+    const rateCheck = await checkMultiLayerRateLimit(supabaseAdmin, clientIP, data.recipientEmail);
 
     if (!rateCheck.allowed) {
-      console.warn(`Rate limit exceeded`);
+      const errorMsg =
+        rateCheck.reason === "email_limit"
+          ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
+          : "Rate limit exceeded. Maximum 10 emails per hour.";
+      console.warn(`Rate limit exceeded: ${rateCheck.reason} for IP: ${clientIP}, email: ${data.recipientEmail}`);
       return new Response(
         JSON.stringify({
-          error: "Rate limit exceeded",
+          error: errorMsg,
           retryAfter: 3600,
         }),
         {
@@ -1508,40 +1513,28 @@ const handler = async (req: Request): Promise<Response> => {
     let partnerEmail: string | null = null;
     let partnerContact: PartnerContactOverride | undefined;
     if (data.partnerId) {
-      console.log(`[${requestId}] Fetching partner for identifier: ${data.partnerId}`);
-
-      // Try to determine if it's a UUID or a slug
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.partnerId);
-
-      const query = isUUID
-        ? supabaseAdmin.from("partners").select("name, phone, whatsapp, email, is_active").eq("id", data.partnerId)
-        : supabaseAdmin.from("partners").select("name, phone, whatsapp, email, is_active").eq("slug", data.partnerId);
-
-      const { data: partnerData, error: partnerError } = await query.maybeSingle();
-
+      const { data: partnerData, error: partnerError } = await supabaseAdmin
+        .from("partners")
+        .select("name, phone, whatsapp, email, is_active")
+        .eq("id", data.partnerId)
+        .maybeSingle();
+      
       if (partnerError) {
-        console.error(`[${requestId}] Database error fetching partner:`, partnerError.message);
-      } else if (partnerData) {
-        console.log(`[${requestId}] Partner record found: name="${partnerData.name}", email="${partnerData.email}", is_active=${partnerData.is_active}`);
-
-        if (partnerData.is_active) {
-          partnerEmail = partnerData.email ?? null;
-
-          partnerContact = {
-            name: partnerData.name ?? null,
-            phone: partnerData.phone ?? null,
-            whatsapp: partnerData.whatsapp ?? null,
-            email: partnerData.email ?? null,
-          };
-
-          if (!partnerEmail) {
-            console.warn(`[${requestId}] Partner found but HAS NO EMAIL ADDRESS defined.`);
-          }
-        } else {
-          console.warn(`[${requestId}] Partner detected (${partnerData.name}) but is NOT ACTIVE. Will only notify Admin.`);
+        console.warn(`[${requestId}] Failed to fetch partner:`, partnerError.message);
+      } else if (partnerData && partnerData.is_active) {
+        partnerEmail = partnerData.email ?? null;
+        if (partnerEmail) {
+          console.log(`[${requestId}] Adding Partner CC:`, partnerEmail);
         }
+
+        partnerContact = {
+          name: partnerData.name ?? null,
+          phone: partnerData.phone ?? null,
+          whatsapp: partnerData.whatsapp ?? null,
+          email: partnerData.email ?? null,
+        };
       } else {
-        console.warn(`[${requestId}] No partner record found for identifier: ${data.partnerId}`);
+        console.log(`[${requestId}] Partner not found, inactive, or no email configured`);
       }
     }
 
@@ -1571,13 +1564,16 @@ const handler = async (req: Request): Promise<Response> => {
       ]
       : [];
 
+    // Build CC list for client email - include partner if available.
     // IMPORTANT: if the "client" recipient is the admin/advisor (testing / internal),
-    // do NOT send the second email (the admin explicitly requested this).
+    // do NOT CC the partner (the admin explicitly requested this).
     const isSendingToAdvisorInbox =
       data.recipientEmail.toLowerCase() === ADVISOR_EMAIL.toLowerCase();
 
-    // Email 1: Client-only email (ALWAYS clean - no CC or BCC)
-    const clientRes = await fetch("https://api.resend.com/emails", {
+    const clientCc: string[] =
+      partnerEmail && !isSendingToAdvisorInbox ? [partnerEmail] : [];
+
+    const primaryRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1586,103 +1582,54 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [data.recipientEmail],
+        cc: clientCc.length > 0 ? clientCc : undefined,
         subject: clientSubject,
         html: clientHtml,
         attachments,
       }),
     });
 
-    // Email 2: Admin/Partner email (always sent unless sending to advisor inbox)
-    // - If partner exists: TO = partner, BCC = admin
-    // - If no partner: TO = admin
-    let adminEmailRes: Response | null = null;
-    let adminEmailResponse: any = null;
-
-    let partnerEmailRes: Response | null = null;
-    let partnerEmailResponse: any = null;
-
-    // 1. Send copy to Admin (if not already sent as client)
-    if (!isSendingToAdvisorInbox) {
-      const adminEmailPayload = {
+    // Always try to send advisor copy separately (with client info section)
+    const advisorRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
         from: "Property Budget Pro <noreply@eshel-f.com>",
         to: [ADVISOR_EMAIL],
-        subject: clientSubject,
-        html: clientHtml,
+        subject: advisorSubject,
+        html: advisorHtml,
         attachments,
-      };
+      }),
+    });
 
-      adminEmailRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify(adminEmailPayload),
-      });
-
-      if (!adminEmailRes.ok) {
-        const adminError = await adminEmailRes.text();
-        console.warn(`[${requestId}] Admin email failed to send:`, adminError);
-      } else {
-        adminEmailResponse = await adminEmailRes.json();
-        console.log(`[${requestId}] Admin email sent to ${ADVISOR_EMAIL}`);
-      }
+    let advisorResponse: any = null;
+    if (!advisorRes.ok) {
+      const advisorError = await advisorRes.text();
+      console.warn(`[${requestId}] Advisor copy failed to send:`, advisorError);
     } else {
-      console.log(`[${requestId}] Skipping admin email because client is admin.`);
+      advisorResponse = await advisorRes.json();
+      console.log(`[${requestId}] Advisor email sent successfully`);
     }
 
-    // 2. Send copy to Partner (if exists)
-    // ALWAYS try to send to partner if they exist, even if client is admin
-    if (partnerEmail) {
-      console.log(`[${requestId}] Attempting to send separate email to partner: ${partnerEmail}`);
-      const partnerEmailPayload = {
-        from: "Property Budget Pro <noreply@eshel-f.com>",
-        to: [partnerEmail],
-        subject: clientSubject,
-        html: clientHtml,
-        attachments,
-      };
-
-      const partnerRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify(partnerEmailPayload),
-      });
-
-      if (!partnerRes.ok) {
-        const partnerError = await partnerRes.text();
-        console.error(`[${requestId}] Partner email FAILED to send to ${partnerEmail}:`, partnerError);
-      } else {
-        partnerEmailRes = partnerRes;
-        partnerEmailResponse = await partnerRes.json();
-        console.log(`[${requestId}] Partner email SENT SUCCESSFULLY to ${partnerEmail}`);
-      }
-    } else if (data.partnerId) {
-      console.warn(`[${requestId}] Could not send partner email: Partner ID ${data.partnerId} was provided but no email was found in the database.`);
-    }
-
-    // Check client email result
-    if (!clientRes.ok) {
-      const errorText = await clientRes.text();
-      console.error("Client email send failed:", clientRes.status, errorText);
+    if (!primaryRes.ok) {
+      const errorText = await primaryRes.text();
+      console.error("Client email send failed:", primaryRes.status, errorText);
       throw new Error(`Failed to send client email: ${errorText}`);
     }
 
-    const clientEmailResponse = await clientRes.json();
+    const emailResponse = await primaryRes.json();
     console.log(`[${requestId}] Client email sent successfully`);
 
     return new Response(
       JSON.stringify({
         requestId,
         deliveredToClient: true,
-        deliveredToPartner: partnerEmailRes ? partnerEmailRes.ok : false,
-        deliveredToAdvisor: adminEmailRes ? adminEmailRes.ok : false,
-        resendClient: clientEmailResponse,
-        resendAdmin: adminEmailResponse,
-        resendPartner: partnerEmailResponse,
+        deliveredToAdvisor: advisorRes.ok,
+        resendClient: emailResponse,
+        resendAdvisor: advisorResponse,
       }),
       {
         status: 200,
