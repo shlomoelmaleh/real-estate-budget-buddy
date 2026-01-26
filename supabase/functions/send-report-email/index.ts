@@ -311,7 +311,7 @@ function getEmailContent(
   const rentRecognitionPct = parseNumber(inputs.rentRecognition) || 80;
   const recognizedRent = !inputs.isFirstProperty && inputs.isRented ? results.rentIncome * (rentRecognitionPct / 100) : 0;
   const adjustedIncomeForDTI = incomeNet + recognizedRent;
-  
+
   // Calculate correct DTI using adjusted income (income + recognized rent)
   const dtiEstimatedCorrected = adjustedIncomeForDTI > 0 ? monthlyPayment / adjustedIncomeForDTI : null;
 
@@ -319,13 +319,13 @@ function getEmailContent(
   const monthlyRent = results.rentIncome || 0;
   const propertyPrice = results.maxPropertyValue || 0;
   const totalCashInvested = results.equityUsed || (equityInitial - results.equityRemaining);
-  
+
   // Gross Annual Yield: (Monthly Rent * 12) / Property Price
   const grossYield = monthlyRent > 0 && propertyPrice > 0 ? (monthlyRent * 12) / propertyPrice : null;
-  
+
   // Net Monthly Cash Flow: Monthly Rent - Monthly Mortgage Payment
   const netCashFlow = monthlyRent - monthlyPayment;
-  
+
   // Cash-on-Cash Return (ROI): (Net Cash Flow * 12) / Total Cash Invested
   const cashOnCash = monthlyRent > 0 && totalCashInvested > 0 ? (netCashFlow * 12) / totalCashInvested : null;
 
@@ -733,13 +733,13 @@ function getEmailContent(
   const equityOnProperty = results.maxPropertyValue - results.loanAmount;
   // Use corrected DTI (with recognized rent for investment properties)
   const dtiEstimatedDisplay = dtiEstimatedCorrected !== null ? `${(dtiEstimatedCorrected * 100).toFixed(1)}%` : t.notAvailable;
-  
+
   // Net balance calculation (rent - payment; negative means out-of-pocket expense)
   const netMonthlyBalanceValue = results.rentIncome - results.monthlyPayment;
   const isNetBalancePositive = netMonthlyBalanceValue >= 0;
   const netBalanceColor = isNetBalancePositive ? "#10b981" : "#dc2626"; // Green or Red
-  const netBalanceFormatted = isNetBalancePositive 
-    ? `₪ ${formatNumber(netMonthlyBalanceValue)}` 
+  const netBalanceFormatted = isNetBalancePositive
+    ? `₪ ${formatNumber(netMonthlyBalanceValue)}`
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   const html = `
@@ -1518,7 +1518,7 @@ const handler = async (req: Request): Promise<Response> => {
         .select("name, phone, whatsapp, email, is_active")
         .eq("id", data.partnerId)
         .maybeSingle();
-      
+
       if (partnerError) {
         console.warn(`[${requestId}] Failed to fetch partner:`, partnerError.message);
       } else if (partnerData && partnerData.is_active) {
@@ -1564,72 +1564,83 @@ const handler = async (req: Request): Promise<Response> => {
       ]
       : [];
 
-    // Build CC list for client email - include partner if available.
     // IMPORTANT: if the "client" recipient is the admin/advisor (testing / internal),
-    // do NOT CC the partner (the admin explicitly requested this).
+    // do NOT send partner email (the admin explicitly requested this).
     const isSendingToAdvisorInbox =
       data.recipientEmail.toLowerCase() === ADVISOR_EMAIL.toLowerCase();
 
-    const clientCc: string[] =
-      partnerEmail && !isSendingToAdvisorInbox ? [partnerEmail] : [];
+    // Email 1: Client-only email (no CC or BCC)
+    // If no partner exists, we'll BCC the admin on this email
+    const clientEmailPayload: any = {
+      from: "Property Budget Pro <noreply@eshel-f.com>",
+      to: [data.recipientEmail],
+      subject: clientSubject,
+      html: clientHtml,
+      attachments,
+    };
 
-    const primaryRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Property Budget Pro <noreply@eshel-f.com>",
-        to: [data.recipientEmail],
-        cc: clientCc.length > 0 ? clientCc : undefined,
-        subject: clientSubject,
-        html: clientHtml,
-        attachments,
-      }),
-    });
-
-    // Always try to send advisor copy separately (with client info section)
-    const advisorRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Property Budget Pro <noreply@eshel-f.com>",
-        to: [ADVISOR_EMAIL],
-        subject: advisorSubject,
-        html: advisorHtml,
-        attachments,
-      }),
-    });
-
-    let advisorResponse: any = null;
-    if (!advisorRes.ok) {
-      const advisorError = await advisorRes.text();
-      console.warn(`[${requestId}] Advisor copy failed to send:`, advisorError);
-    } else {
-      advisorResponse = await advisorRes.json();
-      console.log(`[${requestId}] Advisor email sent successfully`);
+    // If no partner exists, BCC admin on the client email
+    if (!partnerEmail && !isSendingToAdvisorInbox) {
+      clientEmailPayload.bcc = [ADVISOR_EMAIL];
     }
 
-    if (!primaryRes.ok) {
-      const errorText = await primaryRes.text();
-      console.error("Client email send failed:", primaryRes.status, errorText);
+    const clientRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify(clientEmailPayload),
+    });
+
+    // Email 2: Partner & Admin email (only if partner exists and not sending to advisor inbox)
+    let partnerRes: Response | null = null;
+    let partnerResponse: any = null;
+
+    if (partnerEmail && !isSendingToAdvisorInbox) {
+      partnerRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: "Property Budget Pro <noreply@eshel-f.com>",
+          to: [partnerEmail],
+          bcc: [ADVISOR_EMAIL],
+          subject: clientSubject,
+          html: clientHtml,
+          attachments,
+        }),
+      });
+
+      if (!partnerRes.ok) {
+        const partnerError = await partnerRes.text();
+        console.warn(`[${requestId}] Partner email failed to send:`, partnerError);
+      } else {
+        partnerResponse = await partnerRes.json();
+        console.log(`[${requestId}] Partner email sent successfully to ${partnerEmail} with admin BCC`);
+      }
+    }
+
+    // Check client email result
+    if (!clientRes.ok) {
+      const errorText = await clientRes.text();
+      console.error("Client email send failed:", clientRes.status, errorText);
       throw new Error(`Failed to send client email: ${errorText}`);
     }
 
-    const emailResponse = await primaryRes.json();
+    const clientEmailResponse = await clientRes.json();
     console.log(`[${requestId}] Client email sent successfully`);
 
     return new Response(
       JSON.stringify({
         requestId,
         deliveredToClient: true,
-        deliveredToAdvisor: advisorRes.ok,
-        resendClient: emailResponse,
-        resendAdvisor: advisorResponse,
+        deliveredToPartner: partnerRes ? partnerRes.ok : false,
+        deliveredToAdvisor: partnerRes ? partnerRes.ok : !isSendingToAdvisorInbox,
+        resendClient: clientEmailResponse,
+        resendPartner: partnerResponse,
       }),
       {
         status: 200,
