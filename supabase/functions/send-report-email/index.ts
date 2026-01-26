@@ -1565,61 +1565,68 @@ const handler = async (req: Request): Promise<Response> => {
       : [];
 
     // IMPORTANT: if the "client" recipient is the admin/advisor (testing / internal),
-    // do NOT send partner email (the admin explicitly requested this).
+    // do NOT send the second email (the admin explicitly requested this).
     const isSendingToAdvisorInbox =
       data.recipientEmail.toLowerCase() === ADVISOR_EMAIL.toLowerCase();
 
-    // Email 1: Client-only email (no CC or BCC)
-    // If no partner exists, we'll BCC the admin on this email
-    const clientEmailPayload: any = {
-      from: "Property Budget Pro <noreply@eshel-f.com>",
-      to: [data.recipientEmail],
-      subject: clientSubject,
-      html: clientHtml,
-      attachments,
-    };
-
-    // If no partner exists, BCC admin on the client email
-    if (!partnerEmail && !isSendingToAdvisorInbox) {
-      clientEmailPayload.bcc = [ADVISOR_EMAIL];
-    }
-
+    // Email 1: Client-only email (ALWAYS clean - no CC or BCC)
     const clientRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify(clientEmailPayload),
+      body: JSON.stringify({
+        from: "Property Budget Pro <noreply@eshel-f.com>",
+        to: [data.recipientEmail],
+        subject: clientSubject,
+        html: clientHtml,
+        attachments,
+      }),
     });
 
-    // Email 2: Partner & Admin email (only if partner exists and not sending to advisor inbox)
-    let partnerRes: Response | null = null;
-    let partnerResponse: any = null;
+    // Email 2: Admin/Partner email (always sent unless sending to advisor inbox)
+    // - If partner exists: TO = partner, BCC = admin
+    // - If no partner: TO = admin
+    let secondEmailRes: Response | null = null;
+    let secondEmailResponse: any = null;
 
-    if (partnerEmail && !isSendingToAdvisorInbox) {
-      partnerRes = await fetch("https://api.resend.com/emails", {
+    if (!isSendingToAdvisorInbox) {
+      const secondEmailPayload: any = {
+        from: "Property Budget Pro <noreply@eshel-f.com>",
+        subject: clientSubject,
+        html: clientHtml,
+        attachments,
+      };
+
+      if (partnerEmail) {
+        // Partner exists: send TO partner with admin as BCC
+        secondEmailPayload.to = [partnerEmail];
+        secondEmailPayload.bcc = [ADVISOR_EMAIL];
+      } else {
+        // No partner: send TO admin only
+        secondEmailPayload.to = [ADVISOR_EMAIL];
+      }
+
+      secondEmailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${RESEND_API_KEY}`,
         },
-        body: JSON.stringify({
-          from: "Property Budget Pro <noreply@eshel-f.com>",
-          to: [partnerEmail],
-          bcc: [ADVISOR_EMAIL],
-          subject: clientSubject,
-          html: clientHtml,
-          attachments,
-        }),
+        body: JSON.stringify(secondEmailPayload),
       });
 
-      if (!partnerRes.ok) {
-        const partnerError = await partnerRes.text();
-        console.warn(`[${requestId}] Partner email failed to send:`, partnerError);
+      if (!secondEmailRes.ok) {
+        const secondEmailError = await secondEmailRes.text();
+        console.warn(`[${requestId}] Second email (admin/partner) failed to send:`, secondEmailError);
       } else {
-        partnerResponse = await partnerRes.json();
-        console.log(`[${requestId}] Partner email sent successfully to ${partnerEmail} with admin BCC`);
+        secondEmailResponse = await secondEmailRes.json();
+        if (partnerEmail) {
+          console.log(`[${requestId}] Partner email sent to ${partnerEmail} with admin BCC`);
+        } else {
+          console.log(`[${requestId}] Admin email sent to ${ADVISOR_EMAIL}`);
+        }
       }
     }
 
@@ -1637,10 +1644,10 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({
         requestId,
         deliveredToClient: true,
-        deliveredToPartner: partnerRes ? partnerRes.ok : false,
-        deliveredToAdvisor: partnerRes ? partnerRes.ok : !isSendingToAdvisorInbox,
+        deliveredToPartner: partnerEmail && secondEmailRes ? secondEmailRes.ok : false,
+        deliveredToAdvisor: secondEmailRes ? secondEmailRes.ok : false,
         resendClient: clientEmailResponse,
-        resendPartner: partnerResponse,
+        resendSecondEmail: secondEmailResponse,
       }),
       {
         status: 200,
