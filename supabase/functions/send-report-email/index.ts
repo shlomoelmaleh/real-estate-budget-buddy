@@ -146,24 +146,25 @@ async function checkMultiLayerRateLimit(
     return { allowed: true };
   }
 
-  // Layer 1: IP-based rate limit (10 emails per hour from same IP)
-  const ipCheck = await checkRateLimitAtomic(supabaseAdmin, `ip:${clientIP}`, "send-report-email", 10, 60);
+  // Layer 1: IP-based rate limit (Increased to 1000 for testing)
+  const ipCheck = await checkRateLimitAtomic(supabaseAdmin, `ip:${clientIP}`, "send-report-email", 1000, 60);
 
   if (!ipCheck.allowed) {
+    console.warn(`[RateLimit] IP Limit hit for ${clientIP}`);
     return { allowed: false, reason: "ip_limit" };
   }
 
-  // Layer 2: Email-based rate limit (5 emails per hour to same address)
-  // This prevents IP spoofing attacks since email address is harder to forge
+  // Layer 2: Email-based rate limit (Increased to 1000 for testing)
   const emailCheck = await checkRateLimitAtomic(
     supabaseAdmin,
     `email:${recipientEmail.toLowerCase()}`,
     "send-report-email",
-    5,
+    1000,
     60,
   );
 
   if (!emailCheck.allowed) {
+    console.warn(`[RateLimit] Email Limit hit for ${recipientEmail}`);
     return { allowed: false, reason: "email_limit" };
   }
 
