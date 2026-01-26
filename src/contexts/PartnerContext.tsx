@@ -64,31 +64,51 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     applyPartnerBrandColor(null);
   };
 
-  // Detect ?ref=slug (initial load is the primary use-case)
+  // Detect ?ref=slug or ?partnerId=uuid
   useEffect(() => {
     let cancelled = false;
 
     const run = async () => {
       const sp = new URLSearchParams(window.location.search);
       const ref = sp.get("ref")?.trim() || "";
-      if (!ref) return;
+      const queryPartnerId = sp.get("partnerId")?.trim() || sp.get("id")?.trim() || "";
 
-      setIsLoading(true);
-      const p = await fetchPartnerBySlug(ref);
-      if (cancelled) return;
-
-      if (!p || !p.is_active) {
-        // Fallback immediately (invalid/inactive)
-        clearBinding();
+      if (!ref && !queryPartnerId) {
         setIsLoading(false);
         return;
       }
+
+      setIsLoading(true);
+      console.log(`[PartnerContext] Detecting partner from URL: ref="${ref}", partnerId="${queryPartnerId}"`);
+
+      let p: Partner | null = null;
+
+      if (ref) {
+        p = await fetchPartnerBySlug(ref);
+      } else if (queryPartnerId) {
+        p = await fetchPartnerById(queryPartnerId);
+      }
+
+      if (cancelled) return;
+
+      if (!p) {
+        console.warn(`[PartnerContext] No partner found for URL parameters.`);
+        // Don't clear immediately if we already have a binding, unless this was an explicit (but invalid) attempt
+        if (ref || queryPartnerId) {
+          clearBinding();
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      console.log(`[PartnerContext] Partner loaded: ${p.name} (ID: ${p.id}, Active: ${p.is_active})`);
 
       const newBinding: PartnerBinding = {
         partnerId: p.id,
         slug: p.slug,
         expiresAt: Date.now() + THIRTY_DAYS_MS,
       };
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newBinding));
       setBinding(newBinding);
       setPartner(p);
@@ -116,7 +136,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
       setBinding(stored);
       const p = await fetchPartnerById(stored.partnerId);
       if (cancelled) return;
-      if (!p || !p.is_active) {
+      if (!p) {
         clearBinding();
         setIsLoading(false);
         return;
