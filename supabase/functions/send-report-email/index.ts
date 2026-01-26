@@ -1513,6 +1513,7 @@ const handler = async (req: Request): Promise<Response> => {
     let partnerEmail: string | null = null;
     let partnerContact: PartnerContactOverride | undefined;
     if (data.partnerId) {
+      console.log(`[${requestId}] Fetching partner with ID: ${data.partnerId}`);
       const { data: partnerData, error: partnerError } = await supabaseAdmin
         .from("partners")
         .select("name, phone, whatsapp, email, is_active")
@@ -1520,12 +1521,11 @@ const handler = async (req: Request): Promise<Response> => {
         .maybeSingle();
 
       if (partnerError) {
-        console.warn(`[${requestId}] Failed to fetch partner:`, partnerError.message);
-      } else if (partnerData && partnerData.is_active) {
+        console.error(`[${requestId}] Database error fetching partner:`, partnerError.message);
+      } else if (partnerData) {
+        console.log(`[${requestId}] Partner record found: name="${partnerData.name}", email="${partnerData.email}", is_active=${partnerData.is_active}`);
+
         partnerEmail = partnerData.email ?? null;
-        if (partnerEmail) {
-          console.log(`[${requestId}] Adding Partner CC:`, partnerEmail);
-        }
 
         partnerContact = {
           name: partnerData.name ?? null,
@@ -1533,8 +1533,12 @@ const handler = async (req: Request): Promise<Response> => {
           whatsapp: partnerData.whatsapp ?? null,
           email: partnerData.email ?? null,
         };
+
+        if (!partnerEmail) {
+          console.warn(`[${requestId}] Partner found but HAS NO EMAIL ADDRESS defined.`);
+        }
       } else {
-        console.log(`[${requestId}] Partner not found, inactive, or no email configured`);
+        console.warn(`[${requestId}] No partner record found for ID: ${data.partnerId}`);
       }
     }
 
@@ -1623,40 +1627,34 @@ const handler = async (req: Request): Promise<Response> => {
 
       // 2. Send copy to Partner (IF EXISTS)
       if (partnerEmail) {
-        // Prevent sending duplicate if partner IS the advisor (testing scenario)
-        if (partnerEmail.toLowerCase() !== ADVISOR_EMAIL.toLowerCase()) {
-          const partnerEmailPayload = {
-            from: "Property Budget Pro <noreply@eshel-f.com>",
-            to: [partnerEmail],
-            subject: clientSubject,
-            html: clientHtml,
-            attachments,
-          };
+        console.log(`[${requestId}] Attempting to send separate email to partner: ${partnerEmail}`);
+        const partnerEmailPayload = {
+          from: "Property Budget Pro <noreply@eshel-f.com>",
+          to: [partnerEmail],
+          subject: clientSubject,
+          html: clientHtml,
+          attachments,
+        };
 
-          partnerEmailRes = await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${RESEND_API_KEY}`,
-            },
-            body: JSON.stringify(partnerEmailPayload),
-          });
+        const partnerRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify(partnerEmailPayload),
+        });
 
-          if (!partnerEmailRes.ok) {
-            const partnerError = await partnerEmailRes.text();
-            console.warn(`[${requestId}] Partner email failed to send to ${partnerEmail}:`, partnerError);
-          } else {
-            partnerEmailResponse = await partnerEmailRes.json();
-            console.log(`[${requestId}] Partner email sent to ${partnerEmail}`);
-          }
+        if (!partnerRes.ok) {
+          const partnerError = await partnerRes.text();
+          console.error(`[${requestId}] Partner email FAILED to send to ${partnerEmail}:`, partnerError);
         } else {
-          console.log(`[${requestId}] Partner email is same as admin (${partnerEmail}), skipping duplicate send.`);
-          // Mark as "sent" effectively since admin got it
-          partnerEmailRes = adminEmailRes;
-          partnerEmailResponse = adminEmailResponse;
+          partnerEmailRes = partnerRes;
+          partnerEmailResponse = await partnerRes.json();
+          console.log(`[${requestId}] Partner email SENT SUCCESSFULLY to ${partnerEmail}`);
         }
       } else if (data.partnerId) {
-        console.warn(`[${requestId}] Partner ID ${data.partnerId} was provided but no email found (or inactive).`);
+        console.warn(`[${requestId}] Could not send partner email: Partner ID ${data.partnerId} was provided but no email was found in the database.`);
       }
     }
 
