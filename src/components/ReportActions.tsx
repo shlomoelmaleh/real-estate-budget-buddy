@@ -40,7 +40,7 @@ interface ReportActionsProps {
 
 export function ReportActions({ results, amortization, clientName, clientPhone, clientEmail, inputs }: ReportActionsProps) {
   const { t, language } = useLanguage();
-  const { partner } = usePartner();
+  const { partner, binding } = usePartner();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
@@ -202,7 +202,9 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
           yearlyBalanceData,
           paymentBreakdownData,
           csvData,
-          partnerId: partner?.id || null,
+          // If a referral link is present, we may have a binding before the partner
+          // record finishes loading; send partnerId from binding as a fallback.
+          partnerId: partner?.id ?? binding?.partnerId ?? null,
         },
       });
 
