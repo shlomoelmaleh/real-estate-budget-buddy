@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Download, Mail, Printer, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePartner } from '@/contexts/PartnerContext';
 import { CalculatorResults, AmortizationRow, formatNumber } from '@/lib/calculator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -39,6 +40,7 @@ interface ReportActionsProps {
 
 export function ReportActions({ results, amortization, clientName, clientPhone, clientEmail, inputs }: ReportActionsProps) {
   const { t, language } = useLanguage();
+  const { partner } = usePartner();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
@@ -200,6 +202,7 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
           yearlyBalanceData,
           paymentBreakdownData,
           csvData,
+          partnerId: partner?.id || null,
         },
       });
 
