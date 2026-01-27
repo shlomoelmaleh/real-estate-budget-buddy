@@ -1441,6 +1441,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     // Initialize Supabase admin client for rate limiting
     const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
     // Parse and validate input first (needed for email-based rate limiting)
     const rawBody = await req.json();
@@ -1509,7 +1510,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`[${requestId}] Simulation saved to database`);
     }
 
-    // Fetch partner info for CC + advisor branding override if partnerId is provided
+    // Fetch partner info
     let partnerEmail: string | null = null;
     let partnerContact: PartnerContactOverride | undefined;
     if (data.partnerId) {
@@ -1518,15 +1519,12 @@ const handler = async (req: Request): Promise<Response> => {
         .select("name, phone, whatsapp, email, is_active")
         .eq("id", data.partnerId)
         .maybeSingle();
-      
+       
       if (partnerError) {
         console.warn(`[${requestId}] Failed to fetch partner:`, partnerError.message);
       } else if (partnerData && partnerData.is_active) {
         partnerEmail = partnerData.email ?? null;
-        if (partnerEmail) {
-          console.log(`[${requestId}] Adding Partner CC:`, partnerEmail);
-        }
-
+        
         partnerContact = {
           name: partnerData.name ?? null,
           phone: partnerData.phone ?? null,
@@ -1538,17 +1536,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Generate two versions: one for client, one for advisor (with client info section)
+    // Generate content using getEmailContent
+    // NOTE: As requested, we use the Client Version for EVERYONE at this stage.
     const clientContent = getEmailContent(data, false, partnerContact);
-    const advisorContent = getEmailContent(data, true, partnerContact);
+    
+    const htmlContent = clientContent.html;
+    const subjectContent = clientContent.subject;
 
-    const clientHtml = clientContent.html;
-    const clientSubject = clientContent.subject;
-    const advisorHtml = advisorContent.html;
-    const advisorSubject = advisorContent.subject;
-
+    // Prepare Attachments (CSV)
     const csvFilenames: Record<string, string> = {
-      he: "loach-silkukin.csv", // Use ASCII for filename to avoid encoding issues
+      he: "loach-silkukin.csv", 
       en: "amortization-table.csv",
       fr: "tableau-amortissement.csv",
     };
@@ -1557,91 +1554,124 @@ const handler = async (req: Request): Promise<Response> => {
       ? [
         {
           filename: csvFilenames[data.language] || "report.csv",
-          // Use UTF-8 BOM for Excel compatibility and robust base64 encoding
           content: toBase64("\uFEFF" + data.csvData),
           content_type: "text/csv; charset=utf-8",
         },
       ]
       : [];
 
-    // Build CC list for client email - include partner if available.
-    // IMPORTANT: if the "client" recipient is the admin/advisor (testing / internal),
-    // do NOT CC the partner (the admin explicitly requested this).
-    const isSendingToAdvisorInbox =
-      data.recipientEmail.toLowerCase() === ADVISOR_EMAIL.toLowerCase();
+    // =========================================================================
+    // NEW SENDING LOGIC (SPLIT INTO 3 SEPARATE CALLS)
+    // =========================================================================
 
-    const clientCc: string[] =
-      partnerEmail && !isSendingToAdvisorInbox ? [partnerEmail] : [];
+    const senderFrom = "Property Budget Pro <noreply@eshel-f.com>";
 
-    const primaryRes = await fetch("https://api.resend.com/emails", {
+    // 1. Send to CLIENT (Critical - Must succeed)
+    // -------------------------------------------
+    console.log(`[${requestId}] Sending Email 1/3: Client (${data.recipientEmail})`);
+    const clientRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Property Budget Pro <noreply@eshel-f.com>",
+        from: senderFrom,
         to: [data.recipientEmail],
-        cc: clientCc.length > 0 ? clientCc : undefined,
-        subject: clientSubject,
-        html: clientHtml,
+        // No CC, No BCC
+        subject: subjectContent,
+        html: htmlContent,
         attachments,
       }),
     });
 
-    // Always try to send advisor copy separately (with client info section)
-    const advisorRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Property Budget Pro <noreply@eshel-f.com>",
-        to: [ADVISOR_EMAIL],
-        subject: advisorSubject,
-        html: advisorHtml,
-        attachments,
-      }),
-    });
-
-    let advisorResponse: any = null;
-    if (!advisorRes.ok) {
-      const advisorError = await advisorRes.text();
-      console.warn(`[${requestId}] Advisor copy failed to send:`, advisorError);
-    } else {
-      advisorResponse = await advisorRes.json();
-      console.log(`[${requestId}] Advisor email sent successfully`);
-    }
-
-    if (!primaryRes.ok) {
-      const errorText = await primaryRes.text();
-      console.error("Client email send failed:", primaryRes.status, errorText);
+    if (!clientRes.ok) {
+      const errorText = await clientRes.text();
+      console.error(`[${requestId}] Client email failed:`, clientRes.status, errorText);
       throw new Error(`Failed to send client email: ${errorText}`);
     }
+    const clientResponseJson = await clientRes.json();
+    console.log(`[${requestId}] ✅ Client email sent successfully`);
 
-    const emailResponse = await primaryRes.json();
-    console.log(`[${requestId}] Client email sent successfully`);
 
+    // 2. Send to ADMIN (Exact Copy)
+    // -------------------------------------------
+    // Note: We use ADVISOR_EMAIL defined at top of file
+    console.log(`[${requestId}] Sending Email 2/3: Admin (${ADVISOR_EMAIL})`);
+    const adminRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: senderFrom,
+        to: [ADVISOR_EMAIL], 
+        subject: subjectContent, // Identical subject
+        html: htmlContent,       // Identical content
+        attachments,
+      }),
+    });
+
+    if (adminRes.ok) {
+      console.log(`[${requestId}] ✅ Admin email sent successfully`);
+    } else {
+      console.warn(`[${requestId}] ⚠️ Admin email failed:`, await adminRes.text());
+    }
+
+
+    // 3. Send to PARTNER (Exact Copy - Conditional)
+    // -------------------------------------------
+    let partnerSent = false;
+    // Prevent sending to partner if the "client" is actually the admin testing the system
+    const isSendingToAdvisorInbox = data.recipientEmail.toLowerCase() === ADVISOR_EMAIL.toLowerCase();
+
+    if (partnerEmail && !isSendingToAdvisorInbox) {
+      console.log(`[${requestId}] Sending Email 3/3: Partner (${partnerEmail})`);
+      const partnerRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: senderFrom,
+          to: [partnerEmail],
+          subject: subjectContent, // Identical subject
+          html: htmlContent,       // Identical content
+          attachments,
+        }),
+      });
+
+      if (partnerRes.ok) {
+        console.log(`[${requestId}] ✅ Partner email sent successfully`);
+        partnerSent = true;
+      } else {
+        console.warn(`[${requestId}] ⚠️ Partner email failed:`, await partnerRes.text());
+      }
+    } else {
+      console.log(`[${requestId}] Skipping Partner email (No partner or testing mode)`);
+    }
+
+    // Return Response
     return new Response(
       JSON.stringify({
         requestId,
         deliveredToClient: true,
-        deliveredToAdvisor: advisorRes.ok,
-        resendClient: emailResponse,
-        resendAdvisor: advisorResponse,
+        deliveredToAdmin: adminRes.ok,
+        deliveredToPartner: partnerSent,
+        resendClient: clientResponseJson,
       }),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       },
     );
+
   } catch (error: any) {
     const errorId = crypto.randomUUID().substring(0, 8);
-    // Log full error details for debugging (server-side only)
     console.error(`[${errorId}] Error in send-report-email function:`, error.message);
 
-    // Return generic error message to client to prevent information leakage
     return new Response(
       JSON.stringify({
         error: "An error occurred while sending the report. Please try again later.",
