@@ -1537,73 +1537,139 @@ const handler = async (req: Request): Promise<Response> => {
 
     const senderFrom = "Property Budget Pro <noreply@eshel-f.com>";
 
+    // Resend API has a strict rate limit (commonly 2 requests/second).
+    // We send 2-3 separate emails (client/admin/partner). To avoid the partner
+    // send failing with 429, we:
+    // 1) throttle between sends
+    // 2) retry on 429 with backoff
+    const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    type ResendSendResult = {
+      ok: boolean;
+      status: number;
+      json: any | null;
+      text: string;
+    };
+
+    const sendResendEmail = async (
+      payload: Record<string, unknown>,
+      opts?: { label?: string; maxAttempts?: number; throttleMs?: number },
+    ): Promise<ResendSendResult> => {
+      const label = opts?.label ?? "email";
+      const maxAttempts = opts?.maxAttempts ?? 3;
+      const throttleMs = opts?.throttleMs ?? 650;
+
+      // throttle before each attempt (including first)
+      await sleep(throttleMs);
+
+      let attempt = 1;
+      let lastText = "";
+
+      while (attempt <= maxAttempts) {
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
+          body: JSON.stringify(payload),
+        });
+
+        // Always consume body to avoid resource leaks in Deno.
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          try {
+            const j = await res.json();
+            lastText = JSON.stringify(j);
+          } catch {
+            lastText = await res.text();
+          }
+        } else {
+          lastText = await res.text();
+        }
+
+        if (res.ok) {
+          let parsedJson: any | null = null;
+          try {
+            parsedJson = JSON.parse(lastText);
+          } catch {
+            // ignore
+          }
+          return { ok: true, status: res.status, json: parsedJson, text: lastText };
+        }
+
+        // Retry only on 429 (rate-limit)
+        if (res.status === 429 && attempt < maxAttempts) {
+          const backoffMs = 800 * attempt; // 800ms, 1600ms
+          console.warn(`[${requestId}] ${label} send hit Resend 429; retrying in ${backoffMs}ms (attempt ${attempt}/${maxAttempts})`);
+          await sleep(backoffMs);
+          attempt += 1;
+          continue;
+        }
+
+        return { ok: false, status: res.status, json: null, text: lastText };
+      }
+
+      return { ok: false, status: 429, json: null, text: lastText || "rate_limited" };
+    };
+
     // =========================================================================
     // שליחת אימיילים - ללא לוגיקה נסתרת וללא תנאים מיותרים
     // =========================================================================
 
     // 1. שליחה ללקוח
     console.log(`[${requestId}] Sending to Client: ${data.recipientEmail}`);
-    const clientRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
+    const clientSend = await sendResendEmail(
+      {
         from: senderFrom,
         to: [data.recipientEmail],
         subject: subjectContent,
         html: htmlContent,
         attachments,
-      }),
-    });
-
-    if (!clientRes.ok) {
-      const errorText = await clientRes.text();
-      throw new Error(`Failed to send client email: ${errorText}`);
-    }
-    const clientResponseJson = await clientRes.json();
+      },
+      { label: "client", throttleMs: 0 },
+    );
+    if (!clientSend.ok) throw new Error(`Failed to send client email: ${clientSend.text}`);
 
 
     // 2. שליחה לאדמין (עותק זהה)
     console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL}`);
-    const adminRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-      body: JSON.stringify({
+    const adminSend = await sendResendEmail(
+      {
         from: senderFrom,
-        to: [ADVISOR_EMAIL], 
+        to: [ADVISOR_EMAIL],
         subject: subjectContent,
         html: htmlContent,
         attachments,
-      }),
-    });
+      },
+      { label: "admin" },
+    );
 
 
     // 3. שליחה לשותף (רק אם יש שותף - שום תנאי אחר)
     let partnerSent = false;
     if (partnerEmail) {
       console.log(`[${requestId}] Sending to Partner: ${partnerEmail}`);
-      const partnerRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-        body: JSON.stringify({
+      const partnerSend = await sendResendEmail(
+        {
           from: senderFrom,
           to: [partnerEmail],
-          subject: subjectContent, 
-          html: htmlContent,       
+          subject: subjectContent,
+          html: htmlContent,
           attachments,
-        }),
-      });
-      
-      if (partnerRes.ok) partnerSent = true;
-      else console.warn(`[${requestId}] Partner email failed:`, await partnerRes.text());
+        },
+        { label: "partner", maxAttempts: 4 },
+      );
+
+      if (partnerSend.ok) partnerSent = true;
+      else console.warn(`[${requestId}] Partner email failed:`, partnerSend.text);
     }
 
     return new Response(
       JSON.stringify({
         requestId,
         deliveredToClient: true,
-        deliveredToAdmin: adminRes.ok,
+        deliveredToAdmin: adminSend.ok,
         deliveredToPartner: partnerSent,
-        resendClient: clientResponseJson,
+        resendClient: clientSend.json ?? clientSend.text,
+        resendAdmin: adminSend.json ?? adminSend.text,
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
