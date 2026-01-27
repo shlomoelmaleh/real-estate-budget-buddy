@@ -31,8 +31,9 @@ function safeJsonParse<T>(raw: string | null): T | null {
 }
 
 async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
+  // Use partners_public view - base partners table has admin-only RLS
   const { data, error } = await supabase
-    .from("partners")
+    .from("partners_public")
     .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
     .eq("slug", slug)
     .maybeSingle();
@@ -41,8 +42,9 @@ async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
 }
 
 async function fetchPartnerById(id: string): Promise<Partner | null> {
+  // Use partners_public view - base partners table has admin-only RLS
   const { data, error } = await supabase
-    .from("partners")
+    .from("partners_public")
     .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
     .eq("id", id)
     .maybeSingle();
