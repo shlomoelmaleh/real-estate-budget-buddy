@@ -1439,11 +1439,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Initialize Supabase admin client for rate limiting
     const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
-    // Parse and validate input first (needed for email-based rate limiting)
+    // קריאת המידע מהבקשה וביצוע ולידציה
     const rawBody = await req.json();
     const rawAdvisorFee = rawBody?.inputs?.advisorFee;
     const parseResult = EmailRequestSchema.safeParse(rawBody);
@@ -1462,38 +1461,26 @@ const handler = async (req: Request): Promise<Response> => {
     const data = parseResult.data as ReportEmailRequest;
     data.inputs.advisorFee = data.inputs.advisorFee || rawAdvisorFee || "0";
 
-    // Multi-layer rate limiting: IP + email-based (defense in depth)
+    // בדיקות Rate Limit (נשאר כפי שהיה)
     const clientIP =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 
     const rateCheck = await checkMultiLayerRateLimit(supabaseAdmin, clientIP, data.recipientEmail);
 
     if (!rateCheck.allowed) {
-      const errorMsg =
-        rateCheck.reason === "email_limit"
+      const errorMsg = rateCheck.reason === "email_limit"
           ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
           : "Rate limit exceeded. Maximum 10 emails per hour.";
-      console.warn(`Rate limit exceeded: ${rateCheck.reason} for IP: ${clientIP}, email: ${data.recipientEmail}`);
       return new Response(
-        JSON.stringify({
-          error: errorMsg,
-          retryAfter: 3600,
-        }),
-        {
-          status: 429,
-          headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders },
-        },
+        JSON.stringify({ error: errorMsg, retryAfter: 3600 }),
+        { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders } },
       );
     }
 
-    // Continue with validated data
     const requestId = crypto.randomUUID().substring(0, 8);
     console.log(`[${requestId}] Email request received`);
-    console.log(
-      `[${requestId}] Chart data - yearlyBalance: ${data.yearlyBalanceData?.length || 0}, paymentBreakdown: ${data.paymentBreakdownData?.length || 0}, csvData: ${data.csvData ? "present" : "missing"}`,
-    );
 
-    // Insert simulation into database using service role (bypasses RLS)
+    // שמירה לדאטה בייס (נשאר כפי שהיה)
     const { error: insertError } = await supabaseAdmin.from("simulations").insert({
       client_name: data.recipientName,
       email: data.recipientEmail,
@@ -1503,16 +1490,12 @@ const handler = async (req: Request): Promise<Response> => {
       results: data.results,
     });
 
-    if (insertError) {
-      console.error(`[${requestId}] Database insert failed:`, insertError.message);
-      // Continue with email sending even if insert fails - don't block user
-    } else {
-      console.log(`[${requestId}] Simulation saved to database`);
-    }
+    if (insertError) console.error(`[${requestId}] Database insert failed:`, insertError.message);
 
-    // Fetch partner info
+    // שליפת פרטי שותף (אם קיים ID)
     let partnerEmail: string | null = null;
     let partnerContact: PartnerContactOverride | undefined;
+    
     if (data.partnerId) {
       const { data: partnerData, error: partnerError } = await supabaseAdmin
         .from("partners")
@@ -1520,30 +1503,24 @@ const handler = async (req: Request): Promise<Response> => {
         .eq("id", data.partnerId)
         .maybeSingle();
        
-      if (partnerError) {
-        console.warn(`[${requestId}] Failed to fetch partner:`, partnerError.message);
-      } else if (partnerData && partnerData.is_active) {
+      if (partnerData && partnerData.is_active) {
         partnerEmail = partnerData.email ?? null;
-        
         partnerContact = {
           name: partnerData.name ?? null,
           phone: partnerData.phone ?? null,
           whatsapp: partnerData.whatsapp ?? null,
           email: partnerData.email ?? null,
         };
-      } else {
-        console.log(`[${requestId}] Partner not found, inactive, or no email configured`);
       }
     }
 
-    // Generate content using getEmailContent
-    // NOTE: As requested, we use the Client Version for EVERYONE at this stage.
+    // יצירת תוכן האימייל (פעם אחת - זהה לכולם)
+    // משתמשים בגרסת הלקוח (false) עבור כולם כרגע
     const clientContent = getEmailContent(data, false, partnerContact);
-    
     const htmlContent = clientContent.html;
     const subjectContent = clientContent.subject;
 
-    // Prepare Attachments (CSV)
+    // הכנת קובץ CSV
     const csvFilenames: Record<string, string> = {
       he: "loach-silkukin.csv", 
       en: "amortization-table.csv",
@@ -1551,34 +1528,27 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const attachments = data.csvData
-      ? [
-        {
+      ? [{
           filename: csvFilenames[data.language] || "report.csv",
           content: toBase64("\uFEFF" + data.csvData),
           content_type: "text/csv; charset=utf-8",
-        },
-      ]
+        }]
       : [];
-
-    // =========================================================================
-    // NEW SENDING LOGIC (SPLIT INTO 3 SEPARATE CALLS)
-    // =========================================================================
 
     const senderFrom = "Property Budget Pro <noreply@eshel-f.com>";
 
-    // 1. Send to CLIENT (Critical - Must succeed)
-    // -------------------------------------------
-    console.log(`[${requestId}] Sending Email 1/3: Client (${data.recipientEmail})`);
+    // =========================================================================
+    // שליחת אימיילים - ללא לוגיקה נסתרת וללא תנאים מיותרים
+    // =========================================================================
+
+    // 1. שליחה ללקוח
+    console.log(`[${requestId}] Sending to Client: ${data.recipientEmail}`);
     const clientRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
         from: senderFrom,
         to: [data.recipientEmail],
-        // No CC, No BCC
         subject: subjectContent,
         html: htmlContent,
         attachments,
@@ -1587,73 +1557,46 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!clientRes.ok) {
       const errorText = await clientRes.text();
-      console.error(`[${requestId}] Client email failed:`, clientRes.status, errorText);
       throw new Error(`Failed to send client email: ${errorText}`);
     }
     const clientResponseJson = await clientRes.json();
-    console.log(`[${requestId}] ✅ Client email sent successfully`);
 
 
-    // 2. Send to ADMIN (Exact Copy)
-    // -------------------------------------------
-    // Note: We use ADVISOR_EMAIL defined at top of file
-    console.log(`[${requestId}] Sending Email 2/3: Admin (${ADVISOR_EMAIL})`);
+    // 2. שליחה לאדמין (עותק זהה)
+    console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL}`);
     const adminRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
         from: senderFrom,
         to: [ADVISOR_EMAIL], 
-        subject: subjectContent, // Identical subject
-        html: htmlContent,       // Identical content
+        subject: subjectContent,
+        html: htmlContent,
         attachments,
       }),
     });
 
-    if (adminRes.ok) {
-      console.log(`[${requestId}] ✅ Admin email sent successfully`);
-    } else {
-      console.warn(`[${requestId}] ⚠️ Admin email failed:`, await adminRes.text());
-    }
 
-
-    // 3. Send to PARTNER (Exact Copy - Conditional)
-    // -------------------------------------------
+    // 3. שליחה לשותף (רק אם יש שותף - שום תנאי אחר)
     let partnerSent = false;
-    // Prevent sending to partner if the "client" is actually the admin testing the system
-    const isSendingToAdvisorInbox = data.recipientEmail.toLowerCase() === ADVISOR_EMAIL.toLowerCase();
-
-    if (partnerEmail && !isSendingToAdvisorInbox) {
-      console.log(`[${requestId}] Sending Email 3/3: Partner (${partnerEmail})`);
+    if (partnerEmail) {
+      console.log(`[${requestId}] Sending to Partner: ${partnerEmail}`);
       const partnerRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
           from: senderFrom,
           to: [partnerEmail],
-          subject: subjectContent, // Identical subject
-          html: htmlContent,       // Identical content
+          subject: subjectContent, 
+          html: htmlContent,       
           attachments,
         }),
       });
-
-      if (partnerRes.ok) {
-        console.log(`[${requestId}] ✅ Partner email sent successfully`);
-        partnerSent = true;
-      } else {
-        console.warn(`[${requestId}] ⚠️ Partner email failed:`, await partnerRes.text());
-      }
-    } else {
-      console.log(`[${requestId}] Skipping Partner email (No partner or testing mode)`);
+      
+      if (partnerRes.ok) partnerSent = true;
+      else console.warn(`[${requestId}] Partner email failed:`, await partnerRes.text());
     }
 
-    // Return Response
     return new Response(
       JSON.stringify({
         requestId,
@@ -1662,27 +1605,16 @@ const handler = async (req: Request): Promise<Response> => {
         deliveredToPartner: partnerSent,
         resendClient: clientResponseJson,
       }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      },
+      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
 
   } catch (error: any) {
     const errorId = crypto.randomUUID().substring(0, 8);
     console.error(`[${errorId}] Error in send-report-email function:`, error.message);
-
     return new Response(
-      JSON.stringify({
-        error: "An error occurred while sending the report. Please try again later.",
-        errorId,
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      },
+      JSON.stringify({ error: "An error occurred.", errorId }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   }
 };
-
 serve(handler);
