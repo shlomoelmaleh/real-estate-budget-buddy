@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
+const FUNCTION_VERSION = "2025-01-28-v2-debug-logs";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADVISOR_EMAIL = "shlomo.elmaleh@gmail.com";
 
@@ -1484,6 +1485,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const requestId = crypto.randomUUID().substring(0, 8);
+    console.log(`[send-report-email ${FUNCTION_VERSION}] Processing request`);
     console.log(`[${requestId}] Email request received`);
 
     // Normalize partner ID
