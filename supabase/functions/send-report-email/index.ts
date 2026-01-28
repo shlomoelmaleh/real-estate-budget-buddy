@@ -1484,7 +1484,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Normalize partner ID
     const effectivePartnerId = data.partnerId || data.partner_id || null;
-    console.log(`[${requestId}] Effective Partner ID resolved to:`, effectivePartnerId, typeof effectivePartnerId);
+    console.log(`[${requestId}] Received partnerId:`, effectivePartnerId, 'Type:', typeof effectivePartnerId);
+    console.log(`[${requestId}] Raw data.partnerId:`, data.partnerId, 'Raw data.partner_id:', data.partner_id);
 
     // שמירה לדאטה בייס (נשאר כפי שהיה)
     const { error: insertError } = await supabaseAdmin.from("simulations").insert({
@@ -1512,9 +1513,9 @@ const handler = async (req: Request): Promise<Response> => {
         .maybeSingle();
 
       if (partnerError) {
-        console.error(`[${requestId}] Partner DB Query Error:`, partnerError.message, partnerError.details);
+        console.error(`[${requestId}] Partner DB Query Error:`, partnerError.message, partnerError.details, partnerError.hint);
       } else if (partnerData) {
-        console.log(`[${requestId}] Partner found in DB:`, JSON.stringify(partnerData));
+        console.log(`[${requestId}] Partner found - Name: "${partnerData.name}", Email: "${partnerData.email}", Active: ${partnerData.is_active}`);
         partnerEmail = partnerData.is_active !== false ? (partnerData.email ?? null) : null;
         partnerContact = {
           name: partnerData.name ?? null,
@@ -1522,9 +1523,12 @@ const handler = async (req: Request): Promise<Response> => {
           whatsapp: partnerData.whatsapp ?? null,
           email: partnerData.email ?? null,
         };
+        console.log(`[${requestId}] partnerContact constructed:`, JSON.stringify(partnerContact));
       } else {
         console.log(`[${requestId}] No partner found in DB with ID: ${effectivePartnerId}`);
       }
+    } else {
+      console.log(`[${requestId}] No partnerId provided, skipping partner lookup`);
     }
 
     // יצירת תוכן האימייל (גרסאות נפרדות ללקוח ולאדמין)
@@ -1534,10 +1538,16 @@ const handler = async (req: Request): Promise<Response> => {
       fr: { subjectWithName: "Rapport du dossier de", fromPartner: "de la part de" }
     }) as Record<string, Record<string, string>>)[data.language] || { subjectWithName: "Report for", fromPartner: "from" };
 
+    console.log(`[${requestId}] Before subject construction - partnerContact:`, JSON.stringify(partnerContact));
+    console.log(`[${requestId}] partnerContact?.name exists:`, !!partnerContact?.name, 'Value:', partnerContact?.name);
+
     const clientSubject = `${t.subjectWithName} ${data.recipientName}`;
     let adminSubject = clientSubject;
     if (partnerContact?.name) {
       adminSubject = `${clientSubject} ${t.fromPartner} ${partnerContact.name}`;
+      console.log(`[${requestId}] Partner name found, admin subject modified to: "${adminSubject}"`);
+    } else {
+      console.log(`[${requestId}] No partner name available, admin subject unchanged: "${adminSubject}"`);
     }
 
     const clientHtml = generateEmailHtml(data, false, partnerContact);
