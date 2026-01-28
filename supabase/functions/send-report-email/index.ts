@@ -2,7 +2,35 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const FUNCTION_VERSION = "2025-01-28-v2-debug-logs";
+// ============================================================================
+// DEPLOYMENT VERSION DETECTION (auto-detected, no manual increment needed)
+// ============================================================================
+const FUNCTION_VERSION = (() => {
+  // Priority order for Git SHA detection from various CI/CD environments
+  const envVars = [
+    "GIT_SHA",
+    "GITHUB_SHA", 
+    "COMMIT_SHA",
+    "VERCEL_GIT_COMMIT_SHA",
+    "NETLIFY_COMMIT_REF",
+    "CF_PAGES_COMMIT_SHA",
+    "DENO_DEPLOYMENT_ID",
+  ];
+  
+  for (const envVar of envVars) {
+    const value = Deno.env.get(envVar);
+    if (value && value.trim()) {
+      return value.trim().slice(0, 7); // First 7 chars of SHA
+    }
+  }
+  
+  // Fallback: timestamp-based version (deterministic per deployment)
+  return `build-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`;
+})();
+
+// Captured at module load time (deployment time), NOT per-request
+const DEPLOYED_AT = new Date().toISOString();
+
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADVISOR_EMAIL = "shlomo.elmaleh@gmail.com";
 
@@ -15,7 +43,7 @@ const WHITELISTED_EMAILS = [
 // CORS headers - allow all origins for this public calculator
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-build-sha",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -105,6 +133,7 @@ const EmailRequestSchema = z.object({
   csvData: z.string().optional(),
   partnerId: z.string().uuid().nullable().optional(),
   partner_id: z.string().uuid().nullable().optional(),
+  buildSha: z.string().max(40).nullable().optional(),
 });
 
 // Atomic rate limiting helper using database function to prevent race conditions
@@ -227,6 +256,7 @@ interface ReportEmailRequest {
   csvData?: string;
   partnerId?: string | null;
   partner_id?: string | null;
+  buildSha?: string | null;
 }
 
 function formatNumber(num: number): string {
@@ -1456,10 +1486,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!parseResult.success) {
       console.error("Validation error:", parseResult.error.format());
+      const headerBuildSha = req.headers.get("x-build-sha") || null;
       return new Response(
         JSON.stringify({
           error: "Invalid request data",
           details: parseResult.error.issues.map((i) => i.message).join(", "),
+          version: {
+            functionVersion: FUNCTION_VERSION,
+            deployedAt: DEPLOYED_AT,
+            clientBuildSha: headerBuildSha,
+            mismatch: false,
+          },
         }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
       );
@@ -1478,14 +1515,48 @@ const handler = async (req: Request): Promise<Response> => {
       const errorMsg = rateCheck.reason === "email_limit"
         ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
         : "Rate limit exceeded. Maximum 10 emails per hour.";
+      
+      // Extract clientBuildSha for version metadata (even in rate limit response)
+      const clientBuildSha = req.headers.get("x-build-sha") || data.buildSha || null;
+      const versionMismatch = !!(
+        clientBuildSha && 
+        FUNCTION_VERSION && 
+        FUNCTION_VERSION !== "unknown" && 
+        !FUNCTION_VERSION.startsWith("build-") &&
+        clientBuildSha !== FUNCTION_VERSION
+      );
+      
       return new Response(
-        JSON.stringify({ error: errorMsg, retryAfter: 3600 }),
+        JSON.stringify({ 
+          error: errorMsg, 
+          retryAfter: 3600,
+          version: {
+            functionVersion: FUNCTION_VERSION,
+            deployedAt: DEPLOYED_AT,
+            clientBuildSha: clientBuildSha,
+            mismatch: versionMismatch,
+          },
+        }),
         { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders } },
       );
     }
 
+    // Extract clientBuildSha from header or payload
+    const clientBuildSha = req.headers.get("x-build-sha") || data.buildSha || null;
+    
+    // Calculate version mismatch
+    const versionMismatch = !!(
+      clientBuildSha && 
+      FUNCTION_VERSION && 
+      FUNCTION_VERSION !== "unknown" && 
+      !FUNCTION_VERSION.startsWith("build-") &&
+      clientBuildSha !== FUNCTION_VERSION
+    );
+
     const requestId = crypto.randomUUID().substring(0, 8);
-    console.log(`[send-report-email ${FUNCTION_VERSION}] Processing request`);
+    
+    // Version verification log (non-PII)
+    console.log(`[send-report-email] version: ${FUNCTION_VERSION} | deployed: ${DEPLOYED_AT} | clientBuildSha: ${clientBuildSha || 'none'}`);
     console.log(`[${requestId}] Email request received`);
 
     // Normalize partner ID
@@ -1705,6 +1776,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({
+        version: {
+          functionVersion: FUNCTION_VERSION,
+          deployedAt: DEPLOYED_AT,
+          clientBuildSha: clientBuildSha,
+          mismatch: versionMismatch,
+        },
         requestId,
         deliveredToClient: true,
         deliveredToAdmin: adminSend.ok,
@@ -1719,7 +1796,16 @@ const handler = async (req: Request): Promise<Response> => {
     const errorId = crypto.randomUUID().substring(0, 8);
     console.error(`[${errorId}] Error in send-report-email function:`, error.message);
     return new Response(
-      JSON.stringify({ error: "An error occurred.", errorId }),
+      JSON.stringify({ 
+        error: "An error occurred.", 
+        errorId,
+        version: {
+          functionVersion: FUNCTION_VERSION,
+          deployedAt: DEPLOYED_AT,
+          clientBuildSha: null,
+          mismatch: false,
+        },
+      }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   }
