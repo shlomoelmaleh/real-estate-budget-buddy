@@ -335,6 +335,7 @@ function getEmailContent(
     he: {
       subject: "דוח מחשבון תקציב רכישת נכס",
       subjectWithName: "דוח תיק של",
+      fromPartner: "מאת",
       // Greeting
       greeting: "שלום",
       // Section 1 - Hero
@@ -439,6 +440,7 @@ function getEmailContent(
     en: {
       subject: "Property Budget Calculator - Complete Report",
       subjectWithName: "Report for",
+      fromPartner: "from",
       greeting: "Hello",
       heroTitle: "Your Property Project Summary",
       heroTitleWithName: "Report for",
@@ -535,6 +537,7 @@ function getEmailContent(
     fr: {
       subject: "Simulateur Budget Immobilier - Rapport Complet",
       subjectWithName: "Rapport du dossier de",
+      fromPartner: "de la part de",
       greeting: "Bonjour",
       heroTitle: "Synthèse de votre projet immobilier",
       heroTitleWithName: "Rapport du dossier de",
@@ -1425,12 +1428,15 @@ function getEmailContent(
   `;
 
   // For client: use personalized subject with their name
-  // For advisor: use subject with client name for easy identification
-  const personalizedSubject = isAdvisorCopy
-    ? ` ${t.subjectWithName} ${recipientName}`
-    : `${t.subjectWithName} ${recipientName}`;
+  const subject = `${t.subjectWithName} ${recipientName}`;
 
-  return { subject: personalizedSubject, html };
+  // For advisor: use subject with client name + partner name if applicable
+  let adminSubject = subject;
+  if (partnerContact?.name) {
+    adminSubject = `${subject} ${t.fromPartner} ${partnerContact.name}`;
+  }
+
+  return { subject, adminSubject, html };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -1532,9 +1538,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // יצירת תוכן האימייל (פעם אחת - זהה לכולם)
     // משתמשים בגרסת הלקוח (false) עבור כולם כרגע
-    const clientContent = getEmailContent(data, false, partnerContact);
-    const htmlContent = clientContent.html;
-    const subjectContent = clientContent.subject;
+    const { subject: subjectContent, adminSubject, html: htmlContent } = getEmailContent(data, false, partnerContact);
 
     // הכנת קובץ CSV
     const csvFilenames: Record<string, string> = {
@@ -1647,12 +1651,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 2. שליחה לאדמין (עותק זהה)
     console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL}`);
-
-    // Determine Admin subject line
-    let adminSubject = subjectContent;
-    if (partnerContact?.name) {
-      adminSubject = `[Partner Lead: ${partnerContact.name}] ${subjectContent}`;
-    }
     console.log(`[${requestId}] Admin Subject:`, adminSubject);
 
     const adminSend = await sendResendEmail(
