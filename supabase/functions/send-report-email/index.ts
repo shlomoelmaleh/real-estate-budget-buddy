@@ -1726,8 +1726,8 @@ const handler = async (req: Request): Promise<Response> => {
     // שליחת אימיילים - ללא לוגיקה נסתרת וללא תנאים מיותרים
     // =========================================================================
 
-    // 1. שליחה ללקוח (Simplified version)
-    console.log(`[${requestId}] Sending to Client: ${data.recipientEmail} | Subject: ${clientSubject} | Version: SIMPLIFIED`);
+    // 1. שליחה ללקוח
+    console.log(`[${requestId}] Sending to Client: ${data.recipientEmail} | Subject: ${clientSubject}`);
     const clientSend = await sendResendEmail(
       {
         from: senderFrom,
@@ -1741,8 +1741,8 @@ const handler = async (req: Request): Promise<Response> => {
     if (!clientSend.ok) throw new Error(`Failed to send client email: ${clientSend.text}`);
 
 
-    // 2. שליחה לאדמין (עותק מלא עם פרטי קשר ונושא מורחב)
-    console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL} | Subject: ${adminSubject} | Version: FULL_REPORT`);
+    // 2. שליחה לאדמין (עותק עם פרטי קשר ונושא מורחב)
+    console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL} | Subject: ${adminSubject}`);
     const adminSend = await sendResendEmail(
       {
         from: senderFrom,
@@ -1755,10 +1755,10 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
 
-    // 3. שליחה לשותף (רק אם יש שותף - מקבל עותק מלא כמו האדמין)
+    // 3. שליחה לשותף (רק אם יש שותף - שום תנאי אחר)
     let partnerSent = false;
     if (partnerEmail) {
-      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${adminSubject} | Version: FULL_REPORT`);
+      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${adminSubject}`);
       const partnerSend = await sendResendEmail(
         {
           from: senderFrom,

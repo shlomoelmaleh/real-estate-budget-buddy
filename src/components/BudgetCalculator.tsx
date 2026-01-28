@@ -344,7 +344,7 @@ export function BudgetCalculator() {
             <img 
               src={displayLogo} 
               alt={partner?.name ? `${partner.name} logo` : "Eshel Finances"} 
-              className="h-14 w-auto object-contain opacity-90"
+              className="h-16 md:h-[72px] w-auto object-contain opacity-90"
             />
             <div className="flex flex-col items-center gap-1">
               <p className="font-semibold text-foreground">{displayName}</p>

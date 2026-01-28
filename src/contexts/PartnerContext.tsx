@@ -34,7 +34,7 @@ async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
   // Use partners_public view - base partners table has admin-only RLS
   const { data, error } = await supabase
     .from("partners_public")
-    .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
+    .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,is_active,created_at")
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data) return null;
@@ -45,7 +45,7 @@ async function fetchPartnerById(id: string): Promise<Partner | null> {
   // Use partners_public view - base partners table has admin-only RLS
   const { data, error } = await supabase
     .from("partners_public")
-    .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
+    .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,is_active,created_at")
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;

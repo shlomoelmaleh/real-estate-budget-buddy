@@ -23,19 +23,21 @@ export function HeroHeader() {
         <LanguageSwitcher />
         
         {/* Logo */}
-        <div className="flex flex-col items-center justify-center pt-3 md:pt-4 gap-2">
+        <div className="flex flex-col items-center justify-center pt-3 md:pt-4 gap-3">
           <img
             src={partner?.logo_url || logoEshel}
             alt={partner?.name ? `${partner.name} logo` : 'Eshel Finances - אשל פיננסים'}
             className={
               partner?.logo_url
-                ? "w-auto max-w-[90vw] object-contain drop-shadow-sm"
+                ? "w-full max-w-[85vw] md:max-w-[480px] lg:max-w-[540px] h-auto object-contain drop-shadow-lg"
                 : "h-44 md:h-64 lg:h-80 xl:h-96 w-auto max-w-[90vw] md:max-w-[72vw] lg:max-w-[60vw] object-contain drop-shadow-xl"
             }
-            style={partner?.logo_url ? { maxHeight: 40, objectFit: 'contain' } : undefined}
           />
-          {partner?.name ? (
-            <span className="text-xs text-muted-foreground">Partenaire: {partner.name}</span>
+          {/* Partner slogan - displayed if defined, otherwise invisible placeholder */}
+          {partner?.logo_url ? (
+            <span className={`text-lg font-medium ${partner?.slogan ? 'text-muted-foreground' : 'text-transparent select-none'}`}>
+              {partner?.slogan || '\u00A0'}
+            </span>
           ) : null}
         </div>
         
