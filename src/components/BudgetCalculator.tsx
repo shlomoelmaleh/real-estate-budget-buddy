@@ -238,6 +238,8 @@ export function BudgetCalculator() {
         };
 
         const partnerId = partner?.id || null;
+        console.log('Sending email with partner:', { partnerId, partnerName: partner?.name, partnerLoaded: !!partner });
+        
         const { error: emailError } = await supabase.functions.invoke('send-report-email', {
           body: {
             recipientEmail: data.email,
