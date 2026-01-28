@@ -268,7 +268,7 @@ function getEmailContent(
   data: ReportEmailRequest,
   isAdvisorCopy: boolean = false,
   partnerContact?: PartnerContactOverride,
-): { subject: string; html: string } {
+): { subject: string; adminSubject: string; html: string } {
   const {
     language,
     recipientName: rawRecipientName,
@@ -1434,6 +1434,9 @@ function getEmailContent(
   let adminSubject = subject;
   if (partnerContact?.name) {
     adminSubject = `${subject} ${t.fromPartner} ${partnerContact.name}`;
+    console.log(`[getEmailContent] Constructed adminSubject with partner: "${adminSubject}"`);
+  } else {
+    console.log(`[getEmailContent] Constructed adminSubject without partner: "${adminSubject}" (partnerContact.name is: ${partnerContact?.name})`);
   }
 
   return { subject, adminSubject, html };
@@ -1538,7 +1541,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // יצירת תוכן האימייל (פעם אחת - זהה לכולם)
     // משתמשים בגרסת הלקוח (false) עבור כולם כרגע
+    console.log(`[${requestId}] Calling getEmailContent with partnerContact:`, JSON.stringify(partnerContact));
     const { subject: subjectContent, adminSubject, html: htmlContent } = getEmailContent(data, false, partnerContact);
+    console.log(`[${requestId}] getEmailContent returned adminSubject: "${adminSubject}"`);
 
     // הכנת קובץ CSV
     const csvFilenames: Record<string, string> = {
