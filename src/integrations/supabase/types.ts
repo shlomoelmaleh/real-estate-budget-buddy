@@ -66,6 +66,7 @@ export type Database = {
           logo_url: string | null
           name: string
           phone: string | null
+          slogan: string | null
           slug: string
           whatsapp: string | null
         }
@@ -78,6 +79,7 @@ export type Database = {
           logo_url?: string | null
           name: string
           phone?: string | null
+          slogan?: string | null
           slug: string
           whatsapp?: string | null
         }
@@ -90,6 +92,7 @@ export type Database = {
           logo_url?: string | null
           name?: string
           phone?: string | null
+          slogan?: string | null
           slug?: string
           whatsapp?: string | null
         }
@@ -182,6 +185,7 @@ export type Database = {
           logo_url: string | null
           name: string | null
           phone: string | null
+          slogan: string | null
           slug: string | null
           whatsapp: string | null
         }
@@ -194,6 +198,7 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           phone?: string | null
+          slogan?: string | null
           slug?: string | null
           whatsapp?: string | null
         }
@@ -206,6 +211,7 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           phone?: string | null
+          slogan?: string | null
           slug?: string | null
           whatsapp?: string | null
         }

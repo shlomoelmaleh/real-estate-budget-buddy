@@ -33,9 +33,11 @@ export function HeroHeader() {
                 : "h-44 md:h-64 lg:h-80 xl:h-96 w-auto max-w-[90vw] md:max-w-[72vw] lg:max-w-[60vw] object-contain drop-shadow-xl"
             }
           />
-          {/* Placeholder for partner slogan - transparent until slogan is defined */}
+          {/* Partner slogan - displayed if defined, otherwise invisible placeholder */}
           {partner?.logo_url ? (
-            <span className="text-sm text-transparent select-none">&nbsp;</span>
+            <span className={`text-sm ${partner?.slogan ? 'text-muted-foreground' : 'text-transparent select-none'}`}>
+              {partner?.slogan || '\u00A0'}
+            </span>
           ) : null}
         </div>
         

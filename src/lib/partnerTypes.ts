@@ -7,6 +7,7 @@ export type Partner = {
   phone: string | null;
   whatsapp: string | null;
   email: string | null;
+  slogan: string | null;
   is_active: boolean;
   created_at: string;
 };
