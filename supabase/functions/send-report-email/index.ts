@@ -1130,7 +1130,8 @@ function generateEmailHtml(
         </div>
       </div>
 
-      <!-- FINANCIAL DASHBOARD SECTION - Always displayed -->
+      <!-- FINANCIAL DASHBOARD SECTION -->
+      ${isAdvisorCopy ? `
       <div class="section" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-${alignStart}: 5px solid #6366f1;">
         <div class="section-title" style="color: #4f46e5;">📈 ${t.financialDashboardTitle}</div>
         <div class="row">
@@ -1156,6 +1157,7 @@ function generateEmailHtml(
           💡 ${language === 'he' ? 'התשואות מחושבות על בסיס ההנחות בסימולציה בלבד.' : language === 'fr' ? 'Rendements calculés sur la base des hypothèses de la simulation uniquement.' : 'Yields are calculated based on simulation assumptions only.'}
         </div>
       </div>
+      ` : ''}
 
       <!-- SECTION 5: Feasibility & Analysis -->
       <div class="section feasibility-section">
@@ -1173,6 +1175,7 @@ function generateEmailHtml(
           ${t.incomeLabel}: ₪${formatNumber(incomeNet)} + ${t.recognizedRentLabel}: ₪${formatNumber(recognizedRent)}
         </div>
         ` : ''}
+        ${isAdvisorCopy ? `
         <div class="row">
           <span class="label">${t.dtiMaxLabel}</span>
           <span class="value">${dtiMaxAllowed > 0 ? `${(dtiMaxAllowed * 100).toFixed(0)}%` : t.notAvailable}</span>
@@ -1181,6 +1184,7 @@ function generateEmailHtml(
           <span class="label">${t.dtiEstimatedLabel}</span>
           <span class="value">${dtiEstimatedDisplay}</span>
         </div>
+        ` : ''}
 
         <!-- Monthly Summary Block -->
         <div style="margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 8px; border: 1px solid #86efac;">
@@ -1671,13 +1675,13 @@ const handler = async (req: Request): Promise<Response> => {
     // 3. שליחה לשותף (רק אם יש שותף - שום תנאי אחר)
     let partnerSent = false;
     if (partnerEmail) {
-      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${clientSubject}`);
+      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${adminSubject}`);
       const partnerSend = await sendResendEmail(
         {
           from: senderFrom,
           to: [partnerEmail],
-          subject: clientSubject,
-          html: clientHtml,
+          subject: adminSubject,
+          html: adminHtml,
           attachments,
         },
         { label: "partner", maxAttempts: 4 },
