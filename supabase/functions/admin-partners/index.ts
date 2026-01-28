@@ -28,6 +28,7 @@ const partnerSchema = z.object({
   whatsapp: z.string().max(30).nullable().optional(),
   brand_color: hexColorSchema.nullable().optional(),
   logo_url: z.string().url().max(2048).nullable().optional(),
+  slogan: z.string().max(200).nullable().optional(),
   is_active: z.boolean(),
 });
 
@@ -103,6 +104,7 @@ Deno.serve(async (req) => {
           whatsapp: request.partner.whatsapp ?? null,
           brand_color: request.partner.brand_color ?? null,
           logo_url: request.partner.logo_url ?? null,
+          slogan: request.partner.slogan ?? null,
           is_active: request.partner.is_active,
         })
         .select("id")

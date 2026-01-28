@@ -63,6 +63,7 @@ export default function AdminPartners() {
     whatsapp: "",
     brand_color: "",
     logo_url: "",
+    slogan: "",
     is_active: true,
   });
 
@@ -72,7 +73,7 @@ export default function AdminPartners() {
     setIsLoadingPartners(true);
     const { data, error } = await supabase
       .from("partners")
-      .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,is_active,created_at")
+      .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,is_active,created_at")
       .order("created_at", { ascending: false });
     if (error) toast.error("Failed to load partners");
     setPartners((data || []) as any);
@@ -110,7 +111,7 @@ export default function AdminPartners() {
 
   const resetForm = () => {
     setEditing(null);
-    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", is_active: true });
+    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", is_active: true });
   };
 
   const startEdit = (p: Partner) => {
@@ -123,6 +124,7 @@ export default function AdminPartners() {
       whatsapp: p.whatsapp || "",
       brand_color: p.brand_color || "",
       logo_url: p.logo_url || "",
+      slogan: p.slogan || "",
       is_active: !!p.is_active,
     });
   };
@@ -167,6 +169,7 @@ export default function AdminPartners() {
           whatsapp: form.whatsapp || null,
           brand_color: brand,
           logo_url: form.logo_url || null,
+          slogan: form.slogan || null,
           is_active: !!form.is_active,
         },
       });
@@ -323,6 +326,15 @@ export default function AdminPartners() {
                         <img src={form.logo_url} alt="Partner logo preview" className="h-10 w-auto object-contain" />
                       </div>
                     ) : null}
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Slogan</label>
+                    <Input 
+                      value={form.slogan} 
+                      onChange={(e) => setForm((f) => ({ ...f, slogan: e.target.value }))} 
+                      placeholder="Your trusted mortgage partner"
+                    />
+                    <p className="text-xs text-muted-foreground">Optional text displayed under the logo in the header</p>
                   </div>
 
                   <div className="flex gap-2 pt-2">
