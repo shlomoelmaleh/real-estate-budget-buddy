@@ -127,6 +127,7 @@ export type Database = {
           id: string
           inputs: Json
           language: string | null
+          partner_id: string | null
           phone: string
           results: Json
         }
@@ -137,6 +138,7 @@ export type Database = {
           id?: string
           inputs: Json
           language?: string | null
+          partner_id?: string | null
           phone: string
           results: Json
         }
@@ -147,10 +149,26 @@ export type Database = {
           id?: string
           inputs?: Json
           language?: string | null
+          partner_id?: string | null
           phone?: string
           results?: Json
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "simulations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simulations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
