@@ -50,8 +50,8 @@ export function HeroHeader() {
             alt={partner?.name ? `${partner.name} logo` : 'Eshel Finances - אשל פיננסים'}
             className={
               partner?.logo_url
-                ? "w-full max-w-[85vw] md:max-w-[480px] lg:max-w-[540px] h-auto object-contain drop-shadow-lg"
-                : "h-44 md:h-64 lg:h-80 xl:h-96 w-auto max-w-[90vw] md:max-w-[72vw] lg:max-w-[60vw] object-contain drop-shadow-xl"
+                ? "w-full max-w-[90vw] md:max-w-[560px] lg:max-w-[640px] h-auto object-contain drop-shadow-lg"
+                : "h-52 md:h-72 lg:h-96 xl:h-[28rem] w-auto max-w-[92vw] md:max-w-[78vw] lg:max-w-[68vw] object-contain drop-shadow-xl"
             }
           />
           {/* Partner slogan - displayed if defined, otherwise invisible placeholder */}
