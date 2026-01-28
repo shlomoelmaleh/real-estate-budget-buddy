@@ -264,11 +264,16 @@ type PartnerContactOverride = {
   whatsapp?: string | null;
 };
 
-function getEmailContent(
+interface EmailVersion {
+  subject: string;
+  html: string;
+}
+
+function generateEmailHtml(
   data: ReportEmailRequest,
-  isAdvisorCopy: boolean = false,
+  isAdvisorCopy: boolean,
   partnerContact?: PartnerContactOverride,
-): { subject: string; adminSubject: string; html: string } {
+): string {
   const {
     language,
     recipientName: rawRecipientName,
@@ -281,12 +286,11 @@ function getEmailContent(
     paymentBreakdownData,
   } = data;
 
-  // Sanitize all user-provided strings to prevent XSS in HTML emails
-  const recipientName = escapeHtml(rawRecipientName);
-  const recipientPhone = escapeHtml(rawRecipientPhone);
-  const recipientEmail = escapeHtml(rawRecipientEmail);
+  // Sanitize all user-provided strings to prevent XSS in HTML body
+  const recipientNameEscaped = escapeHtml(rawRecipientName);
+  const recipientPhoneEscaped = escapeHtml(rawRecipientPhone);
+  const recipientEmailEscaped = escapeHtml(rawRecipientEmail);
 
-  // Parse income for DTI calculation
   const parseNumber = (str: string): number => {
     if (!str) return 0;
     return parseFloat(str.replace(/,/g, "")) || 0;
@@ -302,7 +306,7 @@ function getEmailContent(
     results.purchaseTax + results.lawyerFeeTTC + results.brokerFeeTTC + advisorFeeValue + otherFeeValue;
 
   // Normalize DTI max allowed (could be 33 or 0.33)
-  let dtiMaxAllowedRaw = parseFloat(inputs.ratio) || 0;
+  const dtiMaxAllowedRaw = parseFloat(inputs.ratio) || 0;
   const dtiMaxAllowed = dtiMaxAllowedRaw > 1 ? dtiMaxAllowedRaw / 100 : dtiMaxAllowedRaw;
 
   // Calculate estimated DTI
@@ -639,6 +643,7 @@ function getEmailContent(
   const advisorName = partnerContact?.name || t.advisorName;
   const advisorPhone = partnerContact?.phone || t.advisorPhone;
   const advisorEmail = partnerContact?.email || t.advisorEmail;
+  const advisorNameEscaped = escapeHtml(advisorName);
 
   const normalizeToWaMeDigits = (raw: string) => {
     const digitsOnly = (raw || "").replace(/[^0-9]/g, "");
@@ -747,7 +752,7 @@ function getEmailContent(
     ? `₪ ${formatNumber(netMonthlyBalanceValue)}`
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
-  const html = `
+  return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${language}" style="direction: ${dir};">
     <head>
@@ -1034,18 +1039,18 @@ function getEmailContent(
       <div class="header">
         <div class="header-info">
           <div style="text-align: ${alignStart}; ${isRTL ? "direction: rtl;" : ""}">
-            <p style="font-weight: 700; font-size: 16px; margin: 0 0 4px 0;">${advisorName}</p>
-            <p>📞 <a href="${advisorWhatsAppHref}" target="_blank">${advisorPhone}</a></p>
-            <p>✉️ <a href="mailto:${advisorEmail}">${advisorEmail}</a></p>
+            <p style="font-weight: 700; font-size: 16px; margin: 0 0 4px 0;">${advisorNameEscaped}</p>
+            <p>📞 <a href="${advisorWhatsAppHref}" target="_blank">${escapeHtml(advisorPhone)}</a></p>
+            <p>✉️ <a href="mailto:${escapeHtml(advisorEmail)}">${escapeHtml(advisorEmail)}</a></p>
           </div>
           <p style="font-size: 12px; margin: 0;">📅 ${new Date().toLocaleDateString()}</p>
         </div>
-        <h1>🏠 ${t.heroTitleWithName} ${recipientName}</h1>
+        <h1>🏠 ${t.heroTitleWithName} ${recipientNameEscaped}</h1>
       </div>
 
       <!-- Personalized Greeting -->
       <div style="padding: 16px 20px; font-size: 15px; color: #1e293b;">
-        ${recipientName ? `${t.greeting} ${recipientName},` : `${t.greeting},`}
+        ${recipientNameEscaped ? `${t.greeting} ${recipientNameEscaped},` : `${t.greeting},`}
       </div>
 
       ${isAdvisorCopy
@@ -1055,15 +1060,15 @@ function getEmailContent(
         <div class="section-title" style="color: #1d4ed8;">👤 ${t.clientInfoTitle}</div>
         <div class="row">
           <span class="label">${t.clientName}</span>
-          <span class="value" style="font-weight: 700;">${recipientName}</span>
+          <span class="value" style="font-weight: 700;">${recipientNameEscaped}</span>
         </div>
         <div class="row">
           <span class="label">${t.clientPhone}</span>
-          <span class="value"><a href="tel:${recipientPhone}" style="color: #1d4ed8; text-decoration: none;">${recipientPhone}</a></span>
+          <span class="value"><a href="tel:${recipientPhoneEscaped}" style="color: #1d4ed8; text-decoration: none;">${recipientPhoneEscaped}</a></span>
         </div>
         <div class="row">
           <span class="label">${t.clientEmail}</span>
-          <span class="value"><a href="mailto:${recipientEmail}" style="color: #1d4ed8; text-decoration: none;">${recipientEmail}</a></span>
+          <span class="value"><a href="mailto:${recipientEmailEscaped}" style="color: #1d4ed8; text-decoration: none;">${recipientEmailEscaped}</a></span>
         </div>
       </div>
       `
@@ -1426,20 +1431,6 @@ function getEmailContent(
     </body>
     </html>
   `;
-
-  // For client: use personalized subject with their name
-  const subject = `${t.subjectWithName} ${recipientName}`;
-
-  // For advisor: use subject with client name + partner name if applicable
-  let adminSubject = subject;
-  if (partnerContact?.name) {
-    adminSubject = `${subject} ${t.fromPartner} ${partnerContact.name}`;
-    console.log(`[getEmailContent] Constructed adminSubject with partner: "${adminSubject}"`);
-  } else {
-    console.log(`[getEmailContent] Constructed adminSubject without partner: "${adminSubject}" (partnerContact.name is: ${partnerContact?.name})`);
-  }
-
-  return { subject, adminSubject, html };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -1493,6 +1484,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Normalize partner ID
     const effectivePartnerId = data.partnerId || data.partner_id || null;
+    console.log(`[${requestId}] Effective Partner ID resolved to:`, effectivePartnerId, typeof effectivePartnerId);
 
     // שמירה לדאטה בייס (נשאר כפי שהיה)
     const { error: insertError } = await supabaseAdmin.from("simulations").insert({
@@ -1511,39 +1503,47 @@ const handler = async (req: Request): Promise<Response> => {
     let partnerEmail: string | null = null;
     let partnerContact: PartnerContactOverride | undefined;
 
-    console.log(`[${requestId}] Check Partner ID:`, effectivePartnerId);
-
     if (effectivePartnerId) {
+      console.log(`[${requestId}] Querying partners table for ID: ${effectivePartnerId}`);
       const { data: partnerData, error: partnerError } = await supabaseAdmin
         .from("partners")
         .select("name, phone, whatsapp, email, is_active")
         .eq("id", effectivePartnerId)
         .maybeSingle();
 
-      console.log(`[${requestId}] Partner DB Result:`, partnerData);
-      if (partnerError) console.error(`[${requestId}] Partner DB Error:`, partnerError);
-
-      if (partnerData) {
-        // For the parsed partner contact (used for Admin Subject), we don't strictly require is_active.
-        // If a partner exists, we want to know about it.
-
+      if (partnerError) {
+        console.error(`[${requestId}] Partner DB Query Error:`, partnerError.message, partnerError.details);
+      } else if (partnerData) {
+        console.log(`[${requestId}] Partner found in DB:`, JSON.stringify(partnerData));
         partnerEmail = partnerData.is_active !== false ? (partnerData.email ?? null) : null;
-
         partnerContact = {
           name: partnerData.name ?? null,
           phone: partnerData.phone ?? null,
           whatsapp: partnerData.whatsapp ?? null,
           email: partnerData.email ?? null,
         };
-        console.log(`[${requestId}] Partner identified: ${partnerContact.name}`);
+      } else {
+        console.log(`[${requestId}] No partner found in DB with ID: ${effectivePartnerId}`);
       }
     }
 
-    // יצירת תוכן האימייל (פעם אחת - זהה לכולם)
-    // משתמשים בגרסת הלקוח (false) עבור כולם כרגע
-    console.log(`[${requestId}] Calling getEmailContent with partnerContact:`, JSON.stringify(partnerContact));
-    const { subject: subjectContent, adminSubject, html: htmlContent } = getEmailContent(data, false, partnerContact);
-    console.log(`[${requestId}] getEmailContent returned adminSubject: "${adminSubject}"`);
+    // יצירת תוכן האימייל (גרסאות נפרדות ללקוח ולאדמין)
+    const t = (({
+      he: { subjectWithName: "דוח תיק של", fromPartner: "מאת" },
+      en: { subjectWithName: "Report for", fromPartner: "from" },
+      fr: { subjectWithName: "Rapport du dossier de", fromPartner: "de la part de" }
+    }) as Record<string, Record<string, string>>)[data.language] || { subjectWithName: "Report for", fromPartner: "from" };
+
+    const clientSubject = `${t.subjectWithName} ${data.recipientName}`;
+    let adminSubject = clientSubject;
+    if (partnerContact?.name) {
+      adminSubject = `${clientSubject} ${t.fromPartner} ${partnerContact.name}`;
+    }
+
+    const clientHtml = generateEmailHtml(data, false, partnerContact);
+    const adminHtml = generateEmailHtml(data, true, partnerContact);
+
+    console.log(`[${requestId}] Final Subjects -> Client: "${clientSubject}", Admin: "${adminSubject}"`);
 
     // הכנת קובץ CSV
     const csvFilenames: Record<string, string> = {
@@ -1640,13 +1640,13 @@ const handler = async (req: Request): Promise<Response> => {
     // =========================================================================
 
     // 1. שליחה ללקוח
-    console.log(`[${requestId}] Sending to Client: ${data.recipientEmail}`);
+    console.log(`[${requestId}] Sending to Client: ${data.recipientEmail} | Subject: ${clientSubject}`);
     const clientSend = await sendResendEmail(
       {
         from: senderFrom,
         to: [data.recipientEmail],
-        subject: subjectContent,
-        html: htmlContent,
+        subject: clientSubject,
+        html: clientHtml,
         attachments,
       },
       { label: "client", throttleMs: 0 },
@@ -1654,16 +1654,14 @@ const handler = async (req: Request): Promise<Response> => {
     if (!clientSend.ok) throw new Error(`Failed to send client email: ${clientSend.text}`);
 
 
-    // 2. שליחה לאדמין (עותק זהה)
-    console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL}`);
-    console.log(`[${requestId}] Admin Subject:`, adminSubject);
-
+    // 2. שליחה לאדמין (עותק עם פרטי קשר ונושא מורחב)
+    console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL} | Subject: ${adminSubject}`);
     const adminSend = await sendResendEmail(
       {
         from: senderFrom,
         to: [ADVISOR_EMAIL],
         subject: adminSubject,
-        html: htmlContent,
+        html: adminHtml,
         attachments,
       },
       { label: "admin" },
@@ -1673,13 +1671,13 @@ const handler = async (req: Request): Promise<Response> => {
     // 3. שליחה לשותף (רק אם יש שותף - שום תנאי אחר)
     let partnerSent = false;
     if (partnerEmail) {
-      console.log(`[${requestId}] Sending to Partner: ${partnerEmail}`);
+      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${clientSubject}`);
       const partnerSend = await sendResendEmail(
         {
           from: senderFrom,
           to: [partnerEmail],
-          subject: subjectContent,
-          html: htmlContent,
+          subject: clientSubject,
+          html: clientHtml,
           attachments,
         },
         { label: "partner", maxAttempts: 4 },
