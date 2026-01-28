@@ -1,18 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  User, Home, Calculator,
-  UserCircle, Phone, Mail, Banknote, Building,
-  TrendingUp, Percent, Clock, Lock, CheckCircle2, Flag, Wallet
+  Calculator,
+  Mail,
+  CheckCircle2,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
 import { HeroHeader } from './HeroHeader';
-import { FormSection } from './FormSection';
-import { FormInput } from './FormInput';
 import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import {
   parseFormattedNumber,
   CalculatorResults,
@@ -22,9 +20,44 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import logoEshel from '@/assets/logo-eshel.png';
 
+// Modular components
+import { PropertyStatusSection } from './budget/PropertyStatusSection';
+import { RentInvestmentSection } from './budget/RentInvestmentSection';
+import { FinancialSection } from './budget/FinancialSection';
+import { PersonalInfoSection } from './budget/PersonalInfoSection';
+import { calculatorSchema, CalculatorFormValues } from './budget/types';
+
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
   const { partner } = usePartner();
+  const confirmationRef = useRef<HTMLDivElement>(null);
+
+  const [results, setResults] = useState<CalculatorResults | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+  } = useForm<CalculatorFormValues>({
+    resolver: zodResolver(calculatorSchema),
+    defaultValues: {
+      fullName: '',
+      phone: '',
+      email: '',
+      equity: '1,000,000',
+      netIncome: '',
+      age: '',
+      isFirstProperty: undefined,
+      isIsraeliCitizen: undefined,
+      isIsraeliTaxResident: undefined,
+      isRented: false,
+      expectedRent: '',
+      budgetCap: '',
+    },
+  });
 
   const displayName = partner?.name || t.advisorName;
   const displayPhone = partner?.phone || t.advisorPhone;
@@ -33,135 +66,65 @@ export function BudgetCalculator() {
   const displayLogo = partner?.logo_url || logoEshel;
 
   const normalizeToWaMeDigits = (raw: string) => {
-    // WhatsApp wa.me requires an international number with country code (digits only).
     const digitsOnly = (raw || "").replace(/[^0-9]/g, "");
     if (!digitsOnly) return "";
-
-    // Convert international dialing prefix "00" -> ""
     let d = digitsOnly.startsWith("00") ? digitsOnly.slice(2) : digitsOnly;
-
-    // Israel-friendly normalization:
-    // - Local mobile/landline often written as 0XXXXXXXXX  -> 972XXXXXXXXX
-    // - Sometimes written as 9720XXXXXXXXX              -> 972XXXXXXXXX
     if (d.startsWith("9720")) d = `972${d.slice(4)}`;
     else if (d.startsWith("0")) d = `972${d.slice(1)}`;
-    else if (d.length === 9 && d.startsWith("5")) d = `972${d}`; // e.g. 549997711
-
+    else if (d.length === 9 && d.startsWith("5")) d = `972${d}`;
     return d;
   };
 
   const buildWhatsAppHref = () => {
-    // Prefer an explicit partner.whatsapp value if provided.
     const rawWhatsApp = partner?.whatsapp || "";
     if (rawWhatsApp) {
       if (rawWhatsApp.startsWith("http://") || rawWhatsApp.startsWith("https://")) return rawWhatsApp;
       const digits = normalizeToWaMeDigits(rawWhatsApp);
       if (digits) return `https://wa.me/${digits}`;
     }
-
-    // Fallback: derive from phone.
     const digitsFromPhone = normalizeToWaMeDigits(partner?.phone || "");
     if (digitsFromPhone) return `https://wa.me/${digitsFromPhone}`;
-
-    // Default admin WhatsApp.
     return "https://wa.me/972549997711";
   };
-
-  // Basic info
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [equity, setEquity] = useState('1,000,000');
-  const [netIncome, setNetIncome] = useState('');
-  // ratio is hidden - using default value
-  const [age, setAge] = useState('');
-
-  // New fields for LTV calculation
-  const [isFirstProperty, setIsFirstProperty] = useState<boolean | null>(null);
-  const [isIsraeliCitizen, setIsIsraeliCitizen] = useState<boolean | null>(null);
-  const [isIsraeliTaxResident, setIsIsraeliTaxResident] = useState<boolean | null>(null);
 
   // Hidden defaults
   const maxAge = '80';
   const interest = '5.0';
   const ratio = '33';
+  const rentalYield = '3.0';
+  const rentRecognition = '80';
+  const lawyerPct = '1.0';
+  const brokerPct = '2.0';
+  const vatPct = '18';
+  const advisorFee = '9,000';
+  const otherFee = '3,000';
 
-  // Rent & Investment
-  const [isRented, setIsRented] = useState(false);
-  const [rentalYield, setRentalYield] = useState('3.0');
-  const [rentRecognition, setRentRecognition] = useState('80');
-  const [budgetCap, setBudgetCap] = useState('');
-  const [expectedRent, setExpectedRent] = useState('');
-
-  // Expenses (purchase tax is now calculated automatically)
-  const [lawyerPct, setLawyerPct] = useState('1.0');
-  const [brokerPct, setBrokerPct] = useState('2.0');
-  const [vatPct, setVatPct] = useState('18');
-  const [advisorFee, setAdvisorFee] = useState('9,000');
-  const [otherFee, setOtherFee] = useState('3,000');
-
-  // Results
-  const [results, setResults] = useState<CalculatorResults | null>(null);
-  const [amortization, setAmortization] = useState<AmortizationRow[]>([]);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({});
-
-  const validateRequiredFields = (): boolean => {
-    const errors: Record<string, boolean> = {};
-
-    // Required fields (except isRented and budgetCap)
-    if (!fullName.trim()) errors.fullName = true;
-    if (!phone.trim()) errors.phone = true;
-    if (!email.trim()) errors.email = true;
-    if (!equity.trim() || equity === '0') errors.equity = true;
-    if (!netIncome.trim() || netIncome === '0') errors.netIncome = true;
-    // ratio is hidden - no validation needed
-    if (!age.trim() || age === '0') errors.age = true;
-    if (isFirstProperty === null) errors.isFirstProperty = true;
-    if (isIsraeliCitizen === null) errors.isIsraeliCitizen = true;
-    if (isIsraeliTaxResident === null) errors.isIsraeliTaxResident = true;
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // Calculate LTV based on first property and citizenship
-  const calculateLTV = (): number => {
+  const calculateLTV = (isFirstProperty: boolean, isIsraeliCitizen: boolean): number => {
     if (!isFirstProperty) return 50;
     if (isIsraeliCitizen) return 75;
     return 50;
   };
 
-  const handleCalculate = async () => {
-    if (!validateRequiredFields()) {
-      toast.error(t.requiredField);
-      return;
-    }
-
+  const onSubmit = async (data: CalculatorFormValues) => {
     setIsSubmitting(true);
 
-    const calculatedLTV = calculateLTV();
+    const calculatedLTV = calculateLTV(data.isFirstProperty, data.isIsraeliCitizen);
 
     const inputs = {
-      equity: parseFormattedNumber(equity),
+      equity: parseFormattedNumber(data.equity),
       ltv: calculatedLTV,
-      netIncome: parseFormattedNumber(netIncome),
+      netIncome: parseFormattedNumber(data.netIncome),
       ratio: parseFormattedNumber(ratio),
-      age: parseFormattedNumber(age),
+      age: parseFormattedNumber(data.age),
       maxAge: parseFormattedNumber(maxAge),
       interest: parseFloat(interest) || 0,
-      isRented,
+      isRented: data.isRented,
       rentalYield: parseFloat(rentalYield) || 0,
       rentRecognition: parseFormattedNumber(rentRecognition),
-      budgetCap: budgetCap ? parseFormattedNumber(budgetCap) : null,
-      // Pass property status for automatic tax calculation
-      isFirstProperty: isFirstProperty ?? false,
-      isIsraeliTaxResident: isIsraeliTaxResident ?? false,
-      // Expected rent (fixed amount) - null means use 3% yield formula
-      expectedRent: expectedRent ? parseFormattedNumber(expectedRent) : null,
-      // Other costs
+      budgetCap: data.budgetCap ? parseFormattedNumber(data.budgetCap) : null,
+      isFirstProperty: data.isFirstProperty,
+      isIsraeliTaxResident: data.isIsraeliTaxResident,
+      expectedRent: data.expectedRent ? parseFormattedNumber(data.expectedRent) : null,
       lawyerPct: parseFloat(lawyerPct) || 0,
       brokerPct: parseFloat(brokerPct) || 0,
       vatPct: parseFormattedNumber(vatPct),
@@ -170,7 +133,6 @@ export function BudgetCalculator() {
     };
 
     try {
-      // Call secure server-side edge function for calculation
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-budget`,
         {
@@ -198,9 +160,7 @@ export function BudgetCalculator() {
 
       if (calcResults) {
         setResults(calcResults);
-        setAmortization(amortRows || []);
 
-        // Send email automatically
         const amortizationSummary = {
           totalMonths: amortRows.length,
           firstPayment:
@@ -216,7 +176,6 @@ export function BudgetCalculator() {
               : { principal: 0, interest: 0 },
         };
 
-        // Chart data: Loan balance by year
         const yearlyBalanceData: { year: number; balance: number }[] = [];
         for (let i = 0; i < amortRows.length; i++) {
           if ((i + 1) % 12 === 0 || i === amortRows.length - 1) {
@@ -227,19 +186,16 @@ export function BudgetCalculator() {
           }
         }
 
-        // Chart data: Annual interest vs principal
         const paymentBreakdownData: { year: number; interest: number; principal: number }[] = [];
         for (let yearIndex = 0; yearIndex < Math.ceil(amortRows.length / 12); yearIndex++) {
           const startMonth = yearIndex * 12;
           const endMonth = Math.min(startMonth + 12, amortRows.length);
-
           let yearlyInterest = 0;
           let yearlyPrincipal = 0;
           for (let i = startMonth; i < endMonth; i++) {
             yearlyInterest += amortRows[i].interest;
             yearlyPrincipal += amortRows[i].principal;
           }
-
           paymentBreakdownData.push({
             year: yearIndex + 1,
             interest: yearlyInterest,
@@ -247,16 +203,11 @@ export function BudgetCalculator() {
           });
         }
 
-        // Generate CSV data for the full amortization table
-        // Always use ASCII headers to avoid encoding issues with email attachments
         const asciiHeaders = ['Month', 'Opening', 'Payment', 'Principal', 'Interest', 'Closing'];
         const isRTL = language === 'he';
-        
-        // For RTL languages, reverse column order for better Excel viewing
         const headers = isRTL ? [...asciiHeaders].reverse() : asciiHeaders;
-
         const csvHeader = headers.join(",") + "\n";
-        const csvRows = amortRows.map((row: AmortizationRow) => {
+        const csvRows = (amortRows || []).map((row: AmortizationRow) => {
           const values = isRTL
             ? [row.closing, row.interest, row.principal, row.payment, row.opening, row.month]
             : [row.month, row.opening, row.payment, row.principal, row.interest, row.closing];
@@ -266,61 +217,32 @@ export function BudgetCalculator() {
 
         const { supabase } = await import('@/integrations/supabase/client');
 
-        // Save simulation to database
         const simulationInputs = {
-          equity,
+          ...data,
           ltv: calculatedLTV.toString(),
-          isFirstProperty,
-          isIsraeliCitizen,
-          isIsraeliTaxResident,
-          netIncome,
-          ratio,
-          age,
-          expectedRent,
           maxAge,
           interest,
-          isRented,
           rentalYield,
           rentRecognition,
-          budgetCap,
           lawyerPct,
           brokerPct,
           vatPct,
           advisorFee,
           otherFee,
+          ratio,
         };
 
         const simulationResults = {
-          maxPropertyValue: calcResults.maxPropertyValue,
-          loanAmount: calcResults.loanAmount,
-          actualLTV: calcResults.actualLTV,
-          monthlyPayment: calcResults.monthlyPayment,
-          rentIncome: calcResults.rentIncome,
-          netPayment: calcResults.netPayment,
-          closingCosts: calcResults.closingCosts,
-          totalInterest: calcResults.totalInterest,
-          totalCost: calcResults.totalCost,
-          loanTermYears: calcResults.loanTermYears,
+          ...calcResults,
           shekelRatio: calcResults.totalCost / calcResults.loanAmount,
-          purchaseTax: calcResults.purchaseTax,
-          taxProfile: calcResults.taxProfile,
-          equityUsed: calcResults.equityUsed,
-          equityRemaining: calcResults.equityRemaining,
-          lawyerFeeTTC: calcResults.lawyerFeeTTC,
-          brokerFeeTTC: calcResults.brokerFeeTTC,
         };
 
-        // Database insert is handled by the edge function (rate-limited)
-
-        // Log partner_id for debugging
         const partnerId = partner?.id || null;
-        console.log('Sending email with partner_id:', partnerId);
-
         const { error: emailError } = await supabase.functions.invoke('send-report-email', {
           body: {
-            recipientEmail: email,
-            recipientName: fullName || 'Client',
-            recipientPhone: phone,
+            recipientEmail: data.email,
+            recipientName: data.fullName || 'Client',
+            recipientPhone: data.phone,
             language: language,
             inputs: simulationInputs,
             results: simulationResults,
@@ -333,7 +255,11 @@ export function BudgetCalculator() {
         });
 
         if (emailError) throw emailError;
+
         setShowConfirmation(true);
+        setTimeout(() => {
+          confirmationRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
       } else {
         toast.error('Please check your input values');
       }
@@ -341,281 +267,45 @@ export function BudgetCalculator() {
       console.error('Calculation or email error:', error);
       toast.error(t.emailError || 'An error occurred. Please try again.');
     }
-
     setIsSubmitting(false);
+  };
+
+  const handleFormError = () => {
+    toast.error(t.requiredField);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Header */}
       <HeroHeader />
-
-      {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 pb-12 space-y-8">
-        {/* Form */}
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-          {/* SECTION 1 - Property Status (FIRST) */}
-          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titlePropertyStatus} variant="secondary">
-            <div className="grid grid-cols-1 gap-5">
-              {/* First Property Question */}
-              <div className={cn("space-y-2", validationErrors.isFirstProperty && "ring-2 ring-destructive rounded-lg p-3")}>
-                <Label className="text-sm font-medium flex items-center gap-1">
-                  <Home className="w-4 h-4" />
-                  {t.isFirstProperty} <span className="text-destructive">*</span>
-                </Label>
-                <div className="inline-flex gap-0 rounded-lg border border-border overflow-hidden max-w-[280px]">
-                  <button
-                    type="button"
-                    onClick={() => setIsFirstProperty(true)}
-                    className={cn(
-                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap",
-                      isFirstProperty === true
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background hover:bg-muted"
-                    )}
-                  >
-                    {t.yes}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsFirstProperty(false)}
-                    className={cn(
-                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap border-s border-border",
-                      isFirstProperty === false
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background hover:bg-muted"
-                    )}
-                  >
-                    {t.no}
-                  </button>
-                </div>
-              </div>
+        <form onSubmit={handleSubmit(onSubmit, handleFormError)} className="space-y-6">
+          <PropertyStatusSection control={control} t={t} errors={errors} />
+          <RentInvestmentSection control={control} t={t} />
+          <FinancialSection control={control} t={t} errors={errors} />
+          <PersonalInfoSection control={control} t={t} errors={errors} />
 
-              {/* Israeli Citizenship Question */}
-              <div className={cn("space-y-2", validationErrors.isIsraeliCitizen && "ring-2 ring-destructive rounded-lg p-3")}>
-                <Label className="text-sm font-medium flex items-center gap-1">
-                  <Flag className="w-4 h-4" />
-                  {t.isIsraeliCitizen} <span className="text-destructive">*</span>
-                </Label>
-                <div className="inline-flex gap-0 rounded-lg border border-border overflow-hidden max-w-[280px]">
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliCitizen(true)}
-                    className={cn(
-                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap",
-                      isIsraeliCitizen === true
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background hover:bg-muted"
-                    )}
-                  >
-                    {t.yes}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliCitizen(false)}
-                    className={cn(
-                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap border-s border-border",
-                      isIsraeliCitizen === false
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background hover:bg-muted"
-                    )}
-                  >
-                    {t.no}
-                  </button>
-                </div>
-              </div>
-
-              {/* Israeli Tax Resident Question */}
-              <div className={cn("space-y-2", validationErrors.isIsraeliTaxResident && "ring-2 ring-destructive rounded-lg p-3")}>
-                <Label className="text-sm font-medium flex items-center gap-1">
-                  <Banknote className="w-4 h-4" />
-                  {t.isIsraeliTaxResident} <span className="text-destructive">*</span>
-                </Label>
-                <div className="inline-flex gap-0 rounded-lg border border-border overflow-hidden max-w-[280px]">
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliTaxResident(true)}
-                    className={cn(
-                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap",
-                      isIsraeliTaxResident === true
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background hover:bg-muted"
-                    )}
-                  >
-                    {t.yes}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsIsraeliTaxResident(false)}
-                    className={cn(
-                      "w-[110px] sm:w-[130px] h-11 px-4 transition-all font-medium text-sm whitespace-nowrap border-s border-border",
-                      isIsraeliTaxResident === false
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background hover:bg-muted"
-                    )}
-                  >
-                    {t.no}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </FormSection>
-
-          {/* SECTION 2 - Rent & Investment (SECOND) */}
-          <FormSection icon={<Home className="w-5 h-5 text-secondary" />} title={t.titleRent} variant="secondary">
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    id="isRented"
-                    checked={isRented}
-                    onCheckedChange={(checked) => setIsRented(checked === true)}
-                    className="w-5 h-5"
-                  />
-                  <Label htmlFor="isRented" className="cursor-pointer font-medium">
-                    {t.isRented}
-                  </Label>
-                </div>
-                <p className="text-xs text-muted-foreground ms-8">
-                  {t.helperRentEstimate}
-                </p>
-              </div>
-
-              {/* Expected Monthly Rent - only visible when property will be rented */}
-              {isRented && (
-                <div className="space-y-2">
-                  <FormInput
-                    label={t.expectedRent}
-                    icon={<Banknote className="w-4 h-4" />}
-                    suffix="₪"
-                    placeholder={t.expectedRentPlaceholder}
-                    value={expectedRent}
-                    onChange={setExpectedRent}
-                    formatNumber
-                  />
-                </div>
-              )}
-
-              {/* Rental yield and bank recognition are hidden - using default values */}
-
-              <div className="space-y-2">
-                <FormInput
-                  label={t.budgetCap}
-                  icon={<Lock className="w-4 h-4" />}
-                  suffix="₪"
-                  value={budgetCap}
-                  onChange={setBudgetCap}
-                  formatNumber
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t.helperBudgetCap}
-                </p>
-              </div>
-            </div>
-          </FormSection>
-
-          {/* SECTION 3 - Financial Information (THIRD) */}
-          <FormSection icon={<Wallet className="w-5 h-5 text-accent" />} title={t.titleFinancial} variant="accent">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <FormInput
-                label={t.equity}
-                icon={<Banknote className="w-4 h-4" />}
-                suffix="₪"
-                value={equity}
-                onChange={setEquity}
-                formatNumber
-                required
-                hasError={validationErrors.equity}
-              />
-              <div className="space-y-2">
-                <FormInput
-                  label={t.netIncomeLabel}
-                  icon={<TrendingUp className="w-4 h-4" />}
-                  suffix="₪"
-                  value={netIncome}
-                  onChange={setNetIncome}
-                  formatNumber
-                  required
-                  hasError={validationErrors.netIncome}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t.helperNetIncome}
-                </p>
-              </div>
-            </div>
-          </FormSection>
-
-          {/* SECTION 4 - Personal Information (LAST) */}
-          <FormSection icon={<UserCircle className="w-5 h-5 text-primary" />} title={t.titlePersonal} variant="primary">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <FormInput
-                label={t.fullName}
-                icon={<User className="w-4 h-4" />}
-                value={fullName}
-                onChange={setFullName}
-                type="text"
-                required
-                hasError={validationErrors.fullName}
-              />
-              <FormInput
-                label={t.phone}
-                icon={<Phone className="w-4 h-4" />}
-                value={phone}
-                onChange={setPhone}
-                type="tel"
-                required
-                hasError={validationErrors.phone}
-              />
-              <FormInput
-                label={t.email}
-                icon={<Mail className="w-4 h-4" />}
-                value={email}
-                onChange={setEmail}
-                type="email"
-                required
-                hasError={validationErrors.email}
-              />
-              <FormInput
-                label={t.age}
-                icon={<Clock className="w-4 h-4" />}
-                value={age}
-                onChange={setAge}
-                formatNumber
-                required
-                hasError={validationErrors.age}
-              />
-            </div>
-          </FormSection>
-
-          {/* Calculate & Preview Buttons */}
           <div className="flex flex-col items-center pt-4 gap-4">
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Button
-                type="button"
-                onClick={handleCalculate}
-                disabled={isSubmitting}
-                size="lg"
-                className={cn(
-                  "px-8 py-6 text-lg font-semibold rounded-xl flex-1 sm:flex-initial min-w-[200px]",
-                  "bg-gradient-to-r from-primary to-primary-dark",
-                  "hover:shadow-elevated hover:scale-[1.02]",
-                  "transition-all duration-300",
-                  "gap-2",
-                  isSubmitting && "opacity-70 cursor-not-allowed"
-                )}
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Calculator className="w-5 h-5" />
-                )}
-                {t.calcBtn}
-              </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              size="lg"
+              className={cn(
+                "px-8 py-6 text-lg font-semibold rounded-xl flex-1 sm:flex-initial min-w-[200px]",
+                "bg-gradient-to-r from-primary to-primary-dark",
+                "hover:shadow-elevated hover:scale-[1.02]",
+                "transition-all duration-300",
+                "gap-2",
+                isSubmitting && "opacity-70 cursor-not-allowed"
+              )}
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Calculator className="w-5 h-5" />
+              )}
+              {t.calcBtn}
+            </Button>
 
-
-            </div>
-
-            {/* Disclaimer */}
             <p className="text-xs text-muted-foreground text-center max-w-xl leading-relaxed">
               {t.disclaimer}
             </p>
@@ -625,21 +315,17 @@ export function BudgetCalculator() {
           </div>
         </form>
 
-
-
-        {/* Confirmation Message - Client version only shows confirmation, no results */}
         {showConfirmation && (
-          <div className="mt-8 space-y-4 animate-fade-in">
+          <div ref={confirmationRef} className="mt-8 space-y-4 animate-fade-in">
             <div className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl shadow-lg text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-2xl font-bold text-green-800 mb-3">{t.confirmationTitle}</h3>
               <p className="text-green-700 text-lg">{t.confirmationMessage}</p>
-              <p className="mt-4 text-sm text-green-600">{email}</p>
+              <p className="mt-4 text-sm text-green-600">{getValues('email')}</p>
             </div>
 
-            {/* Tax Disclaimer */}
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
               <div className="flex items-start gap-3">
                 <span className="text-amber-600 text-lg flex-shrink-0">⚠️</span>
@@ -651,23 +337,17 @@ export function BudgetCalculator() {
           </div>
         )}
 
-        {/* Footer */}
         <footer className="text-center text-sm text-muted-foreground pt-8 pb-6 border-t border-border/50">
           <div className="flex flex-col items-center gap-4">
-            {/* Mini Logo */}
             <img 
               src={displayLogo} 
               alt={partner?.name ? `${partner.name} logo` : "Eshel Finances"} 
               className="h-14 w-auto object-contain opacity-90"
             />
-            
-            {/* Advisor Info */}
             <div className="flex flex-col items-center gap-1">
               <p className="font-semibold text-foreground">{displayName}</p>
               <p className="text-xs text-muted-foreground">{displayTitle}</p>
             </div>
-            
-            {/* Contact Links */}
             <div className="flex items-center gap-6 text-sm">
               <a 
                 href={buildWhatsAppHref()} 
@@ -686,8 +366,6 @@ export function BudgetCalculator() {
                 <span>{displayEmail}</span>
               </a>
             </div>
-            
-            {/* Copyright */}
             <p className="text-xs text-muted-foreground/70 pt-2">
               © {new Date().getFullYear()} {t.companyName}
             </p>
