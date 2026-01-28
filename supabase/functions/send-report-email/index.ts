@@ -1488,6 +1488,7 @@ const handler = async (req: Request): Promise<Response> => {
       language: data.language,
       inputs: data.inputs,
       results: data.results,
+      partner_id: data.partnerId || null,
     });
 
     if (insertError) console.error(`[${requestId}] Database insert failed:`, insertError.message);
