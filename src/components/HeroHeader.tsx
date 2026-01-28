@@ -3,11 +3,32 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import heroBg from '@/assets/hero-bg.jpg';
 import logoEshel from '@/assets/logo-eshel.png';
 import { usePartner } from '@/contexts/PartnerContext';
+import type { SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
+
+function getSloganFontSizeClass(size: SloganFontSize | null | undefined): string {
+  switch (size) {
+    case 'xs': return 'text-xs';
+    case 'sm': return 'text-sm';
+    case 'base': return 'text-base';
+    case 'lg': return 'text-lg';
+    case 'xl': return 'text-xl';
+    default: return 'text-sm';
+  }
+}
+
+function getSloganFontStyleClass(style: SloganFontStyle | null | undefined): string {
+  switch (style) {
+    case 'normal': return 'font-normal not-italic';
+    case 'italic': return 'font-normal italic';
+    case 'bold': return 'font-bold not-italic';
+    case 'bold-italic': return 'font-bold italic';
+    default: return 'font-normal not-italic';
+  }
+}
 
 export function HeroHeader() {
   const { t } = useLanguage();
   const { partner } = usePartner();
-
   return (
     <header className="relative overflow-hidden min-h-[280px] md:min-h-[320px]">
       {/* Background Image */}
@@ -35,7 +56,9 @@ export function HeroHeader() {
           />
           {/* Partner slogan - displayed if defined, otherwise invisible placeholder */}
           {partner?.logo_url ? (
-            <span className={`text-sm ${partner?.slogan ? 'text-muted-foreground' : 'text-transparent select-none'}`}>
+            <span 
+              className={`${getSloganFontSizeClass(partner?.slogan_font_size)} ${getSloganFontStyleClass(partner?.slogan_font_style)} ${partner?.slogan ? 'text-muted-foreground' : 'text-transparent select-none'}`}
+            >
               {partner?.slogan || '\u00A0'}
             </span>
           ) : null}

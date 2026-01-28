@@ -20,6 +20,9 @@ const hexColorSchema = z
   .regex(/^#?[0-9a-fA-F]{6}$/, "Invalid color")
   .transform((v) => (v.startsWith("#") ? v : `#${v}`));
 
+const sloganFontSizeSchema = z.enum(['xs', 'sm', 'base', 'lg', 'xl']).nullable().optional();
+const sloganFontStyleSchema = z.enum(['normal', 'italic', 'bold', 'bold-italic']).nullable().optional();
+
 const partnerSchema = z.object({
   name: z.string().min(1).max(120),
   slug: slugSchema,
@@ -29,6 +32,8 @@ const partnerSchema = z.object({
   brand_color: hexColorSchema.nullable().optional(),
   logo_url: z.string().url().max(2048).nullable().optional(),
   slogan: z.string().max(200).nullable().optional(),
+  slogan_font_size: sloganFontSizeSchema,
+  slogan_font_style: sloganFontStyleSchema,
   is_active: z.boolean(),
 });
 
@@ -105,6 +110,8 @@ Deno.serve(async (req) => {
           brand_color: request.partner.brand_color ?? null,
           logo_url: request.partner.logo_url ?? null,
           slogan: request.partner.slogan ?? null,
+          slogan_font_size: request.partner.slogan_font_size ?? 'sm',
+          slogan_font_style: request.partner.slogan_font_style ?? 'normal',
           is_active: request.partner.is_active,
         })
         .select("id")

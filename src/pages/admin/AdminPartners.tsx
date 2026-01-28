@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { ActivityLogRow, Partner } from "@/lib/partnerTypes";
+import type { ActivityLogRow, Partner, SloganFontSize, SloganFontStyle } from "@/lib/partnerTypes";
 import { ADMIN_EMAIL } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -64,6 +65,8 @@ export default function AdminPartners() {
     brand_color: "",
     logo_url: "",
     slogan: "",
+    slogan_font_size: "sm" as SloganFontSize,
+    slogan_font_style: "normal" as SloganFontStyle,
     is_active: true,
   });
 
@@ -73,7 +76,7 @@ export default function AdminPartners() {
     setIsLoadingPartners(true);
     const { data, error } = await supabase
       .from("partners")
-      .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,is_active,created_at")
+      .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,slogan_font_size,slogan_font_style,is_active,created_at")
       .order("created_at", { ascending: false });
     if (error) toast.error("Failed to load partners");
     setPartners((data || []) as any);
@@ -111,7 +114,7 @@ export default function AdminPartners() {
 
   const resetForm = () => {
     setEditing(null);
-    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", is_active: true });
+    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", slogan_font_size: "sm", slogan_font_style: "normal", is_active: true });
   };
 
   const startEdit = (p: Partner) => {
@@ -125,6 +128,8 @@ export default function AdminPartners() {
       brand_color: p.brand_color || "",
       logo_url: p.logo_url || "",
       slogan: p.slogan || "",
+      slogan_font_size: (p.slogan_font_size || "sm") as SloganFontSize,
+      slogan_font_style: (p.slogan_font_style || "normal") as SloganFontStyle,
       is_active: !!p.is_active,
     });
   };
@@ -170,6 +175,8 @@ export default function AdminPartners() {
           brand_color: brand,
           logo_url: form.logo_url || null,
           slogan: form.slogan || null,
+          slogan_font_size: form.slogan_font_size || "sm",
+          slogan_font_style: form.slogan_font_style || "normal",
           is_active: !!form.is_active,
         },
       });
@@ -335,6 +342,43 @@ export default function AdminPartners() {
                       placeholder="Your trusted mortgage partner"
                     />
                     <p className="text-xs text-muted-foreground">Optional text displayed under the logo in the header</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Slogan Font Size</label>
+                      <Select 
+                        value={form.slogan_font_size} 
+                        onValueChange={(v) => setForm((f) => ({ ...f, slogan_font_size: v as SloganFontSize }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="xs">Extra Small</SelectItem>
+                          <SelectItem value="sm">Small</SelectItem>
+                          <SelectItem value="base">Normal</SelectItem>
+                          <SelectItem value="lg">Large</SelectItem>
+                          <SelectItem value="xl">Extra Large</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Slogan Font Style</label>
+                      <Select 
+                        value={form.slogan_font_style} 
+                        onValueChange={(v) => setForm((f) => ({ ...f, slogan_font_style: v as SloganFontStyle }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="italic">Italic</SelectItem>
+                          <SelectItem value="bold">Bold</SelectItem>
+                          <SelectItem value="bold-italic">Bold Italic</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="flex gap-2 pt-2">
