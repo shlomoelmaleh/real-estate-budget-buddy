@@ -311,7 +311,7 @@ function getEmailContent(
   const rentRecognitionPct = parseNumber(inputs.rentRecognition) || 80;
   const recognizedRent = !inputs.isFirstProperty && inputs.isRented ? results.rentIncome * (rentRecognitionPct / 100) : 0;
   const adjustedIncomeForDTI = incomeNet + recognizedRent;
-  
+
   // Calculate correct DTI using adjusted income (income + recognized rent)
   const dtiEstimatedCorrected = adjustedIncomeForDTI > 0 ? monthlyPayment / adjustedIncomeForDTI : null;
 
@@ -319,13 +319,13 @@ function getEmailContent(
   const monthlyRent = results.rentIncome || 0;
   const propertyPrice = results.maxPropertyValue || 0;
   const totalCashInvested = results.equityUsed || (equityInitial - results.equityRemaining);
-  
+
   // Gross Annual Yield: (Monthly Rent * 12) / Property Price
   const grossYield = monthlyRent > 0 && propertyPrice > 0 ? (monthlyRent * 12) / propertyPrice : null;
-  
+
   // Net Monthly Cash Flow: Monthly Rent - Monthly Mortgage Payment
   const netCashFlow = monthlyRent - monthlyPayment;
-  
+
   // Cash-on-Cash Return (ROI): (Net Cash Flow * 12) / Total Cash Invested
   const cashOnCash = monthlyRent > 0 && totalCashInvested > 0 ? (netCashFlow * 12) / totalCashInvested : null;
 
@@ -733,13 +733,13 @@ function getEmailContent(
   const equityOnProperty = results.maxPropertyValue - results.loanAmount;
   // Use corrected DTI (with recognized rent for investment properties)
   const dtiEstimatedDisplay = dtiEstimatedCorrected !== null ? `${(dtiEstimatedCorrected * 100).toFixed(1)}%` : t.notAvailable;
-  
+
   // Net balance calculation (rent - payment; negative means out-of-pocket expense)
   const netMonthlyBalanceValue = results.rentIncome - results.monthlyPayment;
   const isNetBalancePositive = netMonthlyBalanceValue >= 0;
   const netBalanceColor = isNetBalancePositive ? "#10b981" : "#dc2626"; // Green or Red
-  const netBalanceFormatted = isNetBalancePositive 
-    ? `₪ ${formatNumber(netMonthlyBalanceValue)}` 
+  const netBalanceFormatted = isNetBalancePositive
+    ? `₪ ${formatNumber(netMonthlyBalanceValue)}`
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   const html = `
@@ -1469,8 +1469,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!rateCheck.allowed) {
       const errorMsg = rateCheck.reason === "email_limit"
-          ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
-          : "Rate limit exceeded. Maximum 10 emails per hour.";
+        ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
+        : "Rate limit exceeded. Maximum 10 emails per hour.";
       return new Response(
         JSON.stringify({ error: errorMsg, retryAfter: 3600 }),
         { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders } },
@@ -1496,14 +1496,14 @@ const handler = async (req: Request): Promise<Response> => {
     // שליפת פרטי שותף (אם קיים ID)
     let partnerEmail: string | null = null;
     let partnerContact: PartnerContactOverride | undefined;
-    
+
     if (data.partnerId) {
       const { data: partnerData, error: partnerError } = await supabaseAdmin
         .from("partners")
         .select("name, phone, whatsapp, email, is_active")
         .eq("id", data.partnerId)
         .maybeSingle();
-       
+
       if (partnerData && partnerData.is_active) {
         partnerEmail = partnerData.email ?? null;
         partnerContact = {
@@ -1523,17 +1523,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     // הכנת קובץ CSV
     const csvFilenames: Record<string, string> = {
-      he: "loach-silkukin.csv", 
+      he: "loach-silkukin.csv",
       en: "amortization-table.csv",
       fr: "tableau-amortissement.csv",
     };
 
     const attachments = data.csvData
       ? [{
-          filename: csvFilenames[data.language] || "report.csv",
-          content: toBase64("\uFEFF" + data.csvData),
-          content_type: "text/csv; charset=utf-8",
-        }]
+        filename: csvFilenames[data.language] || "report.csv",
+        content: toBase64("\uFEFF" + data.csvData),
+        content_type: "text/csv; charset=utf-8",
+      }]
       : [];
 
     const senderFrom = "Property Budget Pro <noreply@eshel-f.com>";
@@ -1632,11 +1632,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     // 2. שליחה לאדמין (עותק זהה)
     console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL}`);
+
+    // Determine Admin subject line
+    let adminSubject = subjectContent;
+    if (partnerContact?.name) {
+      adminSubject = `[Partner Lead: ${partnerContact.name}] ${subjectContent}`;
+    }
+
     const adminSend = await sendResendEmail(
       {
         from: senderFrom,
         to: [ADVISOR_EMAIL],
-        subject: subjectContent,
+        subject: adminSubject,
         html: htmlContent,
         attachments,
       },
