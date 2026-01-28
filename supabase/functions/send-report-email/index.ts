@@ -103,6 +103,7 @@ const EmailRequestSchema = z.object({
     .optional(),
   csvData: z.string().optional(),
   partnerId: z.string().uuid().nullable().optional(),
+  partner_id: z.string().uuid().nullable().optional(),
 });
 
 // Atomic rate limiting helper using database function to prevent race conditions
@@ -224,6 +225,7 @@ interface ReportEmailRequest {
   paymentBreakdownData?: { year: number; interest: number; principal: number }[];
   csvData?: string;
   partnerId?: string | null;
+  partner_id?: string | null;
 }
 
 function formatNumber(num: number): string {
@@ -1480,6 +1482,9 @@ const handler = async (req: Request): Promise<Response> => {
     const requestId = crypto.randomUUID().substring(0, 8);
     console.log(`[${requestId}] Email request received`);
 
+    // Normalize partner ID
+    const effectivePartnerId = data.partnerId || data.partner_id || null;
+
     // שמירה לדאטה בייס (נשאר כפי שהיה)
     const { error: insertError } = await supabaseAdmin.from("simulations").insert({
       client_name: data.recipientName,
@@ -1488,7 +1493,7 @@ const handler = async (req: Request): Promise<Response> => {
       language: data.language,
       inputs: data.inputs,
       results: data.results,
-      partner_id: data.partnerId || null,
+      partner_id: effectivePartnerId,
     });
 
     if (insertError) console.error(`[${requestId}] Database insert failed:`, insertError.message);
@@ -1497,21 +1502,31 @@ const handler = async (req: Request): Promise<Response> => {
     let partnerEmail: string | null = null;
     let partnerContact: PartnerContactOverride | undefined;
 
-    if (data.partnerId) {
+    console.log(`[${requestId}] Check Partner ID:`, effectivePartnerId);
+
+    if (effectivePartnerId) {
       const { data: partnerData, error: partnerError } = await supabaseAdmin
         .from("partners")
         .select("name, phone, whatsapp, email, is_active")
-        .eq("id", data.partnerId)
+        .eq("id", effectivePartnerId)
         .maybeSingle();
 
-      if (partnerData && partnerData.is_active) {
-        partnerEmail = partnerData.email ?? null;
+      console.log(`[${requestId}] Partner DB Result:`, partnerData);
+      if (partnerError) console.error(`[${requestId}] Partner DB Error:`, partnerError);
+
+      if (partnerData) {
+        // For the parsed partner contact (used for Admin Subject), we don't strictly require is_active.
+        // If a partner exists, we want to know about it.
+
+        partnerEmail = partnerData.is_active !== false ? (partnerData.email ?? null) : null;
+
         partnerContact = {
           name: partnerData.name ?? null,
           phone: partnerData.phone ?? null,
           whatsapp: partnerData.whatsapp ?? null,
           email: partnerData.email ?? null,
         };
+        console.log(`[${requestId}] Partner identified: ${partnerContact.name}`);
       }
     }
 
@@ -1638,6 +1653,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (partnerContact?.name) {
       adminSubject = `[Partner Lead: ${partnerContact.name}] ${subjectContent}`;
     }
+    console.log(`[${requestId}] Admin Subject:`, adminSubject);
 
     const adminSend = await sendResendEmail(
       {
