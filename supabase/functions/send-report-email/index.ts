@@ -501,6 +501,12 @@ function generateEmailHtml(
       statusGreen: "עסקה טובה",
       statusOrange: "גבולי",
       statusRed: "פער גבוה",
+      // Client Deal Summary (neutral, no traffic light)
+      dealSummaryTitle: "סיכום עסקה",
+      targetPropertyPriceLabel: "מחיר הנכס המבוקש",
+      estimatedBudgetLabel: "התקציב המשוער שלך",
+      differenceLabel: "הפרש",
+      bridgeSentence: "פערים בתקציב ניתנים לעיתים לגישור באמצעות תכנון פיננסי יצירתי. הצוות שלנו יבדוק זאת לעומק.",
     },
     en: {
       subject: "Property Budget Calculator - Complete Report",
@@ -606,6 +612,12 @@ function generateEmailHtml(
       statusGreen: "Excellent Fit",
       statusOrange: "Borderline",
       statusRed: "High Gap",
+      // Client Deal Summary (neutral, no traffic light)
+      dealSummaryTitle: "Deal Summary",
+      targetPropertyPriceLabel: "Target Property Price",
+      estimatedBudgetLabel: "Your Estimated Budget",
+      differenceLabel: "Difference",
+      bridgeSentence: "Budget gaps can often be bridged with creative financial planning. Our team will review this.",
     },
     fr: {
       subject: "Simulateur Budget Immobilier - Rapport Complet",
@@ -712,6 +724,12 @@ function generateEmailHtml(
       statusGreen: "Excellente affaire",
       statusOrange: "À la limite",
       statusRed: "Écart élevé",
+      // Client Deal Summary (neutral, no traffic light)
+      dealSummaryTitle: "Résumé de l'opération",
+      targetPropertyPriceLabel: "Prix du bien visé",
+      estimatedBudgetLabel: "Votre budget estimé",
+      differenceLabel: "Différence",
+      bridgeSentence: "Un écart peut souvent être comblé par une ingénierie financière adaptée. Notre équipe va analyser cela.",
     },
   };
 
@@ -1186,6 +1204,30 @@ function generateEmailHtml(
             </div>
           </div>
         </div>
+      </div>
+      ` : ''}
+
+      <!-- CLIENT DEAL SUMMARY - Client Only (no traffic light, neutral styling) -->
+      ${!isAdvisorCopy && targetPrice > 0 ? `
+      <div class="section" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 14px;">
+        <div class="section-title" style="color: #475569;">📋 ${t.dealSummaryTitle}</div>
+        <div class="row">
+          <span class="label">${t.targetPropertyPriceLabel}</span>
+          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">₪ ${formatNumber(targetPrice)}</span>
+        </div>
+        <div class="row">
+          <span class="label">${t.estimatedBudgetLabel}</span>
+          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">₪ ${formatNumber(maxBudget)}</span>
+        </div>
+        <div class="row" style="border-bottom: none;">
+          <span class="label">${t.differenceLabel}</span>
+          <span class="value" style="font-weight: 700; direction: ltr !important; unicode-bidi: isolate;">${trafficLightGap >= 0 ? '' : '-'}₪ ${formatNumber(Math.abs(trafficLightGap))}</span>
+        </div>
+        ${trafficLightGap < 0 ? `
+        <div style="margin-top: 12px; padding: 12px; background: #e0f2fe; border-radius: 8px; font-size: 13px; color: #0369a1; text-align: ${alignStart};">
+          💡 ${t.bridgeSentence}
+        </div>
+        ` : ''}
       </div>
       ` : ''}
 
