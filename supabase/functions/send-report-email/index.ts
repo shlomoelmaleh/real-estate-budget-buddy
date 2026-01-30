@@ -1880,9 +1880,14 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
 
-    // 3. שליחה לשותף (רק אם יש שותף - שום תנאי אחר)
+    // 3. שליחה לשותף (רק אם יש שותף ואימייל שונה מהלקוח)
+    // CRITICAL: Skip partner email if it matches client email to prevent
+    // client receiving the admin/partner copy with traffic light
     let partnerSent = false;
-    if (partnerEmail) {
+    const clientEmailLower = data.recipientEmail.toLowerCase().trim();
+    const partnerEmailLower = partnerEmail?.toLowerCase().trim() || '';
+    
+    if (partnerEmail && partnerEmailLower !== clientEmailLower) {
       console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${adminSubject}`);
       const partnerSend = await sendResendEmail(
         {
@@ -1897,6 +1902,9 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (partnerSend.ok) partnerSent = true;
       else console.warn(`[${requestId}] Partner email failed:`, partnerSend.text);
+    } else if (partnerEmail && partnerEmailLower === clientEmailLower) {
+      console.log(`[${requestId}] Skipping partner email - matches client email: ${partnerEmail}`);
+      partnerSent = true; // Mark as "sent" since client already gets the client copy
     }
 
     return new Response(
