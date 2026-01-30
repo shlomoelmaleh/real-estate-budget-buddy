@@ -1888,12 +1888,13 @@ const handler = async (req: Request): Promise<Response> => {
     const partnerEmailLower = partnerEmail?.toLowerCase().trim() || '';
     
     if (partnerEmail && partnerEmailLower !== clientEmailLower) {
-      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${adminSubject}`);
+      // Partner gets the same subject as client (not admin's extended subject)
+      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${clientSubject}`);
       const partnerSend = await sendResendEmail(
         {
           from: senderFrom,
           to: [partnerEmail],
-          subject: adminSubject,
+          subject: clientSubject,
           html: adminHtml,
           attachments,
         },
