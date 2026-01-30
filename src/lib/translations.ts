@@ -109,6 +109,8 @@ export interface Translations {
   expectedRent: string;
   expectedRentPlaceholder: string;
   helperSimulation: string;
+  targetPropertyPrice: string;
+  targetPropertyPriceHelper: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -216,7 +218,9 @@ export const translations: Record<Language, Translations> = {
     netIncomeLabel: "הכנסה נטו פנויה",
     expectedRent: "שכירות חודשית צפויה",
     expectedRentPlaceholder: "השאר ריק לחישוב אוטומטי (3% תשואה שנתית)",
-    helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים."
+    helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים.",
+    targetPropertyPrice: "מחיר הנכס המבוקש (אופציונלי)",
+    targetPropertyPriceHelper: "אופציונלי: לצורך השוואה מול התקציב המחושב בלבד."
   },
   en: {
     dir: 'ltr',
@@ -322,7 +326,9 @@ export const translations: Record<Language, Translations> = {
     netIncomeLabel: "Available net income",
     expectedRent: "Expected Monthly Rent",
     expectedRentPlaceholder: "Leave empty for auto-calc (3% annual yield)",
-    helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details."
+    helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details.",
+    targetPropertyPrice: "Asking Price (Optional)",
+    targetPropertyPriceHelper: "Optional: Only for comparing against your calculated budget."
   },
   fr: {
     dir: 'ltr',
@@ -428,6 +434,8 @@ export const translations: Record<Language, Translations> = {
     netIncomeLabel: "Revenu net disponible",
     expectedRent: "Loyer mensuel attendu",
     expectedRentPlaceholder: "Laissez vide pour calcul auto (3% rendement annuel)",
-    helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation."
+    helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation.",
+    targetPropertyPrice: "Prix du bien visé (optionnel)",
+    targetPropertyPriceHelper: "Optionnel : pour comparer avec votre budget estimé."
   }
 };
