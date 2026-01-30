@@ -80,6 +80,7 @@ const EmailRequestSchema = z.object({
     vatPct: z.string().max(10),
     advisorFee: z.string().max(30),
     otherFee: z.string().max(30),
+    targetPropertyPrice: z.string().max(30).optional(),
   }),
   results: z.object({
     maxPropertyValue: z.number().nonnegative().max(1e12),
@@ -226,6 +227,7 @@ interface ReportEmailRequest {
     vatPct: string;
     advisorFee: string;
     otherFee: string;
+    targetPropertyPrice?: string;
   };
   results: {
     maxPropertyValue: number;
@@ -366,6 +368,26 @@ function generateEmailHtml(
   // Cash-on-Cash Return (ROI): (Net Cash Flow * 12) / Total Cash Invested
   const cashOnCash = monthlyRent > 0 && totalCashInvested > 0 ? (netCashFlow * 12) / totalCashInvested : null;
 
+  // ========== TRAFFIC LIGHT CALCULATION (Deal Feasibility - Advisor Only) ==========
+  const targetPrice = parseNumber(inputs.targetPropertyPrice || '');
+  const maxBudget = results.maxPropertyValue;
+  
+  let trafficLightStatus: 'green' | 'orange' | 'red' | null = null;
+  let trafficLightGap = 0;
+  
+  if (targetPrice > 0) {
+    trafficLightGap = maxBudget - targetPrice;
+    const ratio = maxBudget / targetPrice;
+    
+    if (ratio >= 1.0) {
+      trafficLightStatus = 'green';  // Deal is safe
+    } else if (ratio >= 0.90) {
+      trafficLightStatus = 'orange'; // Borderline
+    } else {
+      trafficLightStatus = 'red';    // Gap too high
+    }
+  }
+
   const texts = {
     he: {
       subject: "דוח מחשבון תקציב רכישת נכס",
@@ -471,6 +493,14 @@ function generateEmailHtml(
       notRelevant: "לא רלוונטי",
       positiveBalance: "עודף חודשי",
       negativeBalance: "גרעון חודשי",
+      // Traffic Light (Deal Feasibility)
+      dealFeasibility: "בדיקת היתכנות עסקה",
+      askingPrice: "מחיר מבוקש",
+      maxBudgetLabel: "תקציב מקסימלי",
+      budgetGap: "פער",
+      statusGreen: "עסקה טובה",
+      statusOrange: "גבולי",
+      statusRed: "פער גבוה",
     },
     en: {
       subject: "Property Budget Calculator - Complete Report",
@@ -568,6 +598,14 @@ function generateEmailHtml(
       notRelevant: "N/A",
       positiveBalance: "Monthly surplus",
       negativeBalance: "Monthly deficit",
+      // Traffic Light (Deal Feasibility)
+      dealFeasibility: "Deal Feasibility Check",
+      askingPrice: "Asking Price",
+      maxBudgetLabel: "Max Budget",
+      budgetGap: "Gap",
+      statusGreen: "Excellent Fit",
+      statusOrange: "Borderline",
+      statusRed: "High Gap",
     },
     fr: {
       subject: "Simulateur Budget Immobilier - Rapport Complet",
@@ -666,6 +704,14 @@ function generateEmailHtml(
       notRelevant: "N/A",
       positiveBalance: "Excédent mensuel",
       negativeBalance: "Déficit mensuel",
+      // Traffic Light (Deal Feasibility)
+      dealFeasibility: "Vérification de faisabilité",
+      askingPrice: "Prix demandé",
+      maxBudgetLabel: "Budget maximum",
+      budgetGap: "Écart",
+      statusGreen: "Excellente affaire",
+      statusOrange: "À la limite",
+      statusRed: "Écart élevé",
     },
   };
 
@@ -1105,6 +1151,43 @@ function generateEmailHtml(
       `
       : ""
     }
+
+      <!-- TRAFFIC LIGHT SECTION - Advisor/Partner Only -->
+      ${isAdvisorCopy && trafficLightStatus !== null ? `
+      <div class="section" style="background: #2d3748; border-radius: 20px; padding: 20px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; ${isRTL ? "flex-direction: row-reverse;" : ""}">
+          <!-- Traffic Light Visual -->
+          <div style="background: #1a202c; border-radius: 16px; padding: 12px 16px; display: inline-block;">
+            <div style="width: 24px; height: 24px; border-radius: 50%; margin-bottom: 6px; ${trafficLightStatus === 'red' ? 'background: #ef4444; box-shadow: 0 0 12px #ef4444;' : 'background: rgba(255,255,255,0.2);'}"></div>
+            <div style="width: 24px; height: 24px; border-radius: 50%; margin-bottom: 6px; ${trafficLightStatus === 'orange' ? 'background: #f97316; box-shadow: 0 0 12px #f97316;' : 'background: rgba(255,255,255,0.2);'}"></div>
+            <div style="width: 24px; height: 24px; border-radius: 50%; ${trafficLightStatus === 'green' ? 'background: #22c55e; box-shadow: 0 0 12px #22c55e;' : 'background: rgba(255,255,255,0.2);'}"></div>
+          </div>
+          
+          <!-- Status & Values -->
+          <div style="flex: 1; min-width: 200px;">
+            <div style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 8px; ${isRTL ? "text-align: right;" : ""}">🚦 ${t.dealFeasibility}</div>
+            <div style="font-size: 18px; font-weight: 800; color: ${trafficLightStatus === 'green' ? '#22c55e' : trafficLightStatus === 'orange' ? '#f97316' : '#ef4444'}; margin-bottom: 12px; ${isRTL ? "text-align: right;" : ""}">
+              ${trafficLightStatus === 'green' ? t.statusGreen : trafficLightStatus === 'orange' ? t.statusOrange : t.statusRed}
+            </div>
+            
+            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; ${isRTL ? "flex-direction: row-reverse;" : ""}">
+                <span style="color: #a0aec0; font-size: 13px;">${t.askingPrice}</span>
+                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">₪ ${formatNumber(targetPrice)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; ${isRTL ? "flex-direction: row-reverse;" : ""}">
+                <span style="color: #a0aec0; font-size: 13px;">${t.maxBudgetLabel}</span>
+                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">₪ ${formatNumber(maxBudget)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; ${isRTL ? "flex-direction: row-reverse;" : ""}">
+                <span style="color: #a0aec0; font-size: 13px;">${t.budgetGap}</span>
+                <span style="color: ${trafficLightGap >= 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 13px; direction: ltr;">${trafficLightGap >= 0 ? '+' : ''}₪ ${formatNumber(trafficLightGap)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      ` : ''}
 
       <!-- SECTION 1: Hero - Maximum Purchasing Power -->
       <div class="section hero-section">

@@ -13,6 +13,7 @@ export const calculatorSchema = z.object({
   isRented: z.boolean().default(false),
   expectedRent: z.string().default(''),
   budgetCap: z.string().default(''),
+  targetPropertyPrice: z.string().default(''),
 });
 
 export type CalculatorFormValues = z.infer<typeof calculatorSchema>;

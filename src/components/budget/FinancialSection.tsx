@@ -1,5 +1,5 @@
 import { Control, Controller, FieldErrors } from 'react-hook-form';
-import { Wallet, Banknote, TrendingUp } from 'lucide-react';
+import { Wallet, Banknote, TrendingUp, Target } from 'lucide-react';
 import { FormSection } from '../FormSection';
 import { FormInput } from '../FormInput';
 import { Translations } from '@/lib/translations';
@@ -52,6 +52,27 @@ export function FinancialSection({ control, t, errors }: FinancialSectionProps) 
             {t.helperNetIncome}
           </p>
         </div>
+      </div>
+      
+      {/* Target Property Price - Optional */}
+      <div className="mt-5 space-y-2">
+        <Controller
+          name="targetPropertyPrice"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label={t.targetPropertyPrice}
+              icon={<Target className="w-4 h-4" />}
+              suffix="₪"
+              value={field.value}
+              onChange={field.onChange}
+              formatNumber
+            />
+          )}
+        />
+        <p className="text-xs text-muted-foreground">
+          {t.targetPropertyPriceHelper}
+        </p>
       </div>
     </FormSection>
   );

@@ -56,6 +56,7 @@ export function BudgetCalculator() {
       isRented: false,
       expectedRent: '',
       budgetCap: '',
+      targetPropertyPrice: '',
     },
   });
 
@@ -230,6 +231,7 @@ export function BudgetCalculator() {
           advisorFee,
           otherFee,
           ratio,
+          targetPropertyPrice: data.targetPropertyPrice || '',
         };
 
         const simulationResults = {
