@@ -37,10 +37,12 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-            {/* Floating WhatsApp button - appears on every page */}
-            <FloatingWhatsApp />
+
+            {/* --- GLOBAL WIDGETS --- */}
             {/* Accessibility Widget - positioned on opposite side of WhatsApp */}
             <AccessibilityWidget />
+            {/* Floating WhatsApp button - appears on every page */}
+            <FloatingWhatsApp />
           </BrowserRouter>
         </TooltipProvider>
       </PartnerProvider>
