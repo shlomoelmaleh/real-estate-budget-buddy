@@ -5,8 +5,7 @@ import { cn } from "@/lib/utils";
 
 export function FloatingWhatsApp() {
     const { partner } = usePartner();
-    const { t, language } = useLanguage();
-    const isRTL = language === 'he';
+    const { t } = useLanguage();
 
     // Logic to get the correct phone number
     const normalizeToWaMeDigits = (raw: string) => {
@@ -33,47 +32,40 @@ export function FloatingWhatsApp() {
     return (
         <div
             className={cn(
-                "fixed bottom-24 z-[9999] flex items-center transition-all duration-500 ease-in-out group",
-                // Always position on the right edge, half-hidden by default
-                "right-0 translate-x-[50%] hover:translate-x-0",
-                // Better mobile support
-                "touch-action-none"
+                "fixed bottom-24 right-0 z-[9999] flex items-center group",
+                "transition-all duration-500 ease-in-out flex-row-reverse"
             )}
         >
-            {/* The Label (Reveals on hover/touch) - Position adapts to language direction */}
-            <div className={cn(
-                "opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                "bg-white text-primary text-sm font-bold py-2 px-4 shadow-elevated border border-border",
-                "whitespace-nowrap pointer-events-none",
-                // For RTL (Hebrew): label appears to the left of button
-                isRTL && "rounded-l-xl border-r-0",
-                // For LTR (English/French): label appears to the left of button (same side)
-                !isRTL && "rounded-l-xl border-r-0"
-            )}>
-                {t.floatingContact}
-            </div>
-
-            {/* The Button - Tab Style */}
+            {/* 1. THE BUTTON (Always pinned to the edge, half-hidden) */}
             <a
                 href={getWhatsAppHref()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                    "w-16 h-16 bg-[#25D366] text-white flex items-center justify-center shadow-glow",
-                    // Round only the left side to create tab appearance
-                    "rounded-l-full rounded-r-none",
-                    "hover:scale-105 active:scale-95 transition-transform duration-300",
-                    "relative"
+                    "w-14 h-14 bg-[#25D366] text-white flex items-center justify-center shadow-glow z-20",
+                    "rounded-l-full rounded-r-none transition-all duration-500",
+                    // The magic part: translate by exactly 28px (half of w-14) so it's always half-visible
+                    "translate-x-7 group-hover:translate-x-0"
                 )}
             >
-                {/* Icon with padding adjustment to keep it visible when half-hidden */}
-                <div className="pr-2 group-hover:pr-0 transition-all duration-300">
-                    <WhatsAppIcon size={32} />
+                {/* We center the icon within the visible part */}
+                <div className="pr-4 group-hover:pr-0 transition-all duration-500">
+                    <WhatsAppIcon size={28} />
                 </div>
 
-                {/* Subtle Pulse - only active when hidden to draw attention */}
+                {/* Pulse animation - only active when NOT hovered */}
                 <span className="absolute inset-0 rounded-l-full bg-[#25D366] animate-ping opacity-20 group-hover:hidden"></span>
             </a>
+
+            {/* 2. THE LABEL (Slides out from behind the button to the LEFT) */}
+            <div className={cn(
+                "bg-white text-primary text-xs font-bold py-2 px-4 rounded-l-xl shadow-md border border-r-0 border-border",
+                "whitespace-nowrap pointer-events-none transition-all duration-500 z-10",
+                // Hidden state: pushed behind the button and invisible
+                "opacity-0 translate-x-10 group-hover:opacity-100 group-hover:translate-x-0"
+            )}>
+                {t.floatingContact}
+            </div>
         </div>
     );
 }
