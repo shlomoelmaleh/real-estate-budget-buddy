@@ -26,8 +26,8 @@ export function FloatingWhatsApp() {
         const digits = normalizeToWaMeDigits(rawWhatsApp);
         const message = encodeURIComponent(
             partner?.name
-                ? `שלום ${partner.name}, אני משתמש בסימולטור שלך ויש לי שאלה...`
-                : `שלום, אני משתמש בסימולטור אשל פיננסים ויש לי שאלה...`
+                ? t.whatsappMessageWithPartner(partner.name)
+                : t.whatsappMessageDefault
         );
         return `https://wa.me/${digits}?text=${message}`;
     };

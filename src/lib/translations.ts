@@ -112,6 +112,9 @@ export interface Translations {
   targetPropertyPrice: string;
   targetPropertyPriceHelper: string;
   floatingContact: string;
+  // WhatsApp messages
+  whatsappMessageWithPartner: (partnerName: string) => string;
+  whatsappMessageDefault: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -222,7 +225,10 @@ export const translations: Record<Language, Translations> = {
     helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים.",
     targetPropertyPrice: "מחיר הנכס המבוקש (אופציונלי)",
     targetPropertyPriceHelper: "אופציונלי: לצורך השוואה מול התקציב המחושב בלבד.",
-    floatingContact: "יש לך שאלה? אני כאן בשבילך"
+    floatingContact: "יש לך שאלה? אני כאן בשבילך",
+    // WhatsApp messages
+    whatsappMessageWithPartner: (partnerName: string) => `שלום ${partnerName}, אני משתמש בסימולטור שלך ויש לי שאלה...`,
+    whatsappMessageDefault: "שלום, אני משתמש בסימולטור אשל פיננסים ויש לי שאלה..."
   },
   en: {
     dir: 'ltr',
@@ -331,7 +337,10 @@ export const translations: Record<Language, Translations> = {
     helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details.",
     targetPropertyPrice: "Asking Price (Optional)",
     targetPropertyPriceHelper: "Optional: Only for comparing against your calculated budget.",
-    floatingContact: "Got a question? I'm here to help"
+    floatingContact: "Got a question? I'm here to help",
+    // WhatsApp messages
+    whatsappMessageWithPartner: (partnerName: string) => `Hello ${partnerName}, I'm using your simulator and I have a question...`,
+    whatsappMessageDefault: "Hello, I'm using the Eshel Finances simulator and I have a question..."
   },
   fr: {
     dir: 'ltr',
@@ -440,6 +449,9 @@ export const translations: Record<Language, Translations> = {
     helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation.",
     targetPropertyPrice: "Prix du bien visé (optionnel)",
     targetPropertyPriceHelper: "Optionnel : pour comparer avec votre budget estimé.",
-    floatingContact: "Une question ? Je suis là pour vous"
+    floatingContact: "Une question ? Je suis là pour vous",
+    // WhatsApp messages
+    whatsappMessageWithPartner: (partnerName: string) => `Bonjour ${partnerName}, j'utilise votre simulateur et j'ai une question...`,
+    whatsappMessageDefault: "Bonjour, j'utilise le simulateur Eshel Finances et j'ai une question..."
   }
 };
