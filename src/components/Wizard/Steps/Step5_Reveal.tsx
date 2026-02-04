@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import { Loader2, Mail, Phone, FileText, CheckCircle2 } from 'lucide-react';
 import { StepRevealProps } from '../types';
@@ -13,8 +14,38 @@ export function Step5({
     results,
     isLoading,
     onSendReport,
-    isSending
+    isSending,
+    watch
 }: StepRevealProps) {
+
+    const [displayValue, setDisplayValue] = useState(0);
+    const [hasCounted, setHasCounted] = useState(false);
+    const fullName = watch ? watch('fullName') : '';
+    const firstName = fullName?.split(' ')[0] || '';
+
+    useEffect(() => {
+        if (!results || isLoading) return;
+
+        const target = results.maxPropertyValue;
+        const duration = 2500; // 2.5 seconds
+        const fps = 60;
+        const steps = duration / (1000 / fps);
+        const increment = target / steps;
+
+        let current = 0;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                setDisplayValue(target);
+                setHasCounted(true);
+                clearInterval(timer);
+            } else {
+                setDisplayValue(current);
+            }
+        }, 1000 / fps);
+
+        return () => clearInterval(timer);
+    }, [results, isLoading]);
 
     if (isLoading) {
         return (
@@ -41,13 +72,16 @@ export function Step5({
                     <CheckCircle2 className="w-8 h-8 text-green-600" />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                     <h2 className="text-2xl font-bold text-foreground">
-                        {t.successTitle}
+                        {firstName ? `${firstName}, ` : ''}{t.successTitle.replace(':', '')}{/* Remove colon for flow */}!
                     </h2>
-                    <div className="py-4">
-                        <span className="text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 drop-shadow-sm">
-                            ₪ {formatNumber(results.maxPropertyValue)}
+                    <div className="py-2">
+                        <span className={cn(
+                            "text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-sm block",
+                            hasCounted && "animate-pulse" // Subtle pulse after counting
+                        )}>
+                            ₪ {formatNumber(displayValue)}
                         </span>
                     </div>
                     <p className="text-muted-foreground font-medium">
@@ -61,11 +95,10 @@ export function Step5({
                 <div className="space-y-2 text-center">
                     <h3 className="font-semibold text-lg flex items-center justify-center gap-2 text-primary">
                         <FileText className="w-5 h-5" />
-                        {/* Split for emphasis if possible, otherwise just show */}
-                        {t.leadCaptureTitle.split('?')[0]}?
+                        Unlocking the Treasure...
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
-                        {t.leadCaptureTitle.split('?')[1] || t.leadCaptureTitle}
+                        {t.leadCaptureTitle}
                     </p>
                 </div>
 
@@ -101,7 +134,7 @@ export function Step5({
                 </div>
 
                 <Button
-                    type="button" // Important: type button to avoid double submit if form tag exists
+                    type="button"
                     onClick={onSendReport}
                     disabled={isSending}
                     className={cn(
@@ -114,7 +147,7 @@ export function Step5({
                     ) : (
                         <FileText className="w-5 h-5 mr-2" />
                     )}
-                    {t.leadCaptureBtn}
+                    Send My Personal Roadmap
                 </Button>
             </div>
         </div>

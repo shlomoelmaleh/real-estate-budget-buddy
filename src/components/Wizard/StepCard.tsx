@@ -14,10 +14,9 @@ export function StepCard({ children, className, title, description, emotionalMes
         <div
             className={cn(
                 "relative w-full max-w-[600px] mx-auto",
-                "bg-white/90 backdrop-blur-xl border border-white/20",
+                "bg-white/80 backdrop-blur-xl border border-white/20",
                 "rounded-2xl shadow-2xl",
                 "p-6 md:p-8 space-y-6",
-                "animate-in slide-in-from-bottom-4 fade-in duration-500",
                 className
             )}
         >

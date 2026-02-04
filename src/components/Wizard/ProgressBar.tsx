@@ -11,10 +11,10 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
 
     const getStepLabel = (step: number) => {
         switch (step) {
-            case 1: return t.step1Desc; // "Identity"
-            case 2: return t.step2Desc; // "Financial Strength"
-            case 3: return t.step3Desc; // "Rules & Limits"
-            case 4: return t.step4Desc; // "Objectives"
+            case 1: return t.step1Desc;
+            case 2: return t.step2Desc;
+            case 3: return t.step3Desc;
+            case 4: return t.step4Desc;
             default: return "";
         }
     };
@@ -32,11 +32,10 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
             </div>
 
             {/* Segments */}
-            <div className="flex gap-2 h-2">
+            <div className="flex gap-2 h-1">
                 {Array.from({ length: totalSteps }).map((_, index) => {
                     const stepNum = index + 1;
                     const isActive = stepNum <= currentStep;
-                    const isCurrent = stepNum === currentStep;
 
                     return (
                         <div
@@ -48,7 +47,7 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
                             <div
                                 className={cn(
                                     "absolute inset-0 transition-all duration-700 ease-out",
-                                    isActive ? "bg-gradient-to-r from-primary to-primary-dark w-full" : "w-0"
+                                    isActive ? "bg-gradient-to-r from-primary to-primary-dark w-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" : "w-0"
                                 )}
                             />
                         </div>

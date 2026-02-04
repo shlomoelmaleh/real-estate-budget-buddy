@@ -122,6 +122,8 @@ export function BudgetCalculator() {
 
   // --- WIZARD NAVIGATION ---
 
+  const [animClass, setAnimClass] = useState("animate-in slide-in-from-right fade-in duration-500");
+
   const handleNext = async () => {
     let fields: (keyof CalculatorFormValues)[] = [];
 
@@ -134,12 +136,14 @@ export function BudgetCalculator() {
 
     const isValid = await trigger(fields);
     if (isValid) {
+      setAnimClass("animate-in slide-in-from-right fade-in duration-500");
       setStep(s => s + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleBack = () => {
+    setAnimClass("animate-in slide-in-from-left fade-in duration-500");
     setStep(s => Math.max(1, s - 1));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -152,6 +156,7 @@ export function BudgetCalculator() {
     if (!isValid) return;
 
     setIsLoading(true);
+    setAnimClass("animate-in fade-in duration-700"); // Gentle fade for Reveal
     setStep(5); // Move to Reveal step immediately to show loader
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -351,6 +356,7 @@ export function BudgetCalculator() {
             isLoading={isLoading}
             onSendReport={handleSendReport}
             isSending={isSending}
+            watch={watch}
           />
         );
       default: return null;
@@ -380,6 +386,8 @@ export function BudgetCalculator() {
 
         {!showConfirmation ? (
           <StepCard
+            key={step} // Force re-render for clean exit/enter animation
+            className={animClass}
             title={header.title}
             emotionalMessage={header.desc}
           >
