@@ -30,31 +30,44 @@ export function FloatingWhatsApp() {
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] group flex flex-col items-end gap-2 animate-fade-in">
-            {/* Psychological Tooltip */}
+        <div
+            className={cn(
+                "fixed bottom-24 z-[9999] flex items-center transition-all duration-500 ease-in-out group",
+                // Position on the right edge, half-hidden by default
+                "right-0 translate-x-[50%] hover:translate-x-0",
+                // Better mobile support
+                "touch-action-none"
+            )}
+        >
+            {/* The Label (Reveals on hover/touch) */}
             <div className={cn(
                 "opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                "bg-white text-primary text-sm font-bold py-2 px-4 rounded-2xl shadow-elevated border border-border",
-                "mb-1 whitespace-nowrap pointer-events-none"
+                "bg-white text-primary text-sm font-bold py-2 px-4 rounded-l-xl shadow-elevated border border-r-0 border-border",
+                "whitespace-nowrap pointer-events-none"
             )}>
                 {t.floatingContact}
             </div>
 
-            {/* Floating Button */}
+            {/* The Button - Tab Style */}
             <a
                 href={getWhatsAppHref()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                    "w-16 h-16 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-glow",
-                    "hover:scale-110 active:scale-95 transition-all duration-300 ease-out",
+                    "w-16 h-16 bg-[#25D366] text-white flex items-center justify-center shadow-glow",
+                    // Round only the left side to create tab appearance
+                    "rounded-l-full rounded-r-none",
+                    "hover:scale-105 active:scale-95 transition-transform duration-300",
                     "relative"
                 )}
             >
-                {/* Subtle Pulse Animation */}
-                <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-20 group-hover:hidden"></span>
+                {/* Icon with padding adjustment to keep it visible when half-hidden */}
+                <div className="pr-2 group-hover:pr-0 transition-all duration-300">
+                    <WhatsAppIcon size={32} />
+                </div>
 
-                <WhatsAppIcon size={32} />
+                {/* Subtle Pulse - only active when hidden to draw attention */}
+                <span className="absolute inset-0 rounded-l-full bg-[#25D366] animate-ping opacity-20 group-hover:hidden"></span>
             </a>
         </div>
     );
