@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 
 export function FloatingWhatsApp() {
     const { partner } = usePartner();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const isRTL = language === 'he';
 
     // Logic to get the correct phone number
     const normalizeToWaMeDigits = (raw: string) => {
@@ -33,17 +34,21 @@ export function FloatingWhatsApp() {
         <div
             className={cn(
                 "fixed bottom-24 z-[9999] flex items-center transition-all duration-500 ease-in-out group",
-                // Position on the right edge, half-hidden by default
+                // Always position on the right edge, half-hidden by default
                 "right-0 translate-x-[50%] hover:translate-x-0",
                 // Better mobile support
                 "touch-action-none"
             )}
         >
-            {/* The Label (Reveals on hover/touch) */}
+            {/* The Label (Reveals on hover/touch) - Position adapts to language direction */}
             <div className={cn(
                 "opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                "bg-white text-primary text-sm font-bold py-2 px-4 rounded-l-xl shadow-elevated border border-r-0 border-border",
-                "whitespace-nowrap pointer-events-none"
+                "bg-white text-primary text-sm font-bold py-2 px-4 shadow-elevated border border-border",
+                "whitespace-nowrap pointer-events-none",
+                // For RTL (Hebrew): label appears to the left of button
+                isRTL && "rounded-l-xl border-r-0",
+                // For LTR (English/French): label appears to the left of button (same side)
+                !isRTL && "rounded-l-xl border-r-0"
             )}>
                 {t.floatingContact}
             </div>
