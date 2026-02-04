@@ -111,6 +111,7 @@ export interface Translations {
   helperSimulation: string;
   targetPropertyPrice: string;
   targetPropertyPriceHelper: string;
+  floatingContact: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -220,7 +221,8 @@ export const translations: Record<Language, Translations> = {
     expectedRentPlaceholder: "השאר ריק לחישוב אוטומטי (3% תשואה שנתית)",
     helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים.",
     targetPropertyPrice: "מחיר הנכס המבוקש (אופציונלי)",
-    targetPropertyPriceHelper: "אופציונלי: לצורך השוואה מול התקציב המחושב בלבד."
+    targetPropertyPriceHelper: "אופציונלי: לצורך השוואה מול התקציב המחושב בלבד.",
+    floatingContact: "יש לך שאלה? אני כאן בשבילך"
   },
   en: {
     dir: 'ltr',
@@ -328,7 +330,8 @@ export const translations: Record<Language, Translations> = {
     expectedRentPlaceholder: "Leave empty for auto-calc (3% annual yield)",
     helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details.",
     targetPropertyPrice: "Asking Price (Optional)",
-    targetPropertyPriceHelper: "Optional: Only for comparing against your calculated budget."
+    targetPropertyPriceHelper: "Optional: Only for comparing against your calculated budget.",
+    floatingContact: "Got a question? I'm here to help"
   },
   fr: {
     dir: 'ltr',
@@ -436,6 +439,7 @@ export const translations: Record<Language, Translations> = {
     expectedRentPlaceholder: "Laissez vide pour calcul auto (3% rendement annuel)",
     helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation.",
     targetPropertyPrice: "Prix du bien visé (optionnel)",
-    targetPropertyPriceHelper: "Optionnel : pour comparer avec votre budget estimé."
+    targetPropertyPriceHelper: "Optionnel : pour comparer avec votre budget estimé.",
+    floatingContact: "Une question ? Je suis là pour vous"
   }
 };

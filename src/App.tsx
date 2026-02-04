@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PartnerProvider } from "@/contexts/PartnerContext";
+import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
@@ -35,6 +36,8 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            {/* Floating WhatsApp button - appears on every page */}
+            <FloatingWhatsApp />
           </BrowserRouter>
         </TooltipProvider>
       </PartnerProvider>
