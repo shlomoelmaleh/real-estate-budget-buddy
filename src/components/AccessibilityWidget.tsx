@@ -1,48 +1,50 @@
-declare global {
-    interface Window {
-        _userway_config?: {
-            account: string;
-            position: string;
-            language: string;
-        };
-    }
-}
-
 import { useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+declare global {
+    interface Window {
+        UserWay?: {
+            changeLanguage: (lang: string) => void;
+            widgetPosition: (pos: string) => void;
+        };
+        userway_config?: any;
+    }
+}
 
 export function AccessibilityWidget() {
     const { language } = useLanguage();
 
     useEffect(() => {
-        // Position logic: 3 = Bottom Right (Hebrew), 5 = Bottom Left (Others)
-        const position = language === 'he' ? '3' : '5';
+        const uwLang = language === 'he' ? 'he-IL' : language === 'fr' ? 'fr-FR' : 'en-US';
+        const uwPos = language === 'he' ? 'right' : 'left'; // Opposite of WhatsApp
 
-        // FORCE CONFIGURATION via Global Object
-        // This is more reliable than data attributes for dynamic changes
-        window._userway_config = {
+        // 1. Initial Config
+        window.userway_config = {
             account: '1pjEW7NzD7',
-            position: position,
-            language: language
+            lang: uwLang,
+            position: uwPos,
         };
 
-        // Remove existing script to force reload with new config
-        const existingScript = document.getElementById('userway-script');
-        if (existingScript) existingScript.remove();
+        // 2. Load Script if not present
+        if (!document.getElementById('userway-script')) {
+            const script = document.createElement('script');
+            script.id = 'userway-script';
+            script.src = "https://cdn.userway.org/widget.js";
+            script.async = true;
+            script.setAttribute('data-account', '1pjEW7NzD7');
+            document.body.appendChild(script);
+        }
 
-        const script = document.createElement('script');
-        script.id = 'userway-script';
-        script.src = "https://cdn.userway.org/widget.js";
-        script.async = true;
-        // We still keep data-account as a fallback for the loader itself
-        script.setAttribute('data-account', '1pjEW7NzD7');
+        // 3. MAGIC FIX: Force update if UserWay is already active
+        const interval = setInterval(() => {
+            if (window.UserWay && typeof window.UserWay.changeLanguage === 'function') {
+                window.UserWay.changeLanguage(uwLang);
+                window.UserWay.widgetPosition(uwPos);
+                clearInterval(interval);
+            }
+        }, 200);
 
-        document.body.appendChild(script);
-
-        return () => {
-            const scriptToRemove = document.getElementById('userway-script');
-            if (scriptToRemove) scriptToRemove.remove();
-        };
+        return () => clearInterval(interval);
     }, [language]);
 
     return null;
