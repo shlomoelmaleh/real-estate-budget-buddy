@@ -17,7 +17,7 @@ export function AccessibilityWidget() {
         // 3. Create and configure the accessibility script
         const script = document.createElement('script');
         script.id = 'nagish-script';
-        script.src = "https://accessibility.org.il/nagishli.js";
+        script.src = "https://nagish.li/nagishli.js";
         script.type = "text/javascript";
         script.async = true;
 
