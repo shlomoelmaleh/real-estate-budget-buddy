@@ -34,26 +34,28 @@ export function FloatingWhatsApp() {
 
     return (
         <div
+            // We force "dir='ltr'" here to ensure the order [Button][Label] or [Label][Button] 
+            // is controlled by us and not the browser's RTL auto-correction
+            dir="ltr"
             className={cn(
-                "fixed bottom-24 z-[9999] flex items-center group transition-all duration-500",
-                // Position Switch
+                "fixed bottom-24 z-[9999] flex items-center group transition-all duration-500 ease-in-out",
                 isLeftSide ? "left-0 flex-row" : "right-0 flex-row-reverse"
             )}
         >
-            {/* 1. THE BUTTON */}
+            {/* 1. THE BUTTON (The Anchor) */}
             <a
                 href={getWhatsAppHref()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
                     "w-14 h-14 bg-[#25D366] text-white flex items-center justify-center shadow-glow z-20 transition-all duration-500",
-                    // Shape Switch: Round the inner side, flat the edge side
+                    // Shape: Flat against the screen edge, round on the inside
                     isLeftSide ? "rounded-r-full rounded-l-none" : "rounded-l-full rounded-r-none",
-                    // Masking Logic
+                    // Initial half-masking (28px = half of w-14)
                     isLeftSide ? "-translate-x-7 group-hover:translate-x-0" : "translate-x-7 group-hover:translate-x-0"
                 )}
             >
-                {/* Padding adjustment to keep icon visible while half-masked */}
+                {/* Align icon so it's centered in the visible half when masked */}
                 <div className={cn(
                     "transition-all duration-500",
                     isLeftSide ? "pl-5 group-hover:pl-0" : "pr-5 group-hover:pr-0"
@@ -67,15 +69,19 @@ export function FloatingWhatsApp() {
                 )}></span>
             </a>
 
-            {/* 2. THE LABEL (Slides out into the screen) */}
-            <div className={cn(
-                "bg-white text-primary text-[13px] font-bold py-2.5 px-4 shadow-md border border-border transition-all duration-500 z-10",
-                "whitespace-nowrap pointer-events-none opacity-0",
-                // Label Side & Slide Logic
-                isLeftSide
-                    ? "rounded-r-xl border-l-0 -translate-x-10 group-hover:opacity-100 group-hover:translate-x-0"
-                    : "rounded-l-xl border-r-0 translate-x-10 group-hover:opacity-100 group-hover:translate-x-0"
-            )}>
+            {/* 2. THE LABEL (Slides out INWARD) */}
+            <div
+                className={cn(
+                    "bg-white text-primary text-[13px] font-bold py-2.5 px-4 shadow-md border border-border transition-all duration-500 z-10",
+                    "whitespace-nowrap pointer-events-none opacity-0",
+                    // Position: On the inside of the button, sliding out from behind it
+                    isLeftSide
+                        ? "rounded-r-xl border-l-0 -translate-x-full group-hover:opacity-100 group-hover:translate-x-0"
+                        : "rounded-l-xl border-r-0 translate-x-full group-hover:opacity-100 group-hover:translate-x-0"
+                )}
+                // Force the text inside the label to respect the site language (Hebrew RTL)
+                style={{ direction: isLeftSide ? 'rtl' : 'ltr' }}
+            >
                 {t.floatingContact}
             </div>
         </div>
