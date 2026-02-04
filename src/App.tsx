@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PartnerProvider } from "@/contexts/PartnerContext";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
+import { AccessibilityWidget } from "@/components/AccessibilityWidget";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
@@ -38,6 +39,8 @@ const App = () => (
             </Routes>
             {/* Floating WhatsApp button - appears on every page */}
             <FloatingWhatsApp />
+            {/* Accessibility Widget - positioned on opposite side of WhatsApp */}
+            <AccessibilityWidget />
           </BrowserRouter>
         </TooltipProvider>
       </PartnerProvider>
