@@ -39,7 +39,7 @@ const App = () => (
             </Routes>
 
             {/* --- GLOBAL WIDGETS --- */}
-            {/* Accessibility Widget - positioned on opposite side of WhatsApp */}
+            {/* Accessibility Widget - UserWay */}
             <AccessibilityWidget />
             {/* Floating WhatsApp button - appears on every page */}
             <FloatingWhatsApp />

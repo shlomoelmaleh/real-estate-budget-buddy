@@ -5,35 +5,34 @@ export function AccessibilityWidget() {
     const { language } = useLanguage();
 
     useEffect(() => {
-        // 1. Determine the side: Opposite of WhatsApp
-        const side = language === 'he' ? 'right' : 'left';
+        // Position logic for UserWay:
+        // 1 = Top Right, 2 = Middle Right, 3 = Bottom Right, 
+        // 4 = Bottom Middle, 5 = Bottom Left, 6 = Middle Left, ...
 
-        // 2. Remove any existing widget script to avoid duplicates on language switch
-        const existingScript = document.getElementById('nagish-script');
-        if (existingScript) {
-            existingScript.remove();
-        }
+        // Hebrew (RTL): WhatsApp is Left, so Accessibility goes Right (Pos 3)
+        // LTR (En/Fr): WhatsApp is Right, so Accessibility goes Left (Pos 5)
+        const position = language === 'he' ? '3' : '5';
 
-        // 3. Create and configure the accessibility script
+        // Remove existing script to allow re-initialization with new position
+        const existingScript = document.getElementById('userway-script');
+        if (existingScript) existingScript.remove();
+
         const script = document.createElement('script');
-        script.id = 'nagish-script';
-        script.src = "https://nagish.li/nagishli.js";
-        script.type = "text/javascript";
-        script.async = true;
+        script.id = 'userway-script';
+        script.src = "https://cdn.userway.org/widget.js";
 
-        // Custom attributes for the widget
-        script.setAttribute('data-position', side);
-        script.setAttribute('data-btn-side', side);
-        script.setAttribute('data-color', '#1e40af'); // Matches your professional blue
+        // UserWay Account ID
+        script.setAttribute('data-account', '1pjEW7NzD7');
+        script.setAttribute('data-position', position);
+        script.async = true;
 
         document.body.appendChild(script);
 
         return () => {
-            // Cleanup when component unmounts
-            const scriptToRemove = document.getElementById('nagish-script');
+            const scriptToRemove = document.getElementById('userway-script');
             if (scriptToRemove) scriptToRemove.remove();
         };
-    }, [language]); // Re-run logic if language changes to swap sides
+    }, [language]);
 
     return null;
 }
