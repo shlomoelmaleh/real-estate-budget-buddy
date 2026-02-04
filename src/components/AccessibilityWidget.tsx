@@ -24,6 +24,7 @@ export function AccessibilityWidget() {
         // UserWay Account ID
         script.setAttribute('data-account', '1pjEW7NzD7');
         script.setAttribute('data-position', position);
+        script.setAttribute('data-language', language); // Sync language (he, en, fr)
         script.async = true;
 
         document.body.appendChild(script);
