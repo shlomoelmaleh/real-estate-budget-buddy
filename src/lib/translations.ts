@@ -111,10 +111,34 @@ export interface Translations {
   helperSimulation: string;
   targetPropertyPrice: string;
   targetPropertyPriceHelper: string;
+  isRentedYes: string;
+  isRentedNo: string;
+  optional: string;
   floatingContact: string;
   // WhatsApp messages
   whatsappMessageWithPartner: (partnerName: string) => string;
   whatsappMessageDefault: string;
+  // Wizard
+  step1Title: string;
+  step1Desc: string;
+  step2Title: string;
+  step2Desc: string;
+  step3Title: string;
+  step3Desc: string;
+  step4Title: string;
+  step4Desc: string;
+  nextBtn: string;
+  backBtn: string;
+  revealBtn: string;
+  loadingText: string;
+  successTitle: string;
+  successSubtitle: string;
+  leadCaptureTitle: string;
+  leadCaptureBtn: string;
+  wizardWelcome: string;
+  wizardFoundation: string;
+  wizardBlueprint: string;
+  wizardPeace: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -225,10 +249,34 @@ export const translations: Record<Language, Translations> = {
     helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים.",
     targetPropertyPrice: "מחיר הנכס המבוקש (אופציונלי)",
     targetPropertyPriceHelper: "אופציונלי: לצורך השוואה מול התקציב המחושב בלבד.",
+    isRentedYes: "נכס להשקעה",
+    isRentedNo: "דירה למגורים",
+    optional: "אופציונלי",
     floatingContact: "יש לך שאלה? אני כאן בשבילך",
     // WhatsApp messages
     whatsappMessageWithPartner: (partnerName: string) => `שלום ${partnerName}, אני משתמש בסימולטור שלך ויש לי שאלה...`,
-    whatsappMessageDefault: "שלום, אני משתמש בסימולטור אשל פיננסים ויש לי שאלה..."
+    whatsappMessageDefault: "שלום, אני משתמש בסימולטור אשל פיננסים ויש לי שאלה...",
+    // Wizard - Hebrew
+    step1Title: "1/4: החזון",
+    step1Desc: "נתוני בסיס",
+    step2Title: "2/4: היסודות",
+    step2Desc: "חוזק פיננסי",
+    step3Title: "3/4: התוכנית",
+    step3Desc: "חוקים ומגבלות",
+    step4Title: "4/4: השקט הנפשי",
+    step4Desc: "יעדים",
+    nextBtn: "המשך לשלב הבא ←",
+    backBtn: "← חזור",
+    revealBtn: "חשוף את הפוטנציאל שלי ✨",
+    loadingText: "מנתח רגולציות בנקאיות ומדרגות מס עבור הפרופיל שלך...",
+    successTitle: "הפוטנציאל שלך לרכישת נכס:",
+    successSubtitle: "כולל מסגרת משכנתא ועלויות נלוות משוערות",
+    leadCaptureTitle: "רוצה את האסטרטגיה המלאה עמוד? הפקנו עבורך דוח אישי הכולל: לוח סילוקין מלא, פירוט מס רכישה וניתוח יחס החזר.",
+    leadCaptureBtn: "שלח לי את האסטרטגיה המלאה ב-PDF",
+    wizardWelcome: "ברוכים הבאים! כל חלום גדול מתחיל בתוכנית. בואו נמפה את שלכם.",
+    wizardFoundation: "מצוין! העבודה הקשה שלך בנתה יסודות. בוא נראה לאן הם יכולים לקחת אותך.",
+    wizardBlueprint: "כמעט שם. פרטים אלו עוזרים לנו למצוא את ההטבות והדלתות הפתוחות בפניך.",
+    wizardPeace: "לסיום, בוא נגדיר את היעדים שלך ושקט נפשי בתזרים.",
   },
   en: {
     dir: 'ltr',
@@ -337,10 +385,34 @@ export const translations: Record<Language, Translations> = {
     helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details.",
     targetPropertyPrice: "Asking Price (Optional)",
     targetPropertyPriceHelper: "Optional: Only for comparing against your calculated budget.",
+    isRentedYes: "Investment Property",
+    isRentedNo: "Primary Residence",
+    optional: "Optional",
     floatingContact: "Got a question? I'm here to help",
     // WhatsApp messages
     whatsappMessageWithPartner: (partnerName: string) => `Hello ${partnerName}, I'm using your simulator and I have a question...`,
-    whatsappMessageDefault: "Hello, I'm using the Eshel Finances simulator and I have a question..."
+    whatsappMessageDefault: "Hello, I'm using the Eshel Finances simulator and I have a question...",
+    // Wizard - English
+    step1Title: "1/4: The Vision",
+    step1Desc: "Identity",
+    step2Title: "2/4: The Foundation",
+    step2Desc: "Financial Strength",
+    step3Title: "3/4: The Blueprint",
+    step3Desc: "Rules & Limits",
+    step4Title: "4/4: Peace of Mind",
+    step4Desc: "Objectives",
+    nextBtn: "Next Step →",
+    backBtn: "← Back",
+    revealBtn: "Reveal My Potential ✨",
+    loadingText: "Analyzing current bank regulations and tax brackets for your profile...",
+    successTitle: "Your property acquisition potential is:",
+    successSubtitle: "This potential includes your mortgage capacity and estimated closing costs.",
+    leadCaptureTitle: "Want the full 5-page strategy? We've generated a personal PDF report for you including: Full Amortization Table, Purchase Tax breakdown, and Bank DTI analysis.",
+    leadCaptureBtn: "Send My Full Strategy PDF",
+    wizardWelcome: "Welcome! Every great dream starts with a plan. Let's map yours.",
+    wizardFoundation: "Great! Your hard work has built a foundation. Let's see how far it can take you.",
+    wizardBlueprint: "Almost there. These details help us find the specific benefits and doors available for you.",
+    wizardPeace: "Finally, let's set your targets and cash-flow comfort zone.",
   },
   fr: {
     dir: 'ltr',
@@ -449,9 +521,33 @@ export const translations: Record<Language, Translations> = {
     helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation.",
     targetPropertyPrice: "Prix du bien visé (optionnel)",
     targetPropertyPriceHelper: "Optionnel : pour comparer avec votre budget estimé.",
+    isRentedYes: "Investissement Locatif",
+    isRentedNo: "Résidence Principale",
+    optional: "Optionnel",
     floatingContact: "Une question ? Je suis là pour vous",
     // WhatsApp messages
     whatsappMessageWithPartner: (partnerName: string) => `Bonjour ${partnerName}, j'utilise votre simulateur et j'ai une question...`,
-    whatsappMessageDefault: "Bonjour, j'utilise le simulateur Eshel Finances et j'ai une question..."
+    whatsappMessageDefault: "Bonjour, j'utilise le simulateur Eshel Finances et j'ai une question...",
+    // Wizard - French
+    step1Title: "1/4: La Vision",
+    step1Desc: "Identité",
+    step2Title: "2/4: Les Fondations",
+    step2Desc: "Force Financière",
+    step3Title: "3/4: Le Plan",
+    step3Desc: "Règles & Limites",
+    step4Title: "4/4: Sérénité",
+    step4Desc: "Objectifs",
+    nextBtn: "Étape Suivante →",
+    backBtn: "← Retour",
+    revealBtn: "Révéler Mon Potentiel ✨",
+    loadingText: "Analyse des régulations bancaires et paliers fiscaux pour votre profil...",
+    successTitle: "Votre potentiel d'acquisition est de :",
+    successSubtitle: "Ce potentiel inclut votre capacité d'emprunt et les frais annexes estimés.",
+    leadCaptureTitle: "Vous voulez la stratégie complète ? Nous avons généré un rapport PDF personnel incluant : Tableau d'amortissement complet, détail des frais d'acquisition et analyse d'endettement.",
+    leadCaptureBtn: "Envoyer ma Stratégie Complète PDF",
+    wizardWelcome: "Bienvenue ! Tout grand rêve commence par un plan. Dessinons le vôtre.",
+    wizardFoundation: "Super ! Votre travail a bâti des fondations solides. Voyons jusqu'où elles peuvent vous mener.",
+    wizardBlueprint: "Presque fini. Ces détails nous aident à trouver les avantages et opportunités qui vous sont ouverts.",
+    wizardPeace: "Enfin, définissons vos objectifs et votre zone de confort mensuelle.",
   }
 };

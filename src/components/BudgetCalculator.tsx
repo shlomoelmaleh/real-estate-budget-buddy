@@ -1,10 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Calculator,
   Mail,
   CheckCircle2,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
@@ -20,11 +22,14 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import logoEshel from '@/assets/logo-eshel.png';
 
-// Modular components
-import { PropertyStatusSection } from './budget/PropertyStatusSection';
-import { RentInvestmentSection } from './budget/RentInvestmentSection';
-import { FinancialSection } from './budget/FinancialSection';
-import { PersonalInfoSection } from './budget/PersonalInfoSection';
+// Wizard Components
+import { StepCard } from './Wizard/StepCard';
+import { ProgressBar } from './Wizard/ProgressBar';
+import { Step1 } from './Wizard/Steps/Step1';
+import { Step2 } from './Wizard/Steps/Step2';
+import { Step3 } from './Wizard/Steps/Step3';
+import { Step4 } from './Wizard/Steps/Step4';
+import { Step5 } from './Wizard/Steps/Step5_Reveal';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
 
 export function BudgetCalculator() {
@@ -32,17 +37,25 @@ export function BudgetCalculator() {
   const { partner } = usePartner();
   const confirmationRef = useRef<HTMLDivElement>(null);
 
+  // State
+  const [step, setStep] = useState(1);
   const [results, setResults] = useState<CalculatorResults | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // For calculation
+  const [isSending, setIsSending] = useState(false); // For email
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Store calculation data for the email step
+  const [calcData, setCalcData] = useState<any>(null);
 
   const {
     control,
-    handleSubmit,
+    trigger, // Used for manual validation per step
     formState: { errors },
     getValues,
+    watch,
   } = useForm<CalculatorFormValues>({
     resolver: zodResolver(calculatorSchema),
+    mode: 'onChange',
     defaultValues: {
       fullName: '',
       phone: '',
@@ -60,6 +73,7 @@ export function BudgetCalculator() {
     },
   });
 
+  // Partner Display Info
   const displayName = partner?.name || t.advisorName;
   const displayPhone = partner?.phone || t.advisorPhone;
   const displayEmail = partner?.email || t.advisorEmail;
@@ -88,7 +102,7 @@ export function BudgetCalculator() {
     return "https://wa.me/972549997711";
   };
 
-  // Hidden defaults
+  // Logic Constants
   const maxAge = '80';
   const interest = '5.0';
   const ratio = '33';
@@ -106,11 +120,45 @@ export function BudgetCalculator() {
     return 50;
   };
 
-  const onSubmit = async (data: CalculatorFormValues) => {
-    setIsSubmitting(true);
+  // --- WIZARD NAVIGATION ---
 
+  const handleNext = async () => {
+    let fields: (keyof CalculatorFormValues)[] = [];
+
+    switch (step) {
+      case 1: fields = ['fullName', 'age']; break;
+      case 2: fields = ['equity', 'netIncome']; break;
+      case 3: fields = ['isFirstProperty', 'isIsraeliCitizen', 'isIsraeliTaxResident']; break;
+      default: break;
+    }
+
+    const isValid = await trigger(fields);
+    if (isValid) {
+      setStep(s => s + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleBack = () => {
+    setStep(s => Math.max(1, s - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // --- CALCULATION PHASE ---
+
+  const handleCalculate = async () => {
+    // Validate Step 4
+    const isValid = await trigger(['isRented', 'expectedRent', 'targetPropertyPrice', 'budgetCap']);
+    if (!isValid) return;
+
+    setIsLoading(true);
+    setStep(5); // Move to Reveal step immediately to show loader
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const data = getValues();
+
+    // Prepare Inputs
     const calculatedLTV = calculateLTV(data.isFirstProperty, data.isIsraeliCitizen);
-
     const inputs = {
       equity: parseFormattedNumber(data.equity),
       ltv: calculatedLTV,
@@ -138,7 +186,7 @@ export function BudgetCalculator() {
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-budget`,
         {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
           },
@@ -146,37 +194,12 @@ export function BudgetCalculator() {
         }
       );
 
-      if (response.status === 429) {
-        toast.error(t.rateLimitError || 'Too many requests. Please wait a moment.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Calculation failed');
-      }
+      if (!response.ok) throw new Error('Calculation failed');
 
       const { results: calcResults, amortization: amortRows } = await response.json();
 
       if (calcResults) {
-        setResults(calcResults);
-
-        const amortizationSummary = {
-          totalMonths: amortRows.length,
-          firstPayment:
-            amortRows.length > 0
-              ? { principal: amortRows[0].principal, interest: amortRows[0].interest }
-              : { principal: 0, interest: 0 },
-          lastPayment:
-            amortRows.length > 0
-              ? {
-                principal: amortRows[amortRows.length - 1].principal,
-                interest: amortRows[amortRows.length - 1].interest,
-              }
-              : { principal: 0, interest: 0 },
-        };
-
+        // Prepare additional data for email later
         const yearlyBalanceData: { year: number; balance: number }[] = [];
         for (let i = 0; i < amortRows.length; i++) {
           if ((i + 1) % 12 === 0 || i === amortRows.length - 1) {
@@ -216,21 +239,16 @@ export function BudgetCalculator() {
         }).join("\n");
         const csvData = csvHeader + csvRows;
 
-        const { supabase } = await import('@/integrations/supabase/client');
+        const amortizationSummary = {
+          totalMonths: amortRows.length,
+          firstPayment: amortRows.length > 0 ? { principal: amortRows[0].principal, interest: amortRows[0].interest } : { principal: 0, interest: 0 },
+          lastPayment: amortRows.length > 0 ? { principal: amortRows[amortRows.length - 1].principal, interest: amortRows[amortRows.length - 1].interest } : { principal: 0, interest: 0 },
+        };
 
         const simulationInputs = {
           ...data,
           ltv: calculatedLTV.toString(),
-          maxAge,
-          interest,
-          rentalYield,
-          rentRecognition,
-          lawyerPct,
-          brokerPct,
-          vatPct,
-          advisorFee,
-          otherFee,
-          ratio,
+          maxAge, interest, rentalYield, rentRecognition, lawyerPct, brokerPct, vatPct, advisorFee, otherFee, ratio,
           targetPropertyPrice: data.targetPropertyPrice || '',
         };
 
@@ -239,95 +257,179 @@ export function BudgetCalculator() {
           shekelRatio: calcResults.totalCost / calcResults.loanAmount,
         };
 
-        const partnerId = partner?.id || null;
-        console.log('Sending email with partner:', { partnerId, partnerName: partner?.name, partnerLoaded: !!partner });
-        
-        const { error: emailError } = await supabase.functions.invoke('send-report-email', {
-          body: {
-            recipientEmail: data.email,
-            recipientName: data.fullName || 'Client',
-            recipientPhone: data.phone,
-            language: language,
-            inputs: simulationInputs,
-            results: simulationResults,
-            amortizationSummary,
-            yearlyBalanceData,
-            paymentBreakdownData,
-            csvData,
-            partnerId,
-          },
+        setCalcData({
+          inputs: simulationInputs,
+          results: simulationResults,
+          amortizationSummary,
+          yearlyBalanceData,
+          paymentBreakdownData,
+          csvData
         });
 
-        if (emailError) throw emailError;
-
-        setShowConfirmation(true);
+        // Artificial loading delay for 2 seconds
         setTimeout(() => {
-          confirmationRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+          setResults(calcResults);
+          setIsLoading(false);
+        }, 2000);
+
       } else {
-        toast.error('Please check your input values');
+        toast.error('Calculation failed');
+        setStep(4);
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error('Calculation or email error:', error);
-      toast.error(t.emailError || 'An error occurred. Please try again.');
+      console.error(error);
+      toast.error(t.emailError || 'An error occurred.');
+      setStep(4);
+      setIsLoading(false);
     }
-    setIsSubmitting(false);
   };
 
-  const handleFormError = () => {
-    toast.error(t.requiredField);
+  // --- SEND REPORT PHASE ---
+
+  const handleSendReport = async () => {
+    // Validate Lead Capture fields
+    const isValid = await trigger(['email', 'phone']);
+    if (!isValid) return;
+
+    setIsSending(true);
+    const data = getValues();
+    const partnerId = partner?.id || null;
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+
+      const { error: emailError } = await supabase.functions.invoke('send-report-email', {
+        body: {
+          recipientEmail: data.email,
+          recipientName: data.fullName || 'Client',
+          recipientPhone: data.phone,
+          language: language,
+          inputs: calcData.inputs,
+          results: calcData.results,
+          amortizationSummary: calcData.amortizationSummary,
+          yearlyBalanceData: calcData.yearlyBalanceData,
+          paymentBreakdownData: calcData.paymentBreakdownData,
+          csvData: calcData.csvData,
+          partnerId,
+        },
+      });
+
+      if (emailError) throw emailError;
+
+      setShowConfirmation(true);
+      setTimeout(() => {
+        confirmationRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+
+    } catch (error) {
+      console.error(error);
+      toast.error(t.emailError);
+    }
+    setIsSending(false);
   };
+
+  // --- RENDER ---
+
+  const getStepContent = () => {
+    switch (step) {
+      case 1:
+        return <Step1 control={control} errors={errors} t={t} />;
+      case 2:
+        return <Step2 control={control} errors={errors} t={t} />;
+      case 3:
+        return <Step3 control={control} errors={errors} t={t} />;
+      case 4:
+        return <Step4 control={control} errors={errors} t={t} watch={watch} />;
+      case 5:
+        return (
+          <Step5
+            control={control}
+            errors={errors}
+            t={t}
+            results={results}
+            isLoading={isLoading}
+            onSendReport={handleSendReport}
+            isSending={isSending}
+          />
+        );
+      default: return null;
+    }
+  };
+
+  const getStepHeader = () => {
+    switch (step) {
+      case 1: return { title: t.step1Title, desc: t.wizardWelcome };
+      case 2: return { title: t.step2Title, desc: t.wizardFoundation };
+      case 3: return { title: t.step3Title, desc: t.wizardBlueprint };
+      case 4: return { title: t.step4Title, desc: t.wizardPeace };
+      case 5: return { title: "", desc: "" }; // Handled inside Step 5
+      default: return { title: "", desc: "" };
+    }
+  };
+
+  const header = getStepHeader();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-12">
       <HeroHeader />
-      <main className="max-w-4xl mx-auto px-4 pb-12 space-y-8">
-        <form onSubmit={handleSubmit(onSubmit, handleFormError)} className="space-y-6">
-          <PropertyStatusSection control={control} t={t} errors={errors} />
-          <RentInvestmentSection control={control} t={t} />
-          <FinancialSection control={control} t={t} errors={errors} />
-          <PersonalInfoSection control={control} t={t} errors={errors} />
 
-          <div className="flex flex-col items-center pt-4 gap-4">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              size="lg"
-              className={cn(
-                "px-8 py-6 text-lg font-semibold rounded-xl flex-1 sm:flex-initial min-w-[200px]",
-                "bg-gradient-to-r from-primary to-primary-dark",
-                "hover:shadow-elevated hover:scale-[1.02]",
-                "transition-all duration-300",
-                "gap-2",
-                isSubmitting && "opacity-70 cursor-not-allowed"
-              )}
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Calculator className="w-5 h-5" />
-              )}
-              {t.calcBtn}
-            </Button>
+      <main className="px-4 py-8">
 
-            <p className="text-xs text-muted-foreground text-center max-w-xl leading-relaxed">
-              {t.disclaimer}
-            </p>
-            <p className="text-xs text-muted-foreground/80 text-center max-w-xl leading-relaxed italic">
-              {t.helperSimulation}
-            </p>
-          </div>
-        </form>
+        {step < 5 && <ProgressBar currentStep={step} totalSteps={4} />}
 
-        {showConfirmation && (
-          <div ref={confirmationRef} className="mt-8 space-y-4 animate-fade-in">
+        {!showConfirmation ? (
+          <StepCard
+            title={header.title}
+            emotionalMessage={header.desc}
+          >
+            {getStepContent()}
+
+            {/* Navigation Buttons */}
+            {step < 5 && (
+              <div className="flex gap-4 pt-6">
+                {step > 1 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleBack}
+                    className="flex-1 py-6 text-base"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    {t.backBtn}
+                  </Button>
+                )}
+
+                {step < 4 ? (
+                  <Button
+                    onClick={handleNext}
+                    className="flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-[1.02]"
+                  >
+                    {t.nextBtn}
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleCalculate}
+                    className="flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
+                  >
+                    {t.revealBtn}
+                  </Button>
+                )}
+              </div>
+            )}
+          </StepCard>
+        ) : (
+          /* Confirmation State (Same as before but wrapped nicely) */
+          <div ref={confirmationRef} className="max-w-xl mx-auto space-y-4 animate-fade-in mt-8">
             <div className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl shadow-lg text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-2xl font-bold text-green-800 mb-3">{t.confirmationTitle}</h3>
               <p className="text-green-700 text-lg">{t.confirmationMessage}</p>
-              <p className="mt-4 text-sm text-green-600">{getValues('email')}</p>
+              <p className="mt-4 text-sm text-green-600 font-medium bg-white/50 py-1 px-3 rounded-full inline-block">
+                {getValues('email')}
+              </p>
             </div>
 
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
@@ -341,29 +443,30 @@ export function BudgetCalculator() {
           </div>
         )}
 
-        <footer className="text-center text-sm text-muted-foreground pt-8 pb-6 border-t border-border/50">
+        {/* Footer */}
+        <footer className="text-center text-sm text-muted-foreground pt-12 pb-6">
           <div className="flex flex-col items-center gap-4">
-            <img 
-              src={displayLogo} 
-              alt={partner?.name ? `${partner.name} logo` : "Eshel Finances"} 
-              className="h-16 md:h-[72px] w-auto object-contain opacity-90"
+            <img
+              src={displayLogo}
+              alt={partner?.name ? `${partner.name} logo` : "Eshel Finances"}
+              className="h-12 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
             />
             <div className="flex flex-col items-center gap-1">
               <p className="font-semibold text-foreground">{displayName}</p>
               <p className="text-xs text-muted-foreground">{displayTitle}</p>
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <a 
-                href={buildWhatsAppHref()} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+              <a
+                href={buildWhatsAppHref()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-muted-foreground hover:text-green-600 transition-colors"
               >
                 <WhatsAppIcon size={16} className="text-green-600" />
                 <span>{displayPhone}</span>
               </a>
-              <a 
-                href={`mailto:${displayEmail}`} 
+              <a
+                href={`mailto:${displayEmail}`}
                 className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
               >
                 <Mail className="w-4 h-4 text-primary" />
