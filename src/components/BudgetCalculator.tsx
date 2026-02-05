@@ -407,22 +407,47 @@ export function BudgetCalculator() {
                   </Button>
                 )}
 
-                {step < 4 ? (
-                  <Button
-                    onClick={handleNext}
-                    className="flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-[1.02]"
-                  >
-                    {t.nextBtn}
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleCalculate}
-                    className="flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
-                  >
-                    {t.revealBtn}
-                  </Button>
-                )}
+                {(() => {
+                  const currentValues = watch();
+                  let isStepValid = false;
+
+                  if (step === 1) {
+                    isStepValid = !!currentValues.fullName && !!currentValues.age && !errors.fullName && !errors.age;
+                  } else if (step === 2) {
+                    isStepValid = !!currentValues.equity && !!currentValues.netIncome && !errors.equity && !errors.netIncome;
+                  } else if (step === 3) {
+                    isStepValid =
+                      currentValues.isFirstProperty !== undefined &&
+                      currentValues.isIsraeliCitizen !== undefined &&
+                      currentValues.isIsraeliTaxResident !== undefined;
+                  } else if (step === 4) {
+                    isStepValid = !errors.budgetCap && !errors.targetPropertyPrice;
+                  }
+
+                  return step < 4 ? (
+                    <Button
+                      onClick={handleNext}
+                      className={cn(
+                        "flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
+                        "shadow-lg shadow-primary/20",
+                        isStepValid && "shadow-[0_0_15px_rgba(var(--primary),0.6)] animate-pulse ring-1 ring-primary/50"
+                      )}
+                    >
+                      {t.nextBtn}
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleCalculate}
+                      className={cn(
+                        "flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
+                        isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
+                      )}
+                    >
+                      {t.revealBtn}
+                    </Button>
+                  );
+                })()}
               </div>
             )}
           </StepCard>

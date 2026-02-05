@@ -22,11 +22,11 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
     return (
         <div className="w-full max-w-[600px] mx-auto mb-8 px-2">
             {/* Label Info */}
-            <div className="flex justify-between items-center mb-3">
+            <div className="flex justify-start items-center gap-4 mb-3">
                 <span className="text-sm font-semibold text-primary">
                     {t.step1Title.split(':')[0].replace('1', currentStep.toString())}: {getStepLabel(currentStep)}
                 </span>
-                <span className="text-xs text-muted-foreground font-medium">
+                <span className="text-xs text-muted-foreground font-medium bg-primary/10 px-2 py-0.5 rounded-full">
                     {Math.round((currentStep / totalSteps) * 100)}%
                 </span>
             </div>
