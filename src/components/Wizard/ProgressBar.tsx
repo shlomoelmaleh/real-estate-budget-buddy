@@ -36,7 +36,7 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
             */}
 
             {/* Layer 1 & 2: Background Track & Active Progress Line */}
-            <div className="absolute top-4 left-10 right-10 h-[2px] bg-slate-200 z-0">
+            <div className="absolute top-4 left-10 right-10 h-[3px] bg-slate-200 z-0">
                 <div
                     className={cn(
                         "h-full bg-primary transition-all duration-700 ease-in-out absolute",
@@ -69,6 +69,10 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
                                 )}
                             </div>
 
+                            {/* Active Pulse Ring (Blinking animation) */}
+                            {isActive && (
+                                <div className="absolute top-0 w-8 h-8 rounded-full border border-primary animate-ping z-10" />
+                            )}
                             {/* Layer 4: Labels (Below Dot) */}
                             <div className="mt-4 absolute top-8 w-24 md:w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none">
                                 <span className={cn(
