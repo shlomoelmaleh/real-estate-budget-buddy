@@ -25,9 +25,18 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
     const progressPercent = ((effectiveStep - 1) / (totalSteps - 1)) * 100;
 
     return (
-        <div className="w-full max-w-[800px] mx-auto mb-12 px-8 relative">
+        <div className="w-full max-w-[800px] mx-auto mb-12 px-6 relative">
+            {/* 
+                Structure:
+                - Outer container has px-6 (24px padding).
+                - First and last dots are justified to the edges of the inner width.
+                - Dot size is w-8 (32px).
+                - Track should start at center of first dot: 24px (pad) + 16px (half dot) = 40px from left.
+                - Track should end at center of last dot: 24px (pad) + 16px (half dot) = 40px from right.
+            */}
+
             {/* Layer 1 & 2: Background Track & Active Progress Line */}
-            <div className="absolute top-4 left-12 right-12 h-[2px] bg-slate-200 -z-10">
+            <div className="absolute top-4 left-10 right-10 h-[2px] bg-slate-200 z-0">
                 <div
                     className={cn(
                         "h-full bg-primary transition-all duration-700 ease-in-out absolute",
@@ -38,18 +47,17 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
             </div>
 
             {/* Layer 3: Interactive Stations (Dots) */}
-            <div className="flex justify-between items-center relative z-10 w-full">
+            <div className="flex justify-between items-start relative z-10 w-full">
                 {Array.from({ length: totalSteps }).map((_, index) => {
                     const stepNum = index + 1;
                     const isCompleted = stepNum < currentStep;
                     const isActive = stepNum === currentStep;
-                    const isUpcoming = stepNum > currentStep;
 
                     return (
-                        <div key={stepNum} className="flex flex-col items-center group w-0">
+                        <div key={stepNum} className="flex flex-col items-center relative">
                             {/* The Dot */}
                             <div className={cn(
-                                "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0",
+                                "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0 relative z-20",
                                 isCompleted ? "bg-primary border-primary text-white" :
                                     isActive ? "border-primary text-primary font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" :
                                         "border-slate-200 text-slate-300"
@@ -62,10 +70,10 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
                             </div>
 
                             {/* Layer 4: Labels (Below Dot) */}
-                            <div className="mt-3 w-32 text-center">
+                            <div className="mt-4 absolute top-8 w-24 md:w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none">
                                 <span className={cn(
-                                    "text-[10px] md:text-sm font-semibold transition-colors duration-300 block leading-tight",
-                                    isActive ? "text-primary" :
+                                    "text-[10px] md:text-xs font-semibold transition-colors duration-300 block leading-tight",
+                                    isActive ? "text-primary font-bold" :
                                         isCompleted ? "text-slate-600" : "text-slate-400"
                                 )}>
                                     {getStepTitle(stepNum)}
