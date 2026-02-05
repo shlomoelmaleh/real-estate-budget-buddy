@@ -26,8 +26,9 @@ export function Step5({
     useEffect(() => {
         if (!results || isLoading) return;
 
+        // Counting Engine
         const target = results.maxPropertyValue;
-        const duration = 2500; // 2.5 seconds
+        const duration = 2000; // 2.0 seconds as requested
         const fps = 60;
         const steps = duration / (1000 / fps);
         const increment = target / steps;
@@ -78,7 +79,7 @@ export function Step5({
                     </h2>
                     <div className="py-2">
                         <span className={cn(
-                            "text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-sm block",
+                            "text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-600 drop-shadow-sm block", // Gold Gradient updated
                             hasCounted && "animate-pulse" // Subtle pulse after counting
                         )}>
                             ₪ {formatNumber(displayValue)}
@@ -91,26 +92,19 @@ export function Step5({
             </div>
 
             {/* Strategic Lock (Lead Capture) */}
-            <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/60 space-y-6 mt-8 shadow-sm">
+            <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/60 space-y-8 mt-8 shadow-sm">
                 <div className="space-y-2 text-center">
                     <h3 className="font-semibold text-lg flex items-center justify-center gap-2 text-primary">
                         <FileText className="w-5 h-5" />
-                        {t.leadCaptureBtn} {/* Using Btn text for header icon context or similar? Request said "Unlock the Treasure" is hardcoded. */}
-                        {/* Wait, prompt said: "No more English leaks". */}
-                        {/* Lead Capture Title is the paragraph. The header needs a key. */}
-                        {/* I will use a generic icon+title derived from button or just remove the English header "Unlocking the Treasure" if no key exists. */}
-                        {/* Actually, user didn't provide key for "Unlocking the Treasure". He updated `leadCaptureTitle` handling. */}
-                        {/* I will USE `leadCaptureTitle` as the main instruction text and remove the "Unlocking..." header to be safe, or make a key for it? */}
-                        {/* User instructions: "Remove all hardcoded text... English strings like 'Unlock the Treasure'" */}
-                        {/* User provided: leadCaptureTitle: "We have prepared..." */}
-                        {/* So I will remove the "Unlocking the Treasure" header line entirely or merge. */}
+                        {t.leadCaptureBtn}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
                         {t.leadCaptureTitle}
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                {/* Form Fields Container - Gap 8 */}
+                <div className="flex flex-col md:grid md:grid-cols-2 gap-8">
                     <Controller
                         name="email"
                         control={control}
