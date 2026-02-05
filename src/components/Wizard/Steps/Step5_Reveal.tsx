@@ -103,7 +103,7 @@ export function Step5({
                     </p>
                 </div>
 
-                {/* Form Fields Container - Vertical Stack (Strict Gap 8) */}
+                {/* Form Fields & Button Container - Vertical Stack (Strict Gap 8) */}
                 <div className="flex flex-col gap-8 w-full">
                     {/* 1. Email Field (Priority) - Full Width */}
                     <div className="w-full">
@@ -142,24 +142,25 @@ export function Step5({
                             )}
                         />
                     </div>
-                </div>
 
-                <Button
-                    type="button"
-                    onClick={onSendReport}
-                    disabled={isSending}
-                    className={cn(
-                        "w-full py-6 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
-                        "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]"
-                    )}
-                >
-                    {isSending ? (
-                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    ) : (
-                        <FileText className="w-5 h-6 mr-2" />
-                    )}
-                    {t.leadCaptureBtn}
-                </Button>
+                    {/* 3. Send Button - Inside Gap Container */}
+                    <Button
+                        type="button"
+                        onClick={onSendReport}
+                        disabled={isSending}
+                        className={cn(
+                            "w-full py-6 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
+                            "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]"
+                        )}
+                    >
+                        {isSending ? (
+                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        ) : (
+                            <FileText className="w-5 h-6 mr-2" />
+                        )}
+                        {t.leadCaptureBtn}
+                    </Button>
+                </div>
             </div>
         </div>
     );
