@@ -104,8 +104,8 @@ export function Step5({
                 </div>
 
                 {/* Form Fields & Button Container - Vertical Stack (Strict Gap 8) */}
-                <div className="flex flex-col gap-8 w-full">
-                    {/* 1. Email Field (Priority) - Full Width */}
+                <div className="flex flex-col gap-8 w-full max-w-md mx-auto">
+                    {/* 1. Email Field */}
                     <div className="w-full">
                         <Controller
                             name="email"
@@ -124,7 +124,7 @@ export function Step5({
                         />
                     </div>
 
-                    {/* 2. Phone Field (Secondary) - Full Width */}
+                    {/* 2. Phone Field */}
                     <div className="w-full">
                         <Controller
                             name="phone"
@@ -143,7 +143,7 @@ export function Step5({
                         />
                     </div>
 
-                    {/* 3. Send Button - Inside Gap Container */}
+                    {/* 3. Send Button */}
                     <Button
                         type="button"
                         onClick={onSendReport}

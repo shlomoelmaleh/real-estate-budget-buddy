@@ -21,85 +21,56 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
         }
     };
 
-    // effectiveStep limits max to 4 to avoid trying to render step 5 on the bar if passed
     const effectiveStep = Math.min(currentStep, totalSteps);
-    // Calculate raw percentage (0 to 100)
     const progressPercent = ((effectiveStep - 1) / (totalSteps - 1)) * 100;
 
     return (
-        <div className="w-full max-w-[800px] mx-auto mb-10 px-4 relative">
+        <div className="w-full max-w-[800px] mx-auto mb-12 px-8 relative">
+            {/* Layer 1 & 2: Background Track & Active Progress Line */}
+            <div className="absolute top-4 left-12 right-12 h-[2px] bg-slate-200 -z-10">
+                <div
+                    className={cn(
+                        "h-full bg-primary transition-all duration-700 ease-in-out absolute",
+                        isRtl ? "right-0" : "left-0"
+                    )}
+                    style={{ width: `${progressPercent}%` }}
+                />
+            </div>
 
-            {/* 
-                Structure:
-                - Container: relative, padded (px-4 = 16px).
-                - Dots: w-8 (32px).
-                - Track Start/End: 16px (pad) + 16px (half dot) = 32px (left-8 / right-8).
-                - Vertical Align: Labels (h-10) + mb-4 (16px) + Half Dot (16px) = 72px top.
-            */}
-
-            {/* Background Track (Center to Center) - Spans full width minus outer centers */}
-            <div className="absolute top-[72px] left-8 right-8 h-[2px] bg-primary/20 -z-10" />
-
-            {/* Active Progress Line (Overlaid) */}
-            <div
-                className={cn(
-                    "absolute top-[72px] h-[2px] bg-primary transition-all duration-700 ease-in-out -z-10",
-                    isRtl ? "right-8" : "left-8" // Anchor to 'start' based on direction
-                )}
-                style={{
-                    // Width is percentage of the track length (100% - 64px)
-                    width: `calc((100% - 64px) * ${progressPercent / 100})`
-                }}
-            />
-
-            {/* Main Stations Container */}
-            <div className="flex justify-between items-start w-full relative z-10">
+            {/* Layer 3: Interactive Stations (Dots) */}
+            <div className="flex justify-between items-center relative z-10 w-full">
                 {Array.from({ length: totalSteps }).map((_, index) => {
                     const stepNum = index + 1;
                     const isCompleted = stepNum < currentStep;
                     const isActive = stepNum === currentStep;
-
-                    const transitionDelay = isActive ? "delay-500" : "delay-0";
+                    const isUpcoming = stepNum > currentStep;
 
                     return (
-                        <div key={stepNum} className="flex flex-col items-center group w-24">
-                            {/* Title Section (Above Circle) */}
-                            {/* Fixed height container to align all dots horizontally */}
-                            <div className="h-10 flex items-end justify-center mb-4 w-full text-center">
+                        <div key={stepNum} className="flex flex-col items-center group w-0">
+                            {/* The Dot */}
+                            <div className={cn(
+                                "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0",
+                                isCompleted ? "bg-primary border-primary text-white" :
+                                    isActive ? "border-primary text-primary font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" :
+                                        "border-slate-200 text-slate-300"
+                            )}>
+                                {isCompleted ? (
+                                    <Check className="w-4 h-4" />
+                                ) : (
+                                    <span className="text-xs">{stepNum}</span>
+                                )}
+                            </div>
+
+                            {/* Layer 4: Labels (Below Dot) */}
+                            <div className="mt-3 w-32 text-center">
                                 <span className={cn(
-                                    "text-xs md:text-sm font-semibold transition-all duration-300 block leading-tight",
-                                    isActive ? "text-primary scale-110 font-bold" :
-                                        isCompleted ? "text-primary/80" : "text-muted-foreground/50",
-                                    transitionDelay
+                                    "text-[10px] md:text-sm font-semibold transition-colors duration-300 block leading-tight",
+                                    isActive ? "text-primary" :
+                                        isCompleted ? "text-slate-600" : "text-slate-400"
                                 )}>
                                     {getStepTitle(stepNum)}
                                 </span>
                             </div>
-
-                            {/* Station Circle */}
-                            <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-2 bg-background z-20 relative",
-                                isActive ? "border-primary shadow-[0_0_15px_rgba(var(--primary),0.5)] scale-110" :
-                                    isCompleted ? "border-primary bg-primary text-primary-foreground" :
-                                        "border-muted-foreground/20 text-muted-foreground/20",
-                                transitionDelay
-                            )}>
-                                {isCompleted ? (
-                                    <Check className="w-4 h-4 animate-in zoom-in spin-in-45 duration-300" />
-                                ) : (
-                                    <span className={cn(
-                                        "text-xs font-bold transition-all duration-300",
-                                        isActive && "text-primary"
-                                    )}>
-                                        {stepNum}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Active Pulse Ring (Synced) */}
-                            {isActive && (
-                                <div className="absolute top-[64px] w-12 h-12 rounded-full border border-primary/30 animate-ping -z-10 opacity-0 animate-in fade-in duration-1000 delay-700 fill-mode-forwards" />
-                            )}
                         </div>
                     );
                 })}
