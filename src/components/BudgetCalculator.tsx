@@ -30,6 +30,7 @@ import { Step2 } from './Wizard/Steps/Step2';
 import { Step3 } from './Wizard/Steps/Step3';
 import { Step4 } from './Wizard/Steps/Step4';
 import { Step5 } from './Wizard/Steps/Step5_Reveal';
+import { Step0 } from './Wizard/Steps/Step0_Welcome';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
 
 export function BudgetCalculator() {
@@ -39,6 +40,7 @@ export function BudgetCalculator() {
 
   // State - Step 0 is Welcome Screen
   const [step, setStep] = useState(0); // Initial state changed to 0
+  const [isExiting0, setIsExiting0] = useState(false); // For transition out of Step 0
   const [results, setResults] = useState<CalculatorResults | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For calculation
   const [isSending, setIsSending] = useState(false); // For email
@@ -125,6 +127,16 @@ export function BudgetCalculator() {
   const [animClass, setAnimClass] = useState("animate-in slide-in-from-right fade-in duration-500");
 
   const handleNext = async () => {
+    if (step === 0) {
+      setIsExiting0(true);
+      setTimeout(() => {
+        setStep(1);
+        setIsExiting0(false);
+        window.scrollTo({ top: 0 });
+      }, 500); // Duration of the exit animation
+      return;
+    }
+
     let fields: (keyof CalculatorFormValues)[] = [];
 
     switch (step) {
@@ -340,6 +352,8 @@ export function BudgetCalculator() {
 
   const getStepContent = () => {
     switch (step) {
+      case 0:
+        return <Step0 t={t} onNext={handleNext} />;
       case 1:
         return <Step1 control={control} errors={errors} t={t} />;
       case 2:
@@ -378,35 +392,37 @@ export function BudgetCalculator() {
   const header = getStepHeader();
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       {/* Step 0: Welcome Screen */}
-      {step === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[85vh] animate-in fade-in zoom-in duration-500 px-4">
+      {step === 0 && (
+        <div className={cn(
+          "flex flex-col items-center pt-8 md:pt-16 px-4 transition-all duration-700 ease-in-out",
+          isExiting0 && "-translate-y-full opacity-0 scale-95"
+        )}>
           <HeroHeader />
-          <div className="text-center mt-12 max-w-lg space-y-8">
-            <h2 className="text-xl md:text-2xl font-semibold text-muted-foreground/80 leading-relaxed">
-              {t.wizardWelcome}
-            </h2>
-            <Button
-              onClick={() => setStep(1)}
-              className="w-full md:w-auto px-12 py-8 text-xl rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all bg-primary text-white font-bold"
-            >
-              {t.startBtn}
-              <ChevronRight className="ml-2 w-6 h-6" />
-            </Button>
+          <div className="text-center mt-8 w-full">
+            <h1 className="text-3xl md:text-5xl font-display font-bold text-slate-800 mb-4 max-w-3xl mx-auto leading-tight">
+              {t.welcomeTitle}
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
+              {t.welcomeSub}
+            </p>
+            {getStepContent()}
           </div>
         </div>
-      ) : (
+      )}
+
+      {step > 0 && (
         <>
           {/* Action Mode: Tiny Logo Header */}
           <header className="px-6 py-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-20">
             <div className="flex items-center gap-2">
-              <img src={displayLogo} alt="Logo" className="h-10 w-auto object-contain" />
+              <img src={displayLogo} alt="Logo" className="h-8 w-auto object-contain" />
               {partner?.name && <span className="text-xs font-semibold text-muted-foreground">{partner.name}</span>}
             </div>
           </header>
 
-          <main className="px-4 pb-8 pt-0"> {/* Zero top padding for content */}
+          <main className="px-4 pb-8 pt-2"> {/* Minimal top padding for zero-scroll */}
 
             {/* Progress Bar (Station Path) */}
             {step < 5 && <ProgressBar currentStep={step} totalSteps={4} />}

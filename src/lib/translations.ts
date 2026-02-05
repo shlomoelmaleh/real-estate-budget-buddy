@@ -141,6 +141,20 @@ export interface Translations {
   wizardPeace: string;
   revealSuccessHeader: string;
   startBtn: string;
+  welcomeTitle: string;
+  welcomeSub: string;
+  welcomeBtn: string;
+  videoCaption: string;
+  trustTime: string;
+  trustSecurity: string;
+  roadmap1Title: string;
+  roadmap1Desc: string;
+  roadmap2Title: string;
+  roadmap2Desc: string;
+  roadmap3Title: string;
+  roadmap3Desc: string;
+  roadmap4Title: string;
+  roadmap4Desc: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -281,6 +295,20 @@ export const translations: Record<Language, Translations> = {
     wizardPeace: "לסיום, בוא נגדיר את היעדים שלך ושקט נפשי בתזרים.",
     revealSuccessHeader: "[Name], פוטנציאל הרכישה המקסימלי שלכם ברור!",
     startBtn: "בואו נתחיל",
+    welcomeTitle: "המסע אל הבית שלכם מתחיל כאן",
+    welcomeSub: "גלו את הפוטנציאל האמיתי שלכם וקבלו מפת דרכים אישית להגשמת החלום",
+    welcomeBtn: "בואו נצא לדרך",
+    videoCaption: "צפו: כך נמפה יחד את הדרך לבית שלכם",
+    trustTime: "לוקח 2 דקות",
+    trustSecurity: "ללא עלות וללא התחייבות",
+    roadmap1Title: "נעים להכיר",
+    roadmap1Desc: "מי יוצא למסע הזה?",
+    roadmap2Title: "העוצמה שלכם",
+    roadmap2Desc: "הגדרת כוח הקנייה שלכם",
+    roadmap3Title: "המפתחות",
+    roadmap3Desc: "פתיחת הטבות בנקאיות",
+    roadmap4Title: "השקט הנפשי",
+    roadmap4Desc: "אבטחת מפת הדרכים הפיננסית שלכם",
   },
   en: {
     dir: 'ltr',
@@ -419,6 +447,20 @@ export const translations: Record<Language, Translations> = {
     wizardPeace: "Finally, let's set your targets and cash-flow comfort.",
     revealSuccessHeader: "[Name], your potential is clear!",
     startBtn: "Start My Journey",
+    welcomeTitle: "The Journey to Your Home Starts Here",
+    welcomeSub: "Discover your true potential and receive a personalized roadmap to your dream home",
+    welcomeBtn: "Start My Journey",
+    videoCaption: "Watch: How we map your path to a new home together (1:10)",
+    trustTime: "Takes 2 minutes",
+    trustSecurity: "No commitment",
+    roadmap1Title: "Identity",
+    roadmap1Desc: "Who is on this journey?",
+    roadmap2Title: "Financials",
+    roadmap2Desc: "Defining your buying power",
+    roadmap3Title: "Regulation",
+    roadmap3Desc: "Unlocking bank benefits",
+    roadmap4Title: "The Plan",
+    roadmap4Desc: "Securing your financial roadmap",
   },
   fr: {
     dir: 'ltr',
@@ -557,5 +599,19 @@ export const translations: Record<Language, Translations> = {
     wizardPeace: "Enfin, définissons vos objectifs.",
     revealSuccessHeader: "[Name], votre potentiel d'acquisition est confirmé !",
     startBtn: "Commencer mon voyage",
+    welcomeTitle: "Le voyage vers votre foyer commence ici",
+    welcomeSub: "Découvrez votre vrai potentiel et recevez votre feuille de route personnelle",
+    welcomeBtn: "Démarrer l'expérience",
+    videoCaption: "Vidéo : Comment nous traçons votre route vers l'acquisition (1:10)",
+    trustTime: "2 minutes chrono",
+    trustSecurity: "Gratuit & Sans engagement",
+    roadmap1Title: "Identité",
+    roadmap1Desc: "Qui participe à ce voyage ?",
+    roadmap2Title: "Moyens",
+    roadmap2Desc: "Définir votre pouvoir d'achat",
+    roadmap3Title: "Cadre",
+    roadmap3Desc: "Débloquer les avantages bancaires",
+    roadmap4Title: "Sérénité",
+    roadmap4Desc: "Sécuriser votre avenir financier",
   }
 };
