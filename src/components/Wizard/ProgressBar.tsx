@@ -22,28 +22,22 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
 
     // effectiveStep limits max to 4 to avoid trying to render step 5 on the bar if passed
     const effectiveStep = Math.min(currentStep, totalSteps);
+    // Calculate raw percentage (0 to 100)
     const progressPercent = ((effectiveStep - 1) / (totalSteps - 1)) * 100;
 
     return (
         <div className="w-full max-w-[800px] mx-auto mb-10 px-4 relative">
-            {/* Background Track */}
+            {/* Background Track (Continuous Line) */}
             <div className="absolute top-[34px] left-4 right-4 h-[2px] bg-primary/20 -z-10" />
 
-            {/* Active Progress Track (The "Flow") */}
+            {/* Active Progress Line (Linear Overlay) */}
             <div
-                className="absolute top-[34px] left-4 h-[2px] bg-gradient-to-r from-primary to-primary-dark transition-all duration-700 ease-in-out -z-10"
-                style={{ width: `calc(${progressPercent}% - 32px)` }} // Adjust for padding approx
+                className="absolute top-[34px] left-4 h-[2px] bg-primary transition-all duration-700 ease-in-out -z-10"
+                style={{
+                    // Calculate width as a percentage of the TRACK width (which is 100% of parent minus 32px padding)
+                    width: `calc((100% - 32px) * ${progressPercent / 100})`
+                }}
             />
-            {/* Note: Precise width calculation for the line between flex items is complex with percentage. 
-          A better approach is a container for the line that matches the flex container width exactly.
-      */}
-            <div className="absolute top-[34px] left-4 right-4 h-[2px] -z-10 flex items-center">
-                <div
-                    className="h-full bg-primary transition-all duration-700 ease-in-out"
-                    style={{ width: `${progressPercent}%` }}
-                />
-            </div>
-
 
             {/* Main Stations Container */}
             <div className="flex justify-between items-start relative z-10 w-full">
@@ -51,39 +45,46 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
                     const stepNum = index + 1;
                     const isCompleted = stepNum < currentStep;
                     const isActive = stepNum === currentStep;
-                    const isUpcoming = stepNum > currentStep;
+
+                    // Delay the "Active" state visually to match the line arrival (approx 700ms)
+                    // If moving forward, we want the delay. If moving partially, it might differ, but hardcoding for "Next" flow is standard.
+                    const transitionDelay = isActive ? "delay-500" : "delay-0";
 
                     return (
                         <div key={stepNum} className="flex flex-col items-center group">
                             {/* Title Section (Above Circle) */}
                             <span className={cn(
-                                "text-xs md:text-sm font-semibold mb-3 transition-colors duration-300",
-                                isActive ? "text-primary scale-105" :
-                                    isCompleted ? "text-primary/80" : "text-muted-foreground/50"
+                                "text-xs md:text-sm font-semibold mb-3 transition-all duration-300",
+                                isActive ? "text-primary scale-110 font-bold" : // Slightly larger/bolder
+                                    isCompleted ? "text-primary/80" : "text-muted-foreground/50",
+                                transitionDelay
                             )}>
                                 {getStepTitle(stepNum)}
                             </span>
 
                             {/* Station Circle */}
                             <div className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500",
-                                "border-2 bg-background",
-                                isActive ? "border-primary shadow-[0_0_15px_rgba(var(--primary),0.4)] scale-110" :
+                                "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-2 bg-background",
+                                isActive ? "border-primary shadow-[0_0_15px_rgba(var(--primary),0.5)] scale-110" :
                                     isCompleted ? "border-primary bg-primary text-primary-foreground" :
-                                        "border-muted-foreground/20 text-muted-foreground/20"
+                                        "border-muted-foreground/20 text-muted-foreground/20",
+                                transitionDelay
                             )}>
                                 {isCompleted ? (
                                     <Check className="w-4 h-4 animate-in zoom-in spin-in-45 duration-300" />
                                 ) : (
-                                    <span className={cn("text-xs font-bold", isActive && "text-primary")}>
+                                    <span className={cn(
+                                        "text-xs font-bold transition-all duration-300",
+                                        isActive && "text-primary"
+                                    )}>
                                         {stepNum}
                                     </span>
                                 )}
                             </div>
 
-                            {/* Active Pulse Ring */}
+                            {/* Active Pulse Ring (Synced) */}
                             {isActive && (
-                                <div className="absolute top-[28px] w-12 h-12 rounded-full border border-primary/30 animate-ping -z-10" />
+                                <div className="absolute top-[28px] w-12 h-12 rounded-full border border-primary/30 animate-ping -z-10 opacity-0 animate-in fade-in duration-1000 delay-700 fill-mode-forwards" />
                             )}
                         </div>
                     );

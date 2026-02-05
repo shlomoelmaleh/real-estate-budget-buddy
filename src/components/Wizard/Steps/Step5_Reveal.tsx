@@ -103,36 +103,45 @@ export function Step5({
                     </p>
                 </div>
 
-                {/* Form Fields Container - Gap 8 */}
-                <div className="flex flex-col md:grid md:grid-cols-2 gap-8">
-                    <Controller
-                        name="email"
-                        control={control}
-                        render={({ field }) => (
-                            <FormInput
-                                label={t.email}
-                                icon={<Mail className="w-4 h-4" />}
-                                type="email"
-                                {...field}
-                                hasError={!!errors.email}
-                                className="bg-white"
-                            />
-                        )}
-                    />
-                    <Controller
-                        name="phone"
-                        control={control}
-                        render={({ field }) => (
-                            <FormInput
-                                label={t.phone}
-                                icon={<Phone className="w-4 h-4" />}
-                                type="tel"
-                                {...field}
-                                hasError={!!errors.phone}
-                                className="bg-white"
-                            />
-                        )}
-                    />
+                {/* Form Fields Container - Vertical Stack (Strict Gap 8) */}
+                <div className="flex flex-col gap-8 w-full">
+                    {/* 1. Email Field (Priority) - Full Width */}
+                    <div className="w-full">
+                        <Controller
+                            name="email"
+                            control={control}
+                            render={({ field }) => (
+                                <FormInput
+                                    label={t.email}
+                                    icon={<Mail className="w-4 h-4" />}
+                                    type="email"
+                                    {...field}
+                                    hasError={!!errors.email}
+                                    className="bg-white w-full"
+                                    placeholder="example@email.com"
+                                />
+                            )}
+                        />
+                    </div>
+
+                    {/* 2. Phone Field (Secondary) - Full Width */}
+                    <div className="w-full">
+                        <Controller
+                            name="phone"
+                            control={control}
+                            render={({ field }) => (
+                                <FormInput
+                                    label={t.phone}
+                                    icon={<Phone className="w-4 h-4" />}
+                                    type="tel"
+                                    {...field}
+                                    hasError={!!errors.phone}
+                                    className="bg-white w-full"
+                                    placeholder="050-0000000"
+                                />
+                            )}
+                        />
+                    </div>
                 </div>
 
                 <Button
