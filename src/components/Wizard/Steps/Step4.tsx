@@ -57,22 +57,6 @@ export function Step4({ control, errors, t, watch }: StepProps) {
                 </div>
             </div>
 
-            {/* Target Price */}
-            <Controller
-                name="targetPropertyPrice"
-                control={control}
-                render={({ field }) => (
-                    <FormInput
-                        label={t.targetPropertyPrice}
-                        suffix={t.optional}
-                        icon={<Target className="w-4 h-4" />}
-                        {...field}
-                        formatNumber={true}
-                        className="bg-white/50"
-                    />
-                )}
-            />
-
             {/* Budget Cap */}
             <Controller
                 name="budgetCap"

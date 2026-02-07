@@ -1,7 +1,6 @@
-import { Play, User, TrendingUp, ShieldCheck, FileText, Clock, Lock } from 'lucide-react';
+import { Play, Map, TrendingUp, ShieldCheck, Target, Clock, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { StepProps } from '../types';
 
 export function Step0({ t, onNext }: { t: any, onNext: () => void }) {
     return (
@@ -30,10 +29,10 @@ export function Step0({ t, onNext }: { t: any, onNext: () => void }) {
             {/* Section B: The 4-Step Roadmap (The Journey) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {[
-                    { icon: User, title: t.roadmap1Title, desc: t.roadmap1Desc, color: "text-blue-500", bg: "bg-blue-50" },
+                    { icon: Map, title: t.roadmap1Title, desc: t.roadmap1Desc, color: "text-blue-500", bg: "bg-blue-50" },
                     { icon: TrendingUp, title: t.roadmap2Title, desc: t.roadmap2Desc, color: "text-emerald-500", bg: "bg-emerald-50" },
                     { icon: ShieldCheck, title: t.roadmap3Title, desc: t.roadmap3Desc, color: "text-amber-500", bg: "bg-amber-50" },
-                    { icon: FileText, title: t.roadmap4Title, desc: t.roadmap4Desc, color: "text-purple-500", bg: "bg-purple-50" },
+                    { icon: Target, title: t.roadmap4Title, desc: t.roadmap4Desc, color: "text-purple-500", bg: "bg-purple-50" },
                 ].map((step, i) => (
                     <div key={i} className="bg-white/90 backdrop-blur-xl border border-slate-200/60 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center space-y-3">
                         <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-1", step.bg)}>

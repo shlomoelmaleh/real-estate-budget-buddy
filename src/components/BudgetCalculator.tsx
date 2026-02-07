@@ -32,6 +32,7 @@ import { Step4 } from './Wizard/Steps/Step4';
 import { Step5 } from './Wizard/Steps/Step5_Reveal';
 import { Step0 } from './Wizard/Steps/Step0_Welcome';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
@@ -140,7 +141,7 @@ export function BudgetCalculator() {
     let fields: (keyof CalculatorFormValues)[] = [];
 
     switch (step) {
-      case 1: fields = ['fullName', 'age']; break;
+      case 1: fields = ['fullName', 'age', 'targetPropertyPrice']; break;
       case 2: fields = ['equity', 'netIncome']; break;
       case 3: fields = ['isFirstProperty', 'isIsraeliCitizen', 'isIsraeliTaxResident']; break;
       default: break;
@@ -414,7 +415,6 @@ export function BudgetCalculator() {
 
       {step > 0 && (
         <>
-          {/* Action Mode: Tiny Logo Header */}
           <header className="px-6 py-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-20">
             <div className="flex items-center gap-2">
               <img src={displayLogo} alt="Logo" className="h-8 w-auto object-contain" />
@@ -422,78 +422,88 @@ export function BudgetCalculator() {
             </div>
           </header>
 
-          <main className="px-4 pb-8 pt-2"> {/* Minimal top padding for zero-scroll */}
+          <main className="px-4 pb-8 pt-0"> {/* Zero top padding for fixed journey top */}
 
             {/* Progress Bar (Station Path) */}
             {step < 5 && <ProgressBar currentStep={step} totalSteps={4} />}
 
             {!showConfirmation ? (
-              <StepCard
-                key={step} // Force re-render for clean exit/enter animation
-                className={cn(animClass, "mt-0 pt-6 shadow-2xl")} // Lifted to top
-                title={header.title}
-                emotionalMessage={header.desc}
-              >
-                {getStepContent()}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, x: language === 'he' ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: language === 'he' ? 20 : -20 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  className="w-full max-w-2xl mx-auto"
+                >
+                  <StepCard
+                    className="mt-0 pt-2 shadow-2xl border-t-0 rounded-t-none" // Locked to top
+                    title={header.title}
+                    emotionalMessage={header.desc}
+                  >
+                    {getStepContent()}
 
-                {/* Navigation Buttons */}
-                {step < 5 && (
-                  <div className="flex gap-4 pt-6">
-                    {step > 1 && (
-                      <Button
-                        variant="outline"
-                        onClick={handleBack}
-                        className="flex-1 py-6 text-base"
-                      >
-                        <ChevronLeft className="w-4 h-4 mr-2" />
-                        {t.backBtn}
-                      </Button>
+                    {/* Navigation Buttons */}
+                    {step < 5 && (
+                      <div className="flex gap-4 pt-6">
+                        {step > 1 && (
+                          <Button
+                            variant="outline"
+                            onClick={handleBack}
+                            className="flex-1 py-6 text-base"
+                          >
+                            <ChevronLeft className="w-4 h-4 mr-2" />
+                            {t.backBtn}
+                          </Button>
+                        )}
+
+                        {(() => {
+                          const currentValues = watch();
+                          let isStepValid = false;
+
+                          if (step === 1) {
+                            isStepValid = !!currentValues.fullName && !!currentValues.age && !errors.fullName && !errors.age && !errors.targetPropertyPrice;
+                          } else if (step === 2) {
+                            isStepValid = !!currentValues.equity && !!currentValues.netIncome && !errors.equity && !errors.netIncome;
+                          } else if (step === 3) {
+                            isStepValid =
+                              currentValues.isFirstProperty !== undefined &&
+                              currentValues.isIsraeliCitizen !== undefined &&
+                              currentValues.isIsraeliTaxResident !== undefined;
+                          } else if (step === 4) {
+                            isStepValid = !errors.budgetCap && !errors.expectedRent;
+                          }
+
+                          return step < 4 ? (
+                            <Button
+                              onClick={handleNext}
+                              className={cn(
+                                "flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
+                                "shadow-lg shadow-primary/20",
+                                isStepValid && "shadow-[0_0_15px_rgba(var(--primary),0.6)] animate-pulse ring-1 ring-primary/50"
+                              )}
+                            >
+                              {t.nextBtn}
+                              <ChevronRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={handleCalculate}
+                              className={cn(
+                                "flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
+                                isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
+                              )}
+                            >
+                              {t.revealBtn}
+                            </Button>
+                          );
+                        })()}
+                      </div>
                     )}
-
-                    {(() => {
-                      const currentValues = watch();
-                      let isStepValid = false;
-
-                      if (step === 1) {
-                        isStepValid = !!currentValues.fullName && !!currentValues.age && !errors.fullName && !errors.age;
-                      } else if (step === 2) {
-                        isStepValid = !!currentValues.equity && !!currentValues.netIncome && !errors.equity && !errors.netIncome;
-                      } else if (step === 3) {
-                        isStepValid =
-                          currentValues.isFirstProperty !== undefined &&
-                          currentValues.isIsraeliCitizen !== undefined &&
-                          currentValues.isIsraeliTaxResident !== undefined;
-                      } else if (step === 4) {
-                        isStepValid = !errors.budgetCap && !errors.targetPropertyPrice;
-                      }
-
-                      return step < 4 ? (
-                        <Button
-                          onClick={handleNext}
-                          className={cn(
-                            "flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
-                            "shadow-lg shadow-primary/20",
-                            isStepValid && "shadow-[0_0_15px_rgba(var(--primary),0.6)] animate-pulse ring-1 ring-primary/50"
-                          )}
-                        >
-                          {t.nextBtn}
-                          <ChevronRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={handleCalculate}
-                          className={cn(
-                            "flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
-                            isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
-                          )}
-                        >
-                          {t.revealBtn}
-                        </Button>
-                      );
-                    })()}
-                  </div>
-                )}
-              </StepCard>
+                  </StepCard>
+                </motion.div>
+              </AnimatePresence>
             ) : (
               /* Confirmation State */
               <div ref={confirmationRef} className="max-w-xl mx-auto space-y-4 animate-fade-in mt-8">

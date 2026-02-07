@@ -1,5 +1,5 @@
 import { Controller } from 'react-hook-form';
-import { User, Clock } from 'lucide-react';
+import { User, Clock, Target } from 'lucide-react';
 import { FormInput } from '@/components/FormInput';
 import { StepProps } from '../types';
 
@@ -31,6 +31,21 @@ export function Step1({ control, errors, t }: StepProps) {
                             {...field}
                             formatNumber={true}
                             hasError={!!errors.age}
+                            className="bg-white/50"
+                        />
+                    )}
+                />
+
+                <Controller
+                    name="targetPropertyPrice"
+                    control={control}
+                    render={({ field }) => (
+                        <FormInput
+                            label={t.targetPropertyPrice}
+                            suffix={t.optional}
+                            icon={<Target className="w-4 h-4" />}
+                            {...field}
+                            formatNumber={true}
                             className="bg-white/50"
                         />
                     )}

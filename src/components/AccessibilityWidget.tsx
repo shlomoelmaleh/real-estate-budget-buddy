@@ -25,7 +25,7 @@ export function AccessibilityWidget() {
             account: '1pjEW7NzD7',
             lang: uwLang,
             position: uwPos,
-            forceLanguage: true, // This tells UserWay to ignore the browser preference!
+            forceLanguage: true,
         };
 
         window.userway_config = config;

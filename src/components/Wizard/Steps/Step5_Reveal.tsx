@@ -79,7 +79,7 @@ export function Step5({
                     </h2>
                     <div className="py-2">
                         <span className={cn(
-                            "text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-600 drop-shadow-sm block", // Gold Gradient updated
+                            "text-6xl font-black bg-clip-text text-transparent bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B] drop-shadow-md block leading-tight", // Premium Gold Gradient
                             hasCounted && "animate-pulse" // Subtle pulse after counting
                         )}>
                             ₪ {formatNumber(displayValue)}
