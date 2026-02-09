@@ -64,15 +64,23 @@ export function Step0({ onNext }: { onNext: () => void }) {
                     </p>
                 </div>
 
-                {/* Balanced Station Grid (2x2) */}
+                {/* Balanced Station Grid (2x2) with Numbers */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
-                        { icon: Map, title: t.roadmap1Title, desc: t.roadmap1Desc, color: "text-blue-500", bg: "bg-blue-50" },
-                        { icon: TrendingUp, title: t.roadmap2Title, desc: t.roadmap2Desc, color: "text-emerald-500", bg: "bg-emerald-50" },
-                        { icon: ShieldCheck, title: t.roadmap3Title, desc: t.roadmap3Desc, color: "text-amber-500", bg: "bg-amber-50" },
-                        { icon: Target, title: t.roadmap4Title, desc: t.roadmap4Desc, color: "text-purple-500", bg: "bg-purple-50" },
+                        { icon: Map, title: t.roadmap1Title, desc: t.roadmap1Desc, color: "text-blue-500", bg: "bg-blue-50", numberBg: "bg-blue-500" },
+                        { icon: TrendingUp, title: t.roadmap2Title, desc: t.roadmap2Desc, color: "text-emerald-500", bg: "bg-emerald-50", numberBg: "bg-emerald-500" },
+                        { icon: ShieldCheck, title: t.roadmap3Title, desc: t.roadmap3Desc, color: "text-amber-500", bg: "bg-amber-50", numberBg: "bg-amber-500" },
+                        { icon: Target, title: t.roadmap4Title, desc: t.roadmap4Desc, color: "text-purple-500", bg: "bg-purple-50", numberBg: "bg-purple-500" },
                     ].map((step, i) => (
-                        <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all group min-h-[85px]">
+                        <div key={i} className="relative flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all group min-h-[85px]">
+                            {/* Prominent Number Badge */}
+                            <div className={cn(
+                                "absolute -top-3 -left-3 w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 border-white z-10",
+                                step.numberBg
+                            )}>
+                                <span className="text-white font-black text-lg">{i + 1}</span>
+                            </div>
+
                             <div className={cn("flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all shadow-inner", step.bg)}>
                                 <step.icon className={cn("w-6 h-6", step.color)} />
                             </div>

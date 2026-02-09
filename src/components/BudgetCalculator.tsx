@@ -409,7 +409,7 @@ export function BudgetCalculator() {
 
       {step > 0 && (
         <div className="animate-in fade-in duration-700">
-          <main className="px-4 pb-8 pt-[20px]"> {/* Lifted to top 20px */}
+          <main className="px-4 pb-8 pt-2"> {/* Lifted to top for zero-scroll */}
 
             {/* Progress Bar (Station Path) */}
             {step < 5 && <ProgressBar currentStep={step} totalSteps={4} />}
