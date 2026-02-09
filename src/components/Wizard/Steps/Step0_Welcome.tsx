@@ -58,11 +58,11 @@ export function Step0({ onNext }: { onNext: () => void }) {
                     isHe ? "text-right" : "text-left"
                 )}>
                     {/* Headline */}
-                    <div className={cn("space-y-4 overflow-visible", !isHe && "-ml-16 lg:-ml-40")}>
+                    <div className={cn("space-y-4 overflow-visible")}>
                         <h1 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold text-slate-800 leading-[1.1] tracking-tight overflow-visible text-balance">
                             {t.welcomeTitle}
                         </h1>
-                        <p className={cn("text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed", !isHe && "ml-16 lg:ml-40")}>
+                        <p className={cn("text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed")}>
                             {t.welcomeSub}
                         </p>
                     </div>

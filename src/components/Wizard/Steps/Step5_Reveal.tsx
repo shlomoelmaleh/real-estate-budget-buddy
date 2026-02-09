@@ -234,17 +234,19 @@ export function Step5({
                         onClick={onSendReport}
                         disabled={isSending}
                         className={cn(
-                            "w-full py-7 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
+                            "w-full min-h-[4rem] py-4 h-auto text-base sm:text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center px-4",
                             "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]",
                             hasCounted && "animate-pulse shadow-primary/30"
                         )}
                     >
                         {isSending ? (
-                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                            <Loader2 className="w-5 h-5 animate-spin mr-2 shrink-0" />
                         ) : (
-                            <FileText className="w-6 h-6 mr-2" />
+                            <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 shrink-0" />
                         )}
-                        {t.leadCaptureBtn}
+                        <span className="text-balance leading-tight">
+                            {t.leadCaptureBtn}
+                        </span>
                     </Button>
                 </div>
             </div>
