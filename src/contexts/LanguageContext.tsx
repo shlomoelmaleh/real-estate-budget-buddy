@@ -37,3 +37,9 @@ export function useLanguage() {
   }
   return context;
 }
+
+// Non-throwing variant for global widgets that must never blank-screen the app.
+export function useOptionalLanguage() {
+  return useContext(LanguageContext) ?? null;
+}
+
