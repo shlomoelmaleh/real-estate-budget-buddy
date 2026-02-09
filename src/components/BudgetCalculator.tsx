@@ -41,6 +41,7 @@ export function BudgetCalculator() {
 
   // State - Step 0 is Welcome Screen
   const [step, setStep] = useState(0); // Initial state changed to 0
+  const [sessionId] = useState(() => crypto.randomUUID()); // Session ID for funnel tracking
   const [isExiting0, setIsExiting0] = useState(false); // For transition out of Step 0
   const [results, setResults] = useState<CalculatorResults | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For calculation
@@ -130,6 +131,33 @@ export function BudgetCalculator() {
     return 50;
   };
 
+  // --- FUNNEL TRACKING ---
+
+  const logFunnelEvent = async (stepReached: number) => {
+    try {
+      const partnerId = partner?.id || null;
+      const { supabase } = await import('@/integrations/supabase/client');
+
+      // Fire and forget - don't await
+      supabase.from('funnel_events').insert({
+        session_id: sessionId,
+        step_reached: stepReached,
+        partner_id: partnerId,
+        language: language
+      }).then(({ error }) => {
+        if (error) console.debug('Funnel tracking error:', error);
+      });
+    } catch (error) {
+      // Silent failure - don't block UX
+      console.debug('Funnel tracking exception:', error);
+    }
+  };
+
+  // Track Step 0 on mount
+  useEffect(() => {
+    logFunnelEvent(0);
+  }, []);
+
   // --- WIZARD NAVIGATION ---
 
   const [animClass, setAnimClass] = useState("animate-in slide-in-from-right fade-in duration-500");
@@ -156,8 +184,10 @@ export function BudgetCalculator() {
 
     const isValid = await trigger(fields);
     if (isValid) {
+      const nextStep = step + 1;
+      logFunnelEvent(nextStep); // Track progress
       setAnimClass("animate-in slide-in-from-right fade-in duration-500");
-      setStep(s => s + 1);
+      setStep(nextStep);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -176,6 +206,7 @@ export function BudgetCalculator() {
     if (!isValid) return;
 
     setIsLoading(true);
+    logFunnelEvent(5); // Track Reveal Step
     setAnimClass("animate-in fade-in duration-700"); // Gentle fade for Reveal
     setStep(5); // Move to Reveal step immediately to show loader
     window.scrollTo({ top: 0, behavior: 'smooth' });
