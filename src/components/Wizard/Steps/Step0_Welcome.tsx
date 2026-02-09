@@ -1,69 +1,101 @@
-import { Play, Map, TrendingUp, ShieldCheck, Target, Clock, Lock } from 'lucide-react';
+import { Play, Map, TrendingUp, ShieldCheck, Target, Clock, Lock, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { usePartner } from '@/contexts/PartnerContext';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import logoEshel from '@/assets/logo-eshel.png';
 
-export function Step0({ t, onNext }: { t: any, onNext: () => void }) {
+export function Step0({ onNext }: { onNext: () => void }) {
+    const { t } = useLanguage();
+    const { partner } = usePartner();
+    const displayLogo = partner?.logo_url || logoEshel;
+
     return (
-        <div className="space-y-12 animate-in fade-in zoom-in duration-700 max-w-4xl mx-auto pb-12">
-            {/* Section A: The Cinematic Explanation Frame */}
-            <div className="space-y-4">
-                <div className="aspect-video w-full rounded-2xl overflow-hidden relative border border-amber-200/50 shadow-[0_0_30px_rgba(245,158,11,0.15)] group cursor-pointer">
-                    {/* Placeholder for Cinematic Background */}
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-stretch animate-in fade-in zoom-in duration-700 max-w-6xl mx-auto pb-8 lg:pb-12 px-4">
+
+            {/* Left Column: Visual Trust (40%) */}
+            <div className="lg:w-[40%] flex flex-col justify-center">
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-[0.5px] border-amber-400/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.1),0_10px_30px_rgba(0,0,0,0.05)] group cursor-pointer bg-slate-100">
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center transition-transform duration-1000 group-hover:scale-105" />
+                    <div className="absolute inset-0 bg-slate-900/10 transition-opacity duration-500 group-hover:opacity-30" />
 
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px] transition-opacity duration-500 group-hover:opacity-40" />
-
-                    {/* Play Button */}
+                    {/* Centered Play Button */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-20 h-20 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:bg-white animate-pulse">
-                            <Play className="w-8 h-8 text-primary fill-primary ml-1" />
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:bg-white border border-white/50">
+                            <Play className="w-6 h-6 md:w-8 md:h-8 text-primary fill-primary ml-1" />
                         </div>
                     </div>
                 </div>
-                <p className="text-center text-sm text-muted-foreground/80 font-medium">
+                <p className="mt-4 text-center text-[11px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
                     {t.videoCaption}
                 </p>
             </div>
 
-            {/* Section B: The 4-Step Roadmap (The Journey) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                {[
-                    { icon: Map, title: t.roadmap1Title, desc: t.roadmap1Desc, color: "text-blue-500", bg: "bg-blue-50" },
-                    { icon: TrendingUp, title: t.roadmap2Title, desc: t.roadmap2Desc, color: "text-emerald-500", bg: "bg-emerald-50" },
-                    { icon: ShieldCheck, title: t.roadmap3Title, desc: t.roadmap3Desc, color: "text-amber-500", bg: "bg-amber-50" },
-                    { icon: Target, title: t.roadmap4Title, desc: t.roadmap4Desc, color: "text-purple-500", bg: "bg-purple-50" },
-                ].map((step, i) => (
-                    <div key={i} className="bg-white/90 backdrop-blur-xl border border-slate-200/60 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center text-center space-y-3">
-                        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-1", step.bg)}>
-                            <step.icon className={cn("w-6 h-6", step.color)} />
-                        </div>
-                        <div className="space-y-1">
-                            <h4 className="font-bold text-slate-800 text-sm md:text-base">{step.title}</h4>
-                            <p className="text-[10px] md:text-xs text-muted-foreground leading-tight">{step.desc}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            {/* Right Column: Action & Info (60%) */}
+            <div className="lg:w-[60%] flex flex-col justify-between py-2 space-y-8">
 
-            {/* Section C: The High-Conversion CTA */}
-            <div className="flex flex-col items-center space-y-6">
-                <Button
-                    onClick={onNext}
-                    className="group w-full md:w-auto px-16 py-8 text-xl md:text-2xl rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 bg-gradient-to-r from-primary to-primary-dark text-white font-bold"
-                >
-                    {t.welcomeBtn}
-                    <TrendingUp className="ml-3 w-6 h-6 transition-transform group-hover:translate-x-1" />
-                </Button>
-
-                <div className="flex items-center gap-8">
-                    <div className="flex items-center gap-2 text-muted-foreground/70">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-xs font-medium">{t.trustTime}</span>
+                {/* Top Row: Logo & Language */}
+                <div className="flex items-center justify-between gap-4">
+                    <img
+                        src={displayLogo}
+                        alt="Logo"
+                        className="h-10 md:h-12 w-auto object-contain"
+                    />
+                    <div className="scale-90 origin-right">
+                        <LanguageSwitcher />
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground/70">
-                        <Lock className="w-4 h-4" />
-                        <span className="text-xs font-medium">{t.trustSecurity}</span>
+                </div>
+
+                {/* Headline */}
+                <div className="space-y-4">
+                    <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-800 leading-[1.15]">
+                        {t.welcomeTitle}
+                    </h1>
+                    <p className="text-base text-muted-foreground max-w-xl">
+                        {t.welcomeSub}
+                    </p>
+                </div>
+
+                {/* Compact Roadmap Grid (2x2) */}
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                    {[
+                        { icon: Map, title: t.roadmap1Title, desc: t.roadmap1Desc, color: "text-blue-500", bg: "bg-blue-50" },
+                        { icon: TrendingUp, title: t.roadmap2Title, desc: t.roadmap2Desc, color: "text-emerald-500", bg: "bg-emerald-50" },
+                        { icon: ShieldCheck, title: t.roadmap3Title, desc: t.roadmap3Desc, color: "text-amber-500", bg: "bg-amber-50" },
+                        { icon: Target, title: t.roadmap4Title, desc: t.roadmap4Desc, color: "text-purple-500", bg: "bg-purple-50" },
+                    ].map((step, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/50 border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                            <div className={cn("flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform", step.bg)}>
+                                <step.icon className={cn("w-4 h-4", step.color)} />
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="font-bold text-slate-800 text-sm truncate">{step.title}</h4>
+                                <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2">{step.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* CTA & Trust */}
+                <div className="space-y-6 pt-2">
+                    <Button
+                        onClick={onNext}
+                        className="w-full py-7 text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all bg-gradient-to-r from-primary to-primary-dark text-white font-bold group"
+                    >
+                        {t.welcomeBtn}
+                        <ChevronRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </Button>
+
+                    <div className="flex items-center gap-6 justify-center lg:justify-start">
+                        <div className="flex items-center gap-2 text-muted-foreground/60">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span className="text-[11px] font-medium uppercase tracking-tight">{t.trustTime}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground/60">
+                            <Lock className="w-3.5 h-3.5" />
+                            <span className="text-[11px] font-medium uppercase tracking-tight">{t.trustSecurity}</span>
+                        </div>
                     </div>
                 </div>
             </div>

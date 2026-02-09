@@ -149,14 +149,14 @@ export function Step5({
                         onClick={onSendReport}
                         disabled={isSending}
                         className={cn(
-                            "w-full py-6 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
+                            "w-full py-7 text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300",
                             "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]"
                         )}
                     >
                         {isSending ? (
                             <Loader2 className="w-5 h-5 animate-spin mr-2" />
                         ) : (
-                            <FileText className="w-5 h-6 mr-2" />
+                            <FileText className="w-6 h-6 mr-2" />
                         )}
                         {t.leadCaptureBtn}
                     </Button>

@@ -354,7 +354,7 @@ export function BudgetCalculator() {
   const getStepContent = () => {
     switch (step) {
       case 0:
-        return <Step0 t={t} onNext={handleNext} />;
+        return <Step0 onNext={handleNext} />;
       case 1:
         return <Step1 control={control} errors={errors} t={t} />;
       case 2:
@@ -394,35 +394,19 @@ export function BudgetCalculator() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
-      {/* Step 0: Welcome Screen */}
+      {/* Step 0: Welcome Screen (Split Dashboard) */}
       {step === 0 && (
         <div className={cn(
-          "flex flex-col items-center pt-8 md:pt-16 px-4 transition-all duration-700 ease-in-out",
-          isExiting0 && "-translate-y-full opacity-0 scale-95"
+          "flex items-center justify-center min-h-screen transition-all duration-700 ease-in-out",
+          isExiting0 && "opacity-0 scale-95 translate-y-[-20px]"
         )}>
-          <HeroHeader />
-          <div className="text-center mt-8 w-full">
-            <h1 className="text-3xl md:text-5xl font-display font-bold text-slate-800 mb-4 max-w-3xl mx-auto leading-tight">
-              {t.welcomeTitle}
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-              {t.welcomeSub}
-            </p>
-            {getStepContent()}
-          </div>
+          {getStepContent()}
         </div>
       )}
 
       {step > 0 && (
-        <>
-          <header className="px-6 py-4 flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-20">
-            <div className="flex items-center gap-2">
-              <img src={displayLogo} alt="Logo" className="h-8 w-auto object-contain" />
-              {partner?.name && <span className="text-xs font-semibold text-muted-foreground">{partner.name}</span>}
-            </div>
-          </header>
-
-          <main className="px-4 pb-8 pt-0"> {/* Zero top padding for fixed journey top */}
+        <div className="animate-in fade-in duration-700">
+          <main className="px-4 pb-8 pt-[20px]"> {/* Lifted to top 20px */}
 
             {/* Progress Bar (Station Path) */}
             {step < 5 && <ProgressBar currentStep={step} totalSteps={4} />}
@@ -438,7 +422,7 @@ export function BudgetCalculator() {
                   className="w-full max-w-2xl mx-auto"
                 >
                   <StepCard
-                    className="mt-0 pt-2 shadow-2xl border-t-0 rounded-t-none" // Locked to top
+                    className="mt-0 pt-2 shadow-2xl border border-white/20 rounded-2xl" // Refined rounded card
                     title={header.title}
                     emotionalMessage={header.desc}
                   >
@@ -565,7 +549,7 @@ export function BudgetCalculator() {
               </div>
             </footer>
           </main>
-        </>
+        </div>
       )}
     </div>
   );

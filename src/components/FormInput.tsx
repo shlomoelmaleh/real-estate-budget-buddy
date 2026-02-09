@@ -31,7 +31,7 @@ export function FormInput({
   ...props
 }: FormInputProps) {
   const [displayValue, setDisplayValue] = useState(value);
-  const isRtl = document.dir === 'rtl';
+  const isRtl = typeof document !== 'undefined' ? document.documentElement.dir === 'rtl' : false;
 
   useEffect(() => {
     setDisplayValue(value);
