@@ -9,21 +9,21 @@ const FUNCTION_VERSION = (() => {
   // Priority order for Git SHA detection from various CI/CD environments
   const envVars = [
     "GIT_SHA",
-    "GITHUB_SHA", 
+    "GITHUB_SHA",
     "COMMIT_SHA",
     "VERCEL_GIT_COMMIT_SHA",
     "NETLIFY_COMMIT_REF",
     "CF_PAGES_COMMIT_SHA",
     "DENO_DEPLOYMENT_ID",
   ];
-  
+
   for (const envVar of envVars) {
     const value = Deno.env.get(envVar);
     if (value && value.trim()) {
       return value.trim().slice(0, 7); // First 7 chars of SHA
     }
   }
-  
+
   // Fallback: timestamp-based version (deterministic per deployment)
   return `build-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`;
 })();
@@ -100,6 +100,7 @@ const EmailRequestSchema = z.object({
     equityRemaining: z.number().max(1e12),
     lawyerFeeTTC: z.number().nonnegative().max(1e9),
     brokerFeeTTC: z.number().nonnegative().max(1e9),
+    limitingFactor: z.enum(['EQUITY_LIMIT', 'INCOME_LIMIT', 'LTV_LIMIT', 'AGE_LIMIT', 'INSUFFICIENT_DATA', 'UNKNOWN']).optional(),
   }),
   amortizationSummary: z.object({
     totalMonths: z.number().int().positive().max(600),
@@ -136,6 +137,71 @@ const EmailRequestSchema = z.object({
   partner_id: z.string().uuid().nullable().optional(),
   buildSha: z.string().max(40).nullable().optional(),
 });
+
+// INTERNAL ANALYSIS HELPERS (Lead Scoring Phase 3)
+function calculateLeadScore(
+  inputs: ReportEmailRequest['inputs'],
+  results: ReportEmailRequest['results']
+): { score: number; priorityLabel: string; priorityColor: string } {
+  let score = 0;
+  const maxBudget = results.maxPropertyValue;
+  const netIncome = parseFloat(inputs.netIncome.replace(/,/g, '')) || 0;
+  const monthlyPayment = results.monthlyPayment;
+  const equityRemaining = results.equityRemaining;
+  const equityInitial = parseFloat(inputs.equity.replace(/,/g, '')) || 0;
+  const targetPrice = parseFloat(inputs.targetPropertyPrice?.replace(/,/g, '') || '0');
+
+  // 1. Budget Size (Max 40 pts)
+  if (maxBudget > 5000000) score += 40;
+  else if (maxBudget > 3000000) score += 25;
+  else if (maxBudget > 1500000) score += 10;
+
+  // 2. Financial Health (Max 30 pts)
+  // Calculate raw DTI
+  const dti = netIncome > 0 ? (monthlyPayment / netIncome) * 100 : 100;
+  if (dti < 30) score += 30;
+  else if (dti < 35) score += 15;
+
+  // 3. Readiness (Max 30 pts)
+  if (equityRemaining > 100000) score += 30;
+
+  // Bonus: Target Price Feasibility (within 5% of max budget)
+  if (targetPrice > 0 && maxBudget >= targetPrice * 0.95) {
+    score = Math.min(100, score + 20); // Cap at 100
+  }
+
+  // Determine Label
+  let priorityLabel = '❄️ COLD LEAD';
+  let priorityColor = '#3b82f6'; // Blue
+
+  if (score >= 80) {
+    priorityLabel = '🔥 HOT LEAD';
+    priorityColor = '#ef4444'; // Red
+  } else if (score >= 50) {
+    priorityLabel = '☀️ WARM LEAD';
+    priorityColor = '#f59e0b'; // Amber/Orange
+  }
+
+  return { score, priorityLabel, priorityColor };
+}
+
+function getLimitingFactorDescription(factor: string | undefined): string {
+  switch (factor) {
+    case 'INCOME_LIMIT':
+      return "Analysis: This client has reached their maximum repayment capacity based on their income. They could afford a more expensive home if they had a co-signer or higher income, as they still have excess cash available.";
+    case 'EQUITY_LIMIT':
+      return "Analysis: The client is limited by their available cash for down payment and closing costs. Their income could support a higher loan, but they lack the upfront capital.";
+    case 'LTV_LIMIT':
+      return "Analysis: The client has hit the regulatory Loan-to-Value limit (75% or 50%). They have sufficient income and cash for a higher price, but bank regulations cap the loan size relative to the property value.";
+    case 'AGE_LIMIT':
+      return "Analysis: The loan term is restricted by the borrower's age, forcing higher monthly payments which limits the loan amount. A younger co-signer could extend the term and increase the budget.";
+    case 'INSUFFICIENT_DATA':
+      return "Analysis: Insufficient data to determine the specific limiting factor.";
+    default:
+      return "Analysis: The limiting factor could not be automatically determined.";
+  }
+}
+
 
 // Atomic rate limiting helper using database function to prevent race conditions
 async function checkRateLimitAtomic(
@@ -247,6 +313,7 @@ interface ReportEmailRequest {
     equityRemaining: number;
     lawyerFeeTTC: number;
     brokerFeeTTC: number;
+    limitingFactor?: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
   };
   amortizationSummary: {
     totalMonths: number;
@@ -371,14 +438,14 @@ function generateEmailHtml(
   // ========== TRAFFIC LIGHT CALCULATION (Deal Feasibility - Advisor Only) ==========
   const targetPrice = parseNumber(inputs.targetPropertyPrice || '');
   const maxBudget = results.maxPropertyValue;
-  
+
   let trafficLightStatus: 'green' | 'orange' | 'red' | null = null;
   let trafficLightGap = 0;
-  
+
   if (targetPrice > 0) {
     trafficLightGap = maxBudget - targetPrice;
     const ratio = maxBudget / targetPrice;
-    
+
     if (ratio >= 1.0) {
       trafficLightStatus = 'green';  // Deal is safe
     } else if (ratio >= 0.90) {
@@ -847,6 +914,10 @@ function generateEmailHtml(
     ? `₪ ${formatNumber(netMonthlyBalanceValue)}`
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
+  // Internal Analysis Calculation (for Advisor Email)
+  const { score, priorityLabel, priorityColor } = calculateLeadScore(inputs, results);
+  const limitingFactorDescription = getLimitingFactorDescription(results.limitingFactor);
+
   return `
     <!DOCTYPE html>
     <html dir="${dir}" lang="${language}" style="direction: ${dir};">
@@ -1150,6 +1221,16 @@ function generateEmailHtml(
 
       ${isAdvisorCopy
       ? `
+      <!-- INTERNAL ANALYSIS SECTION (Lead Score) -->
+      <div style="background: #1e293b; color: white; padding: 20px; border-bottom: 4px solid ${priorityColor}; margin: -16px -16px 20px -16px; border-radius: 0 0 12px 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="background: ${priorityColor}; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px;">${priorityLabel}</span>
+          <span style="font-size: 24px; font-weight: 800; color: ${priorityColor};">${score}/100</span>
+        </div>
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; opacity: 0.9;">Limiting Factor: ${limitingFactor}</div>
+        <div style="font-size: 13px; opacity: 0.8; line-height: 1.4;">${limitingFactorDescription}</div>
+      </div>
+
       <!-- CLIENT INFO SECTION (Advisor Only) -->
       <div class="section" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-right: ${isRTL ? "5px solid #3b82f6" : "none"}; border-left: ${isRTL ? "none" : "5px solid #3b82f6"};">
         <div class="section-title" style="color: #1d4ed8;">👤 ${t.clientInfoTitle}</div>
@@ -1640,20 +1721,20 @@ const handler = async (req: Request): Promise<Response> => {
       const errorMsg = rateCheck.reason === "email_limit"
         ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
         : "Rate limit exceeded. Maximum 10 emails per hour.";
-      
+
       // Extract clientBuildSha for version metadata (even in rate limit response)
       const clientBuildSha = req.headers.get("x-build-sha") || data.buildSha || null;
       const versionMismatch = !!(
-        clientBuildSha && 
-        FUNCTION_VERSION && 
-        FUNCTION_VERSION !== "unknown" && 
+        clientBuildSha &&
+        FUNCTION_VERSION &&
+        FUNCTION_VERSION !== "unknown" &&
         !FUNCTION_VERSION.startsWith("build-") &&
         clientBuildSha !== FUNCTION_VERSION
       );
-      
+
       return new Response(
-        JSON.stringify({ 
-          error: errorMsg, 
+        JSON.stringify({
+          error: errorMsg,
           retryAfter: 3600,
           version: {
             functionVersion: FUNCTION_VERSION,
@@ -1668,18 +1749,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Extract clientBuildSha from header or payload
     const clientBuildSha = req.headers.get("x-build-sha") || data.buildSha || null;
-    
+
     // Calculate version mismatch
     const versionMismatch = !!(
-      clientBuildSha && 
-      FUNCTION_VERSION && 
-      FUNCTION_VERSION !== "unknown" && 
+      clientBuildSha &&
+      FUNCTION_VERSION &&
+      FUNCTION_VERSION !== "unknown" &&
       !FUNCTION_VERSION.startsWith("build-") &&
       clientBuildSha !== FUNCTION_VERSION
     );
 
     const requestId = crypto.randomUUID().substring(0, 8);
-    
+
     // Version verification log (non-PII)
     console.log(`[send-report-email] version: ${FUNCTION_VERSION} | deployed: ${DEPLOYED_AT} | clientBuildSha: ${clientBuildSha || 'none'}`);
     console.log(`[${requestId}] Email request received`);
@@ -1689,6 +1770,19 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Received partnerId:`, effectivePartnerId, 'Type:', typeof effectivePartnerId);
     console.log(`[${requestId}] Raw data.partnerId:`, data.partnerId, 'Raw data.partner_id:', data.partner_id);
 
+    // Calculate Lead Score & Analysis for Database
+    const leadAnalysis = calculateLeadScore(data.inputs, data.results);
+    const limitingFactorDesc = getLimitingFactorDescription(data.results.limitingFactor);
+
+    // Prepare full results object with analysis
+    const enrichedResults = {
+      ...data.results,
+      lead_score: leadAnalysis.score,
+      priority_label: leadAnalysis.priorityLabel,
+      limiting_factor: data.results.limitingFactor,
+      limiting_factor_description: limitingFactorDesc
+    };
+
     // שמירה לדאטה בייס (נשאר כפי שהיה)
     const { error: insertError } = await supabaseAdmin.from("simulations").insert({
       client_name: data.recipientName,
@@ -1696,7 +1790,7 @@ const handler = async (req: Request): Promise<Response> => {
       phone: data.recipientPhone,
       language: data.language,
       inputs: data.inputs,
-      results: data.results,
+      results: enrichedResults,
       partner_id: effectivePartnerId,
     });
 
@@ -1886,7 +1980,7 @@ const handler = async (req: Request): Promise<Response> => {
     let partnerSent = false;
     const clientEmailLower = data.recipientEmail.toLowerCase().trim();
     const partnerEmailLower = partnerEmail?.toLowerCase().trim() || '';
-    
+
     if (partnerEmail && partnerEmailLower !== clientEmailLower) {
       // Partner gets the same subject as client (not admin's extended subject)
       console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${clientSubject}`);
@@ -1930,8 +2024,8 @@ const handler = async (req: Request): Promise<Response> => {
     const errorId = crypto.randomUUID().substring(0, 8);
     console.error(`[${errorId}] Error in send-report-email function:`, error.message);
     return new Response(
-      JSON.stringify({ 
-        error: "An error occurred.", 
+      JSON.stringify({
+        error: "An error occurred.",
         errorId,
         version: {
           functionVersion: FUNCTION_VERSION,
