@@ -87,7 +87,48 @@ interface CalculatorResults {
   limitingFactor: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
 }
 
-// ... (rest of the file until solveMaximumBudget)
+interface AmortizationRow {
+  month: number;
+  opening: number;
+  payment: number;
+  interest: number;
+  principal: number;
+  closing: number;
+}
+
+function determineTaxProfile(isFirstProperty: boolean, isIsraeliTaxResident: boolean): TaxProfile {
+  if (isFirstProperty && isIsraeliTaxResident) {
+    return 'SINGLE_HOME';
+  }
+  return 'INVESTOR';
+}
+
+function computePurchaseTax(price: number, profile: TaxProfile): number {
+  const brackets = TAX_BRACKETS[profile];
+  let tax = 0;
+
+  for (const bracket of brackets) {
+    if (price <= bracket.min) break;
+    const taxableAmount = Math.min(price, bracket.max) - bracket.min;
+    tax += taxableAmount * bracket.rate;
+  }
+
+  return tax;
+}
+
+function calculateClosingCosts(
+  price: number,
+  purchaseTax: number,
+  lawyerPct: number,
+  brokerPct: number,
+  vatPct: number,
+  advisorFee: number,
+  otherFee: number
+): number {
+  const lawyerFee = price * (lawyerPct / 100) * (1 + vatPct / 100);
+  const brokerFee = price * (brokerPct / 100) * (1 + vatPct / 100);
+  return purchaseTax + lawyerFee + brokerFee + advisorFee + otherFee;
+}
 
 function solveMaximumBudget(
   inputs: CalculatorInputs,
