@@ -139,12 +139,13 @@ export function BudgetCalculator() {
       const { supabase } = await import('@/integrations/supabase/client');
 
       // Fire and forget - don't await
-      supabase.from('funnel_events').insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase.from as any)('funnel_events').insert({
         session_id: sessionId,
         step_reached: stepReached,
         partner_id: partnerId,
         language: language
-      }).then(({ error }) => {
+      }).then(({ error }: { error: unknown }) => {
         if (error) console.debug('Funnel tracking error:', error);
       });
     } catch (error) {
