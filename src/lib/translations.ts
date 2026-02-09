@@ -155,6 +155,8 @@ export interface Translations {
   roadmap3Desc: string;
   roadmap4Title: string;
   roadmap4Desc: string;
+  currencySymbol: string;
+  convertNotice: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -309,6 +311,8 @@ export const translations: Record<Language, Translations> = {
     roadmap3Desc: "פתיחת הטבות בנקאיות",
     roadmap4Title: "השלווה",
     roadmap4Desc: "אבטחת מפת הדרכים הפיננסית",
+    currencySymbol: "₪",
+    convertNotice: "*הסכומים בשקלים (נא להמיר מט\"ח לפי השער היציג)",
   },
   en: {
     dir: 'ltr',
@@ -461,6 +465,8 @@ export const translations: Record<Language, Translations> = {
     roadmap3Desc: "Unlocking bank benefits",
     roadmap4Title: "Peace of Mind",
     roadmap4Desc: "Your financial roadmap",
+    currencySymbol: "₪",
+    convertNotice: "*Values in ILS (Please convert foreign currency before entering)",
   },
   fr: {
     dir: 'ltr',
@@ -613,5 +619,7 @@ export const translations: Record<Language, Translations> = {
     roadmap3Desc: "Débloquer les avantages bancaires",
     roadmap4Title: "Sérénité",
     roadmap4Desc: "Sécuriser votre avenir financier",
+    currencySymbol: "₪",
+    convertNotice: "*Montants en ILS (Veuillez convertir vos devises avant la saisie)",
   }
 };

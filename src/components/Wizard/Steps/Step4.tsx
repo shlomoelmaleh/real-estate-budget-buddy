@@ -44,7 +44,8 @@ export function Step4({ control, errors, t, watch }: StepProps) {
                             control={control}
                             render={({ field }) => (
                                 <FormInput
-                                    label={t.expectedRent}
+                                    label={`${t.expectedRent} (₪)`}
+                                    currencySymbol={t.currencySymbol}
                                     icon={<Building2 className="w-4 h-4" />}
                                     {...field}
                                     formatNumber={true}
@@ -63,8 +64,9 @@ export function Step4({ control, errors, t, watch }: StepProps) {
                 control={control}
                 render={({ field }) => (
                     <FormInput
-                        label={t.budgetCap}
+                        label={`${t.budgetCap} (₪)`}
                         suffix={t.optional}
+                        currencySymbol={t.currencySymbol}
                         icon={<CircleDollarSign className="w-4 h-4" />}
                         {...field}
                         formatNumber={true}
@@ -72,6 +74,10 @@ export function Step4({ control, errors, t, watch }: StepProps) {
                     />
                 )}
             />
+
+            <p className="text-[10px] text-muted-foreground mt-4 italic">
+                {t.convertNotice}
+            </p>
         </div>
     );
 }

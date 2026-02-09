@@ -41,8 +41,9 @@ export function Step1({ control, errors, t }: StepProps) {
                     control={control}
                     render={({ field }) => (
                         <FormInput
-                            label={t.targetPropertyPrice}
+                            label={`${t.targetPropertyPrice} (₪)`}
                             suffix={t.optional}
+                            currencySymbol={t.currencySymbol}
                             icon={<Target className="w-4 h-4" />}
                             {...field}
                             formatNumber={true}
@@ -51,6 +52,10 @@ export function Step1({ control, errors, t }: StepProps) {
                     )}
                 />
             </div>
+
+            <p className="text-[10px] text-muted-foreground mt-4 italic">
+                {t.convertNotice}
+            </p>
         </div>
     );
 }

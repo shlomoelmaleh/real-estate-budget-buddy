@@ -12,7 +12,8 @@ export function Step2({ control, errors, t }: StepProps) {
                     control={control}
                     render={({ field }) => (
                         <FormInput
-                            label={t.equity}
+                            label={`${t.equity} (₪)`}
+                            currencySymbol={t.currencySymbol}
                             icon={<Coins className="w-4 h-4" />}
                             {...field}
                             formatNumber={true}
@@ -27,7 +28,8 @@ export function Step2({ control, errors, t }: StepProps) {
                     control={control}
                     render={({ field }) => (
                         <FormInput
-                            label={t.netIncome}
+                            label={`${t.netIncome} (₪)`}
+                            currencySymbol={t.currencySymbol}
                             icon={<TrendingUp className="w-4 h-4" />}
                             {...field}
                             formatNumber={true}
@@ -37,6 +39,10 @@ export function Step2({ control, errors, t }: StepProps) {
                     )}
                 />
             </div>
+
+            <p className="text-[10px] text-muted-foreground mt-4 italic">
+                {t.convertNotice}
+            </p>
         </div>
     );
 }

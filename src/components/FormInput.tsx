@@ -7,6 +7,7 @@ interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   label: string;
   icon?: ReactNode;
   suffix?: string;
+  currencySymbol?: string;
   formatNumber?: boolean;
   allowDecimals?: boolean;
   value: string;
@@ -19,6 +20,7 @@ export function FormInput({
   label,
   icon,
   suffix,
+  currencySymbol,
   formatNumber = false,
   allowDecimals = false,
   value,
@@ -29,6 +31,7 @@ export function FormInput({
   ...props
 }: FormInputProps) {
   const [displayValue, setDisplayValue] = useState(value);
+  const isRtl = document.dir === 'rtl';
 
   useEffect(() => {
     setDisplayValue(value);
@@ -40,7 +43,7 @@ export function FormInput({
     if (formatNumber) {
       // Remove commas for processing
       const numericValue = newValue.replace(/,/g, '');
-      
+
       if (allowDecimals) {
         // Allow numbers and one decimal point
         if (!/^-?\d*\.?\d*$/.test(numericValue)) return;
@@ -69,21 +72,35 @@ export function FormInput({
         {required && <span className="text-destructive">*</span>}
         {suffix && <span className="text-xs text-muted-foreground/70">({suffix})</span>}
       </Label>
-      <Input
-        {...props}
-        value={displayValue}
-        onChange={handleChange}
-        className={cn(
-          "h-12 px-4 rounded-lg border",
-          "bg-card/80 backdrop-blur-sm",
-          "focus:border-primary focus:ring-2 focus:ring-primary/20",
-          "transition-all duration-200",
-          "text-base font-medium",
-          hasError 
-            ? "border-destructive focus:border-destructive focus:ring-destructive/20" 
-            : "border-border/60"
+      <div className="relative flex items-center">
+        {currencySymbol && (
+          <span
+            className={cn(
+              "absolute text-primary/70 opacity-40 pointer-events-none text-base font-medium",
+              isRtl ? "right-3" : "left-3"
+            )}
+            aria-hidden="true"
+          >
+            {currencySymbol}
+          </span>
         )}
-      />
+        <Input
+          {...props}
+          value={displayValue}
+          onChange={handleChange}
+          className={cn(
+            "h-12 rounded-lg border",
+            "bg-card/80 backdrop-blur-sm",
+            "focus:border-primary focus:ring-2 focus:ring-primary/20",
+            "transition-all duration-200",
+            "text-base font-medium",
+            currencySymbol ? (isRtl ? "pr-10 pl-4" : "pl-10 pr-4") : "px-4",
+            hasError
+              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+              : "border-border/60"
+          )}
+        />
+      </div>
     </div>
   );
 }
