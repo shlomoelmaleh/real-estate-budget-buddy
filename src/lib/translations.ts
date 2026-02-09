@@ -157,6 +157,11 @@ export interface Translations {
   roadmap4Desc: string;
   currencySymbol: string;
   convertNotice: string;
+  // Financial Strength Celebration
+  milestone1: string;
+  milestone2: string;
+  milestone3: string;
+  revealComplete: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -308,6 +313,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "יעדים ואזור נוחות",
     currencySymbol: "₪",
     convertNotice: "*הסכומים בשקלים (נא להמיר מט\"ח לפי השער היציג)",
+    // Financial Strength Celebration
+    milestone1: "כניסה לטווח רכישה בסיסי ✅",
+    milestone2: "עוצמה פיננסית משמעותית! 💪",
+    milestone3: "דירוג כוח קנייה פרימיום! 🏆",
+    revealComplete: "ניתוח המימון הושלם",
   },
   en: {
     dir: 'ltr',
@@ -457,6 +467,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "Constraints & Comfort Zone",
     currencySymbol: "₪",
     convertNotice: "*Values in Shekels (Please convert foreign currency before entering)",
+    // Financial Strength Celebration
+    milestone1: "Entry-Level Capacity Unlocked ✅",
+    milestone2: "Significant Financial Power! 💪",
+    milestone3: "Premium Purchasing Tier reached! 🏆",
+    revealComplete: "Financial Analysis Complete",
   },
   fr: {
     dir: 'ltr',
@@ -606,5 +621,10 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "Cibles & Zone de Confort",
     currencySymbol: "₪",
     convertNotice: "*Montants en Shekels (Veuillez convertir vos devises avant la saisie)",
+    // Financial Strength Celebration
+    milestone1: "Capacité d'achat de base débloquée ✅",
+    milestone2: "Puissance financière significative ! 💪",
+    milestone3: "Niveau d'achat Premium atteint ! 🏆",
+    revealComplete: "Analyse de financement terminée",
   }
 };
