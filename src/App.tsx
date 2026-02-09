@@ -18,11 +18,13 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
-      {/* --- GLOBAL WIDGETS (need LanguageProvider) --- */}
+      {/* AccessibilityWidget only needs LanguageProvider */}
       <AccessibilityWidget />
-      <FloatingWhatsApp />
       
       <PartnerProvider>
+        {/* FloatingWhatsApp needs both Language and Partner */}
+        <FloatingWhatsApp />
+        
         <TooltipProvider>
           <Toaster />
           <Sonner />
