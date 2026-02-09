@@ -33,6 +33,7 @@ import { Step5 } from './Wizard/Steps/Step5_Reveal';
 import { Step0 } from './Wizard/Steps/Step0_Welcome';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
@@ -41,7 +42,13 @@ export function BudgetCalculator() {
 
   // State - Step 0 is Welcome Screen
   const [step, setStep] = useState(0); // Initial state changed to 0
-  const [sessionId] = useState(() => crypto.randomUUID()); // Session ID for funnel tracking
+  const [sessionId] = useState(() => {
+    try {
+      return crypto.randomUUID();
+    } catch (e) {
+      return Math.random().toString(36).substring(2) + Date.now().toString(36);
+    }
+  }); // Session ID for funnel tracking
   const [isExiting0, setIsExiting0] = useState(false); // For transition out of Step 0
   const [results, setResults] = useState<CalculatorResults | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For calculation
@@ -136,26 +143,29 @@ export function BudgetCalculator() {
   const logFunnelEvent = async (stepReached: number) => {
     try {
       const partnerId = partner?.id || null;
-      const { supabase } = await import('@/integrations/supabase/client');
+      console.log(`[Funnel] Logging Step ${stepReached} for session ${sessionId}`);
 
-      // Fire and forget - don't await
+      // Fire and forget
       supabase.from('funnel_events').insert({
         session_id: sessionId,
         step_reached: stepReached,
         partner_id: partnerId,
         language: language
       }).then(({ error }) => {
-        if (error) console.debug('Funnel tracking error:', error);
+        if (error) console.error('[Funnel] Error:', error);
+        else console.log(`[Funnel] Step ${stepReached} successfully logged`);
       });
     } catch (error) {
-      // Silent failure - don't block UX
-      console.debug('Funnel tracking exception:', error);
+      console.error('[Funnel] Exception:', error);
     }
   };
 
-  // Track Step 0 on mount
+  // Track Step 0 on mount - with a small delay to ensure network tab/context are ready
   useEffect(() => {
-    logFunnelEvent(0);
+    const timer = setTimeout(() => {
+      logFunnelEvent(0);
+    }, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   // --- WIZARD NAVIGATION ---
@@ -244,13 +254,18 @@ export function BudgetCalculator() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
           },
           body: JSON.stringify(inputs),
         }
       );
 
-      if (!response.ok) throw new Error('Calculation failed');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Calculate] Function error:', response.status, errorText);
+        throw new Error(`Calculation failed: ${response.status}`);
+      }
 
       const { results: calcResults, amortization: amortRows } = await response.json();
 
