@@ -48,7 +48,14 @@ export function BudgetCalculator() {
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Store calculation data for the email step
-  const [calcData, setCalcData] = useState<any>(null);
+  const [calcData, setCalcData] = useState<{
+    inputs: Record<string, unknown>;
+    results: Record<string, unknown>;
+    amortizationSummary: Record<string, unknown>;
+    yearlyBalanceData: Array<Record<string, unknown>>;
+    paymentBreakdownData: Array<Record<string, unknown>>;
+    csvData: string;
+  } | null>(null);
 
   const {
     control,
@@ -217,8 +224,6 @@ export function BudgetCalculator() {
       const { results: calcResults, amortization: amortRows } = await response.json();
 
       if (calcResults) {
-        // ... processing logic same as before ...
-
         // Prepare additional data for email later
         const yearlyBalanceData: { year: number; balance: number }[] = [];
         for (let i = 0; i < amortRows.length; i++) {
@@ -298,7 +303,6 @@ export function BudgetCalculator() {
         setIsLoading(false);
       }
     } catch (error) {
-      console.error(error);
       toast.error(t.emailError || 'An error occurred.');
       setStep(4);
       setIsLoading(false);
@@ -343,7 +347,6 @@ export function BudgetCalculator() {
       }, 100);
 
     } catch (error) {
-      console.error(error);
       toast.error(t.emailError);
     }
     setIsSending(false);

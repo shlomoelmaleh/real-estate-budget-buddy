@@ -16,11 +16,14 @@ export function AccessibilityWidget() {
     const { language } = useLanguage();
 
     useEffect(() => {
-        // 1. Map to UserWay specific codes (they use underscore or dash, but let's be precise)
+        // 1. Map to UserWay specific codes
         const uwLang = language === 'he' ? 'he-IL' : language === 'fr' ? 'fr-FR' : 'en-US';
-        const uwPos = language === 'he' ? 'right' : 'left';
+        // WhatsApp is on the Left for HE (usually) or Right? 
+        // Typically in RTL apps, WhatsApp is bottom-left, so Accessibility should be bottom-right.
+        // Let's stick to the prompt: "opposite side of the WhatsApp button (Right for HE, Left for EN/FR)".
+        const uwPos = language === 'he' ? 'bottom-right' : 'bottom-left';
 
-        // 2. Update the config objects (UserWay looks at both sometimes)
+        // 2. Update the config objects
         const config = {
             account: '1pjEW7NzD7',
             lang: uwLang,
@@ -41,23 +44,24 @@ export function AccessibilityWidget() {
             document.body.appendChild(script);
         }
 
-        // 4. THE MAGIC NUDGE: 
-        // If the widget is already loaded, we force it to change NOW
+        // 4. Force update if widget is already loaded
         const forceUpdate = () => {
             if (window.UserWay) {
                 if (typeof window.UserWay.changeLanguage === 'function') {
                     window.UserWay.changeLanguage(uwLang);
                 }
                 if (typeof window.UserWay.widgetPosition === 'function') {
-                    window.UserWay.widgetPosition(uwPos);
+                    // UserWay widgetPosition often takes 'left', 'right' or 'bottom-left', etc.
+                    // We'll use the mapped position.
+                    const simplifiedPos = language === 'he' ? 'right' : 'left';
+                    window.UserWay.widgetPosition(simplifiedPos);
                 }
             }
         };
 
-        // Check immediately and then a few times (UserWay takes time to initialize)
         forceUpdate();
-        const interval = setInterval(forceUpdate, 500);
-        const timeout = setTimeout(() => clearInterval(interval), 5000); // Stop checking after 5 seconds
+        const interval = setInterval(forceUpdate, 1000);
+        const timeout = setTimeout(() => clearInterval(interval), 10000);
 
         return () => {
             clearInterval(interval);
