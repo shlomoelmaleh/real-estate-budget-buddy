@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useOptionalLanguage } from '@/contexts/LanguageContext';
 
 declare global {
     interface Window {
@@ -13,7 +13,8 @@ declare global {
 }
 
 export function AccessibilityWidget() {
-    const { language } = useLanguage();
+    const langCtx = useOptionalLanguage();
+    const language = langCtx?.language ?? 'he';
 
     useEffect(() => {
         // 1. Map to UserWay specific codes
