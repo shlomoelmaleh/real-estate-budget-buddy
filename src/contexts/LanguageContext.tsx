@@ -7,7 +7,7 @@ interface LanguageContextType {
   t: Translations;
 }
 
-export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('he');
@@ -36,9 +36,4 @@ export function useLanguage() {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
-}
-
-// Use for non-critical consumers (widgets) to avoid blank screens if rendered outside provider.
-export function useOptionalLanguage() {
-  return useContext(LanguageContext);
 }

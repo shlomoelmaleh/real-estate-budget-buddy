@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
+import { HeroHeader } from './HeroHeader';
 import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +28,7 @@ import { ProgressBar } from './Wizard/ProgressBar';
 import { Step1 } from './Wizard/Steps/Step1';
 import { Step2 } from './Wizard/Steps/Step2';
 import { Step3 } from './Wizard/Steps/Step3';
+import { Step4 } from './Wizard/Steps/Step4';
 import { Step5 } from './Wizard/Steps/Step5_Reveal';
 import { Step0 } from './Wizard/Steps/Step0_Welcome';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
@@ -139,7 +141,7 @@ export function BudgetCalculator() {
         setStep(1);
         setIsExiting0(false);
         window.scrollTo({ top: 0 });
-      }, 500);
+      }, 500); // Duration of the exit animation
       return;
     }
 
@@ -148,38 +150,34 @@ export function BudgetCalculator() {
     switch (step) {
       case 1: fields = ['fullName', 'age', 'targetPropertyPrice']; break;
       case 2: fields = ['equity', 'netIncome']; break;
-      case 3: fields = ['isFirstProperty', 'isIsraeliCitizen', 'isIsraeliTaxResident', 'isRented', 'expectedRent', 'targetPropertyPrice', 'budgetCap']; break;
+      case 3: fields = ['isFirstProperty', 'isIsraeliCitizen', 'isIsraeliTaxResident']; break;
       default: break;
     }
 
     const isValid = await trigger(fields);
     if (isValid) {
-      if (step === 3) {
-        handleCalculate();
-      } else {
-        setAnimClass("animate-in slide-in-from-right fade-in duration-500");
-        setStep(s => s + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      setAnimClass("animate-in slide-in-from-right fade-in duration-500");
+      setStep(s => s + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleBack = () => {
     setAnimClass("animate-in slide-in-from-left fade-in duration-500");
-    setStep(s => Math.max(0, s - 1));
+    setStep(s => Math.max(0, s - 1)); // Allowing back to 0 (Welcome)
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // --- CALCULATION PHASE ---
 
   const handleCalculate = async () => {
-    // Validate merged Step 3 fields
-    const isValid = await trigger(['isFirstProperty', 'isIsraeliCitizen', 'isIsraeliTaxResident', 'isRented', 'expectedRent', 'targetPropertyPrice', 'budgetCap']);
+    // Validate Step 4
+    const isValid = await trigger(['isRented', 'expectedRent', 'targetPropertyPrice', 'budgetCap']);
     if (!isValid) return;
 
     setIsLoading(true);
-    setAnimClass("animate-in fade-in duration-700");
-    setStep(4); // Move to Reveal (Step 4)
+    setAnimClass("animate-in fade-in duration-700"); // Gentle fade for Reveal
+    setStep(5); // Move to Reveal step immediately to show loader
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const data = getValues();
@@ -301,12 +299,12 @@ export function BudgetCalculator() {
 
       } else {
         toast.error('Calculation failed');
-        setStep(3);
+        setStep(4);
         setIsLoading(false);
       }
     } catch (error) {
       toast.error(t.emailError || 'An error occurred.');
-      setStep(3);
+      setStep(4);
       setIsLoading(false);
     }
   };
@@ -358,11 +356,17 @@ export function BudgetCalculator() {
 
   const getStepContent = () => {
     switch (step) {
-      case 0: return <Step0 onNext={handleNext} />;
-      case 1: return <Step1 control={control} errors={errors} t={t} />;
-      case 2: return <Step2 control={control} errors={errors} t={t} />;
-      case 3: return <Step3 control={control} errors={errors} t={t} watch={watch} />;
+      case 0:
+        return <Step0 onNext={handleNext} />;
+      case 1:
+        return <Step1 control={control} errors={errors} t={t} />;
+      case 2:
+        return <Step2 control={control} errors={errors} t={t} />;
+      case 3:
+        return <Step3 control={control} errors={errors} t={t} />;
       case 4:
+        return <Step4 control={control} errors={errors} t={t} watch={watch} />;
+      case 5:
         return (
           <Step5
             control={control}
@@ -405,9 +409,10 @@ export function BudgetCalculator() {
 
       {step > 0 && (
         <div className="animate-in fade-in duration-700">
-          <main className="px-4 pb-8 pt-[20px]">
-            {/* Progress Bar - shown for steps 1-4 */}
-            {step <= 4 && <ProgressBar currentStep={step} totalSteps={4} />}
+          <main className="px-4 pb-8 pt-[20px]"> {/* Lifted to top 20px */}
+
+            {/* Progress Bar (Station Path) */}
+            {step < 5 && <ProgressBar currentStep={step} totalSteps={4} />}
 
             {!showConfirmation ? (
               <AnimatePresence mode="wait">
@@ -420,22 +425,22 @@ export function BudgetCalculator() {
                   className="w-full max-w-2xl mx-auto"
                 >
                   <StepCard
-                    className="mt-0 pt-2 shadow-2xl border border-white/20 rounded-2xl"
+                    className="mt-0 pt-2 shadow-2xl border border-white/20 rounded-2xl" // Refined rounded card
                     title={header.title}
                     emotionalMessage={header.desc}
                   >
                     {getStepContent()}
 
-                    {/* Navigation Buttons - ONLY for steps 1-3 */}
-                    {step < 4 && (
+                    {/* Navigation Buttons */}
+                    {step < 5 && (
                       <div className="flex gap-4 pt-6">
                         {step > 1 && (
                           <Button
                             variant="outline"
                             onClick={handleBack}
-                            className="flex-1 py-7 text-base rounded-xl"
+                            className="flex-1 py-6 text-base"
                           >
-                            <ChevronLeft className={cn("w-4 h-4", language === 'he' ? "ml-2" : "mr-2")} />
+                            <ChevronLeft className="w-4 h-4 mr-2" />
                             {t.backBtn}
                           </Button>
                         )}
@@ -445,27 +450,39 @@ export function BudgetCalculator() {
                           let isStepValid = false;
 
                           if (step === 1) {
-                            isStepValid = !!currentValues.fullName && !!currentValues.age && !errors.fullName && !errors.age;
+                            isStepValid = !!currentValues.fullName && !!currentValues.age && !errors.fullName && !errors.age && !errors.targetPropertyPrice;
                           } else if (step === 2) {
                             isStepValid = !!currentValues.equity && !!currentValues.netIncome && !errors.equity && !errors.netIncome;
                           } else if (step === 3) {
                             isStepValid =
                               currentValues.isFirstProperty !== undefined &&
                               currentValues.isIsraeliCitizen !== undefined &&
-                              currentValues.isIsraeliTaxResident !== undefined &&
-                              !errors.budgetCap && !errors.expectedRent;
+                              currentValues.isIsraeliTaxResident !== undefined;
+                          } else if (step === 4) {
+                            isStepValid = !errors.budgetCap && !errors.expectedRent;
                           }
 
-                          return (
+                          return step < 4 ? (
                             <Button
                               onClick={handleNext}
                               className={cn(
-                                "flex-1 py-7 text-lg font-bold bg-primary hover:bg-primary-dark text-white rounded-xl transition-all hover:scale-[1.02]",
-                                isStepValid && "shadow-[0_0_20px_rgba(var(--primary-rgb),0.5)] animate-pulse"
+                                "flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
+                                "shadow-lg shadow-primary/20",
+                                isStepValid && "shadow-[0_0_15px_rgba(var(--primary),0.6)] animate-pulse ring-1 ring-primary/50"
                               )}
                             >
-                              {step === 3 ? t.revealBtn : t.nextBtn}
-                              {step < 3 && <ChevronRight className={cn("w-5 h-5", language === 'he' ? "mr-2" : "ml-2")} />}
+                              {t.nextBtn}
+                              <ChevronRight className="w-4 h-4 ml-2" />
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={handleCalculate}
+                              className={cn(
+                                "flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
+                                isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
+                              )}
+                            >
+                              {t.revealBtn}
                             </Button>
                           );
                         })()}
@@ -477,7 +494,7 @@ export function BudgetCalculator() {
             ) : (
               /* Confirmation State */
               <div ref={confirmationRef} className="max-w-xl mx-auto space-y-4 animate-fade-in mt-8">
-                <div className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-3xl shadow-lg text-center">
+                <div className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl shadow-lg text-center">
                   <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
                     <CheckCircle2 className="w-8 h-8 text-green-600" />
                   </div>
