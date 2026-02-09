@@ -174,6 +174,7 @@ export function BudgetCalculator() {
 
   const handleNext = async () => {
     if (step === 0) {
+      logFunnelEvent(1); // Track transition from Welcome to Step 1
       setIsExiting0(true);
       setTimeout(() => {
         setStep(1);
