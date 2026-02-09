@@ -1,10 +1,13 @@
 import { Controller } from 'react-hook-form';
-import { Home, Flag, Banknote, Check, X } from 'lucide-react';
+import { Home, Flag, Banknote, Check, X, Building2, CircleDollarSign } from 'lucide-react';
 import { StepProps } from '../types';
 import { Label } from '@/components/ui/label';
+import { FormInput } from '@/components/FormInput';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
-export function Step3({ control, errors, t }: StepProps) {
+export function Step3({ control, errors, t, watch }: StepProps) {
+    const isRented = watch ? watch('isRented') : false;
 
     const ToggleButton = ({
         active,
@@ -69,71 +72,133 @@ export function Step3({ control, errors, t }: StepProps) {
                 )}
             </div>
 
-            {/* Israeli Citizen */}
-            <div className="space-y-3">
-                <Label className="text-base font-semibold flex items-center gap-2">
-                    <Flag className="w-5 h-5 text-primary" />
-                    {t.isIsraeliCitizen}
-                </Label>
-                <Controller
-                    name="isIsraeliCitizen"
-                    control={control}
-                    render={({ field }) => (
-                        <div className="flex gap-4">
-                            <ToggleButton
-                                active={field.value === true}
-                                onClick={() => field.onChange(true)}
-                                variant="yes"
-                            >
-                                {t.yes}
-                            </ToggleButton>
-                            <ToggleButton
-                                active={field.value === false}
-                                onClick={() => field.onChange(false)}
-                                variant="no"
-                            >
-                                {t.no}
-                            </ToggleButton>
-                        </div>
-                    )}
-                />
-                {errors.isIsraeliCitizen && (
-                    <p className="text-sm text-destructive">{t.requiredField}</p>
-                )}
+            {/* Israeli Citizen & Tax Resident Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                    <Label className="text-base font-semibold flex items-center gap-2">
+                        <Flag className="w-5 h-5 text-primary" />
+                        {t.isIsraeliCitizen}
+                    </Label>
+                    <Controller
+                        name="isIsraeliCitizen"
+                        control={control}
+                        render={({ field }) => (
+                            <div className="flex gap-4">
+                                <ToggleButton
+                                    active={field.value === true}
+                                    onClick={() => field.onChange(true)}
+                                    variant="yes"
+                                >
+                                    {t.yes}
+                                </ToggleButton>
+                                <ToggleButton
+                                    active={field.value === false}
+                                    onClick={() => field.onChange(false)}
+                                    variant="no"
+                                >
+                                    {t.no}
+                                </ToggleButton>
+                            </div>
+                        )}
+                    />
+                </div>
+
+                <div className="space-y-3">
+                    <Label className="text-base font-semibold flex items-center gap-2">
+                        <Banknote className="w-5 h-5 text-primary" />
+                        {t.isIsraeliTaxResident}
+                    </Label>
+                    <Controller
+                        name="isIsraeliTaxResident"
+                        control={control}
+                        render={({ field }) => (
+                            <div className="flex gap-4">
+                                <ToggleButton
+                                    active={field.value === true}
+                                    onClick={() => field.onChange(true)}
+                                    variant="yes"
+                                >
+                                    {t.yes}
+                                </ToggleButton>
+                                <ToggleButton
+                                    active={field.value === false}
+                                    onClick={() => field.onChange(false)}
+                                    variant="no"
+                                >
+                                    {t.no}
+                                </ToggleButton>
+                            </div>
+                        )}
+                    />
+                </div>
             </div>
 
-            {/* Tax Resident */}
-            <div className="space-y-3">
-                <Label className="text-base font-semibold flex items-center gap-2">
-                    <Banknote className="w-5 h-5 text-primary" />
-                    {t.isIsraeliTaxResident}
-                </Label>
+            {/* Investment Property Toggle */}
+            <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
                 <Controller
-                    name="isIsraeliTaxResident"
+                    name="isRented"
                     control={control}
                     render={({ field }) => (
-                        <div className="flex gap-4">
-                            <ToggleButton
-                                active={field.value === true}
-                                onClick={() => field.onChange(true)}
-                                variant="yes"
-                            >
-                                {t.yes}
-                            </ToggleButton>
-                            <ToggleButton
-                                active={field.value === false}
-                                onClick={() => field.onChange(false)}
-                                variant="no"
-                            >
-                                {t.no}
-                            </ToggleButton>
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base font-semibold">{t.isRented}</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    {field.value ? t.isRentedYes : t.isRentedNo}
+                                </p>
+                            </div>
+                            <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                            />
                         </div>
                     )}
                 />
-                {errors.isIsraeliTaxResident && (
-                    <p className="text-sm text-destructive">{t.requiredField}</p>
-                )}
+
+                {/* Conditional Rent Input */}
+                <div className={cn(
+                    "grid transition-all duration-300 ease-in-out",
+                    isRented ? "grid-rows-[1fr] mt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
+                )}>
+                    <div className="overflow-hidden">
+                        <Controller
+                            name="expectedRent"
+                            control={control}
+                            render={({ field }) => (
+                                <FormInput
+                                    label={`${t.expectedRent} (₪)`}
+                                    currencySymbol={t.currencySymbol}
+                                    icon={<Building2 className="w-4 h-4" />}
+                                    {...field}
+                                    formatNumber={true}
+                                    hasError={!!errors.expectedRent}
+                                    className="bg-white"
+                                />
+                            )}
+                        />
+                    </div>
+                </div>
             </div>
+
+            {/* Budget Cap */}
+            <Controller
+                name="budgetCap"
+                control={control}
+                render={({ field }) => (
+                    <FormInput
+                        label={`${t.budgetCap} (₪)`}
+                        suffix={t.optional}
+                        currencySymbol={t.currencySymbol}
+                        icon={<CircleDollarSign className="w-4 h-4" />}
+                        {...field}
+                        formatNumber={true}
+                        className="bg-white/50"
+                    />
+                )}
+            />
+
+            <p className="text-[10px] text-muted-foreground mt-4 italic">
+                {t.convertNotice}
+            </p>
         </div>
     );
 }

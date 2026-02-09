@@ -72,16 +72,16 @@ export function FormInput({
         {required && <span className="text-destructive">*</span>}
         {suffix && <span className="text-xs text-muted-foreground/70">({suffix})</span>}
       </Label>
-      <div className="relative flex items-center">
+      <div className="relative flex items-center group">
         {currencySymbol && (
           <span
             className={cn(
-              "absolute text-primary/70 opacity-40 pointer-events-none text-base font-medium",
-              isRtl ? "right-3" : "left-3"
+              "absolute text-slate-400 group-focus-within:text-primary transition-colors pointer-events-none text-base font-bold",
+              isRtl ? "right-4" : "left-4"
             )}
             aria-hidden="true"
           >
-            {currencySymbol}
+            ₪
           </span>
         )}
         <Input
@@ -89,15 +89,14 @@ export function FormInput({
           value={displayValue}
           onChange={handleChange}
           className={cn(
-            "h-12 rounded-lg border",
-            "bg-card/80 backdrop-blur-sm",
-            "focus:border-primary focus:ring-2 focus:ring-primary/20",
+            "h-14 rounded-xl border-2 bg-white",
+            "focus:border-primary focus:ring-0",
             "transition-all duration-200",
-            "text-base font-medium",
-            currencySymbol ? (isRtl ? "pr-10 pl-4" : "pl-10 pr-4") : "px-4",
+            "text-base font-bold text-slate-800",
+            currencySymbol ? (isRtl ? "pr-10 pl-4" : "pl-10 pr-4") : "px-5",
             hasError
-              ? "border-destructive focus:border-destructive focus:ring-destructive/20"
-              : "border-border/60"
+              ? "border-destructive"
+              : "border-slate-100 hover:border-slate-200"
           )}
         />
       </div>

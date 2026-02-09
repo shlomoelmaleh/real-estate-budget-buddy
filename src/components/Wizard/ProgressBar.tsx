@@ -11,6 +11,9 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
     const { t, language } = useLanguage();
     const isRtl = language === 'he';
 
+    // Linear progress 0-100%
+    const progressPercent = ((currentStep - 1) / (totalSteps - 1)) * 100;
+
     const getStepTitle = (step: number) => {
         switch (step) {
             case 1: return t.step1Title;
@@ -21,32 +24,21 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
         }
     };
 
-    const effectiveStep = Math.min(currentStep, totalSteps);
-    const progressPercent = ((effectiveStep - 1) / (totalSteps - 1)) * 100;
-
     return (
-        <div className="w-full max-w-[800px] mx-auto mb-12 px-6 relative">
-            {/* 
-                Structure:
-                - Outer container has px-6 (24px padding).
-                - First and last dots are justified to the edges of the inner width.
-                - Dot size is w-8 (32px).
-                - Track should start at center of first dot: 24px (pad) + 16px (half dot) = 40px from left.
-                - Track should end at center of last dot: 24px (pad) + 16px (half dot) = 40px from right.
-            */}
-
-            {/* Layer 1 & 2: Background Track & Active Progress Line */}
-            <div className="absolute top-4 left-10 right-10 h-[2px] bg-slate-200 z-0">
+        <div className="w-full max-w-[800px] mx-auto mb-8 px-8 relative">
+            {/* Continuous Track Background */}
+            <div className="absolute top-4 left-8 right-8 h-1 bg-slate-100 rounded-full z-0 overflow-hidden">
+                {/* Linear Fill Line */}
                 <div
                     className={cn(
-                        "h-full bg-primary transition-all duration-700 ease-in-out absolute",
+                        "h-full bg-primary transition-all duration-1000 ease-out absolute rounded-full",
                         isRtl ? "right-0" : "left-0"
                     )}
                     style={{ width: `${progressPercent}%` }}
                 />
             </div>
 
-            {/* Layer 3: Interactive Stations (Dots) */}
+            {/* Sequence Dots */}
             <div className="flex justify-between items-start relative z-10 w-full">
                 {Array.from({ length: totalSteps }).map((_, index) => {
                     const stepNum = index + 1;
@@ -54,31 +46,27 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
                     const isActive = stepNum === currentStep;
 
                     return (
-                        <div key={stepNum} className="flex flex-col items-center relative">
-                            {/* The Dot */}
+                        <div key={stepNum} className="flex flex-col items-center relative gap-4">
+                            {/* Dot Shell */}
                             <div className={cn(
-                                "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0 relative z-20",
-                                isCompleted ? "bg-primary border-primary text-white" :
-                                    isActive ? "border-primary text-primary font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" :
-                                        "border-slate-200 text-slate-300"
+                                "w-9 h-9 rounded-xl border-2 flex items-center justify-center transition-all duration-500 bg-white relative z-20",
+                                isCompleted ? "bg-primary border-primary text-white scale-90" :
+                                    isActive ? "border-primary text-primary font-bold shadow-lg scale-110" :
+                                        "border-slate-100 text-slate-300"
                             )}>
                                 {isCompleted ? (
-                                    <Check className="w-4 h-4" />
+                                    <Check className="w-5 h-5 stroke-[3]" />
                                 ) : (
-                                    <span className="text-xs">{stepNum}</span>
+                                    <span className="text-sm font-black italic">{stepNum}</span>
                                 )}
                             </div>
 
-                            {/* Active Pulse Ring (Blinking animation) */}
-                            {isActive && (
-                                <div className="absolute top-0 w-8 h-8 rounded-full border border-primary animate-ping z-10" />
-                            )}
-                            {/* Layer 4: Labels (Below Dot) */}
-                            <div className="mt-4 absolute top-8 w-24 md:w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+                            {/* Grounded Labels */}
+                            <div className="absolute top-12 w-28 md:w-40 left-1/2 -translate-x-1/2 text-center">
                                 <span className={cn(
-                                    "text-[10px] md:text-xs font-semibold transition-colors duration-300 block leading-tight",
-                                    isActive ? "text-primary font-bold" :
-                                        isCompleted ? "text-slate-600" : "text-slate-400"
+                                    "text-[10px] md:text-sm font-black uppercase tracking-tighter transition-all duration-300 block leading-none",
+                                    isActive ? "text-slate-800 scale-105" :
+                                        isCompleted ? "text-slate-400" : "text-slate-300"
                                 )}>
                                     {getStepTitle(stepNum)}
                                 </span>
