@@ -59,37 +59,37 @@ export function Step0({ onNext }: { onNext: () => void }) {
                 )}>
                     {/* Headline */}
                     <div className={cn("space-y-4 overflow-visible", !isHe && "-ml-16 lg:-ml-40")}>
-                        <h1 className="text-3xl md:text-5xl font-display font-bold text-slate-800 leading-[1.1] tracking-tight whitespace-nowrap overflow-visible">
+                        <h1 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold text-slate-800 leading-[1.1] tracking-tight overflow-visible text-balance">
                             {t.welcomeTitle}
                         </h1>
-                        <p className={cn("text-lg text-muted-foreground max-w-xl leading-relaxed", !isHe && "ml-16 lg:ml-40")}>
+                        <p className={cn("text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed", !isHe && "ml-16 lg:ml-40")}>
                             {t.welcomeSub}
                         </p>
                     </div>
 
-                    {/* Balanced Station Grid (2x2) with Numbers */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Balanced Station Grid (Responsive Column Shift) with Numbers */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
                             { icon: Map, title: t.roadmap1Title, desc: t.roadmap1Desc, color: "text-blue-500", bg: "bg-blue-50", numberBg: "bg-blue-500" },
                             { icon: TrendingUp, title: t.roadmap2Title, desc: t.roadmap2Desc, color: "text-emerald-500", bg: "bg-emerald-50", numberBg: "bg-emerald-500" },
                             { icon: ShieldCheck, title: t.roadmap3Title, desc: t.roadmap3Desc, color: "text-amber-500", bg: "bg-amber-50", numberBg: "bg-amber-500" },
                             { icon: Target, title: t.roadmap4Title, desc: t.roadmap4Desc, color: "text-purple-500", bg: "bg-purple-50", numberBg: "bg-purple-500" },
                         ].map((step, i) => (
-                            <div key={i} className="relative flex items-center gap-4 p-4 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all group h-[90px]">
+                            <div key={i} className="relative flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all group h-auto min-h-[80px] md:h-[90px]">
                                 {/* Prominent Number Badge */}
                                 <div className={cn(
-                                    "absolute -top-3 -left-3 w-9 h-9 rounded-full flex items-center justify-center shadow-lg border-2 border-white z-10",
+                                    "absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shadow-lg border-2 border-white z-10",
                                     step.numberBg
                                 )}>
-                                    <span className="text-white font-black text-lg">{i + 1}</span>
+                                    <span className="text-white font-black text-base sm:text-lg">{i + 1}</span>
                                 </div>
 
-                                <div className={cn("flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all shadow-inner", step.bg)}>
-                                    <step.icon className={cn("w-6 h-6", step.color)} />
+                                <div className={cn("flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-all shadow-inner", step.bg)}>
+                                    <step.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", step.color)} />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <h4 className="font-bold text-slate-800 text-sm md:text-base mb-0.5">{step.title}</h4>
-                                    <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{step.desc}</p>
+                                    <h4 className="font-bold text-slate-800 text-sm sm:text-base mb-0.5 leading-tight">{step.title}</h4>
+                                    <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight line-clamp-2">{step.desc}</p>
                                 </div>
                             </div>
                         ))}

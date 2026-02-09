@@ -25,18 +25,16 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
     const progressPercent = ((effectiveStep - 1) / (totalSteps - 1)) * 100;
 
     return (
-        <div className="w-full max-w-[800px] mx-auto mb-12 px-6 relative">
-            {/* 
-                Structure:
-                - Outer container has px-6 (24px padding).
-                - First and last dots are justified to the edges of the inner width.
-                - Dot size is w-8 (32px).
-                - Track should start at center of first dot: 24px (pad) + 16px (half dot) = 40px from left.
-                - Track should end at center of last dot: 24px (pad) + 16px (half dot) = 40px from right.
-            */}
+        <div className="w-full max-w-[800px] mx-auto mb-8 sm:mb-12 px-6 relative">
+            {/* Mobile-only Active Step Title (Above Bar) */}
+            <div className="md:hidden text-center mb-4">
+                <span className="text-xs font-black uppercase tracking-widest text-primary animate-in fade-in slide-in-from-top-2 duration-500">
+                    {getStepTitle(effectiveStep)}
+                </span>
+            </div>
 
             {/* Layer 1 & 2: Background Track & Active Progress Line */}
-            <div className="absolute top-4 left-10 right-10 h-[2px] bg-slate-200 z-0">
+            <div className="absolute top-[52px] md:top-4 left-10 right-10 h-[1.5px] md:h-[2px] bg-slate-200 z-0">
                 <div
                     className={cn(
                         "h-full bg-primary transition-all duration-700 ease-in-out absolute",
@@ -57,26 +55,26 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
                         <div key={stepNum} className="flex flex-col items-center relative">
                             {/* The Dot */}
                             <div className={cn(
-                                "w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0 relative z-20",
+                                "w-7 h-7 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0 relative z-20",
                                 isCompleted ? "bg-primary border-primary text-white" :
                                     isActive ? "border-primary text-primary font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" :
                                         "border-slate-200 text-slate-300"
                             )}>
                                 {isCompleted ? (
-                                    <Check className="w-4 h-4" />
+                                    <Check className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                 ) : (
-                                    <span className="text-xs">{stepNum}</span>
+                                    <span className="text-[10px] md:text-sm font-bold">{stepNum}</span>
                                 )}
                             </div>
 
                             {/* Active Pulse Ring (Blinking animation) */}
                             {isActive && (
-                                <div className="absolute top-0 w-8 h-8 rounded-full border border-primary animate-ping z-10" />
+                                <div className="absolute top-0 w-7 h-7 md:w-8 md:h-8 rounded-full border border-primary animate-ping z-10" />
                             )}
-                            {/* Layer 4: Labels (Below Dot) */}
-                            <div className="mt-4 absolute top-8 w-24 md:w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+                            {/* Layer 4: Labels (Below Dot - Hidden on Mobile) */}
+                            <div className="mt-4 absolute top-8 w-24 md:w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden md:block">
                                 <span className={cn(
-                                    "text-[10px] md:text-xs font-semibold transition-colors duration-300 block leading-tight",
+                                    "text-xs font-semibold transition-colors duration-300 block leading-tight",
                                     isActive ? "text-primary font-bold" :
                                         isCompleted ? "text-slate-600" : "text-slate-400"
                                 )}>

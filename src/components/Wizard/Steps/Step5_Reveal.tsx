@@ -152,9 +152,13 @@ export function Step5({
                     </div>
 
 
-                    <div className="py-2">
+                    <div className="py-2 overflow-hidden px-2">
                         <span className={cn(
-                            "text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight"
+                            "font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight break-all",
+                            // Responsive scaling: smaller on mobile for large numbers
+                            formatNumber(displayValue).length > 8
+                                ? "text-3xl sm:text-5xl md:text-6xl" // Long numbers (e.g. ₪ 10,000,000)
+                                : "text-4xl sm:text-5xl md:text-6xl" // Standard numbers
                         )}>
                             ₪ {formatNumber(displayValue)}
                         </span>

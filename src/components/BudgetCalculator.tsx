@@ -433,12 +433,12 @@ export function BudgetCalculator() {
 
                     {/* Navigation Buttons */}
                     {step < 5 && (
-                      <div className="flex gap-4 pt-6">
+                      <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-6">
                         {step > 1 && (
                           <Button
                             variant="outline"
                             onClick={handleBack}
-                            className="flex-1 py-6 text-base"
+                            className="w-full sm:flex-1 py-6 text-base"
                           >
                             <ChevronLeft className="w-4 h-4 mr-2" />
                             {t.backBtn}
@@ -466,7 +466,7 @@ export function BudgetCalculator() {
                             <Button
                               onClick={handleNext}
                               className={cn(
-                                "flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
+                                "w-full sm:flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
                                 "shadow-lg shadow-primary/20",
                                 isStepValid && "shadow-[0_0_15px_rgba(var(--primary),0.6)] animate-pulse ring-1 ring-primary/50"
                               )}
@@ -478,7 +478,7 @@ export function BudgetCalculator() {
                             <Button
                               onClick={handleCalculate}
                               className={cn(
-                                "flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
+                                "w-full sm:flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
                                 isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
                               )}
                             >

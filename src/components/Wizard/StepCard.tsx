@@ -16,7 +16,7 @@ export function StepCard({ children, className, title, description, emotionalMes
                 "relative w-full max-w-[600px] mx-auto",
                 "bg-white/80 backdrop-blur-xl border border-white/20",
                 "rounded-2xl shadow-2xl",
-                "p-6 md:p-8 space-y-6",
+                "p-4 md:p-8 space-y-6",
                 className
             )}
         >
@@ -29,7 +29,7 @@ export function StepCard({ children, className, title, description, emotionalMes
                         </p>
                     )}
                     {title && (
-                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-dark">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-dark text-balance">
                             {title}
                         </h2>
                     )}
