@@ -18,6 +18,10 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
+      {/* --- GLOBAL WIDGETS (need LanguageProvider) --- */}
+      <AccessibilityWidget />
+      <FloatingWhatsApp />
+      
       <PartnerProvider>
         <TooltipProvider>
           <Toaster />
@@ -37,12 +41,6 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-
-            {/* --- GLOBAL WIDGETS --- */}
-            {/* Accessibility Widget - UserWay */}
-            <AccessibilityWidget />
-            {/* Floating WhatsApp button - appears on every page */}
-            <FloatingWhatsApp />
           </BrowserRouter>
         </TooltipProvider>
       </PartnerProvider>
