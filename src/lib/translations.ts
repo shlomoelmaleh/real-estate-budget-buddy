@@ -171,6 +171,14 @@ export interface Translations {
   hookAge: string;
   hookDefault: string;
   dossierSubject: string;
+  // Strategic Moat (Phase 5)
+  overviewTitle: string;
+  noteIncome: string;
+  noteEquity: string;
+  noteLTV: string;
+  noteAge: string;
+  whatIfText: string;
+  expertCommitment: string;
 }
 
 export const translations: Record<Language, Translations> = {
