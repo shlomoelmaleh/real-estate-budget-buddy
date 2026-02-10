@@ -337,6 +337,14 @@ export const translations: Record<Language, Translations> = {
     dossierSubject: "תיק האסטרטגיה הפיננסית שלך - [Name]",
     leadCaptureTitle: "אל תשארו עם מספר בלבד. הכנו עבורכם 'תיק אסטרטגיה' אישי הכוללת ניתוח בנקאי מלא ותחזית מס. לאן לשלוח לכם אותו?",
     leadCaptureBtn: "שלחו לי את התיק המלא",
+    // Strategic Moat (Phase 5)
+    overviewTitle: "ניתוח העוצמה הפיננסית שלכם",
+    noteIncome: "החסכונות שלכם מצוינים. הדרך להגדיל את התקציב היא להראות לבנק יכולת החזר חודשית גבוהה יותר.",
+    noteEquity: "ההכנסה החודשית שלכם מצוינת. מה שמגביל את התקציב כרגע הוא גובה המזומנים הראשוני הנדרש למיסים והוצאות.",
+    noteLTV: "אתם מנצלים כרגע את המקסימום המותר לפי נהלי הבנק. השלב הבא הוא להבטיח שהפרופיל שלכם מוצג בצורה מושלמת כדי להשיג את הריביות הנמוכות ביותר.",
+    noteAge: "תקופת ההלוואה מוגבלת בשל גיל, מה שמעלה את ההחזר החודשי. מומלץ לבחון מבנה הלוואה הממזער את ההשפעה.",
+    whatIfText: "הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪100,000.",
+    expertCommitment: "התיק ייבדק בידי מומחה כדי לוודא תאימות לכללי בנק ישראל 2025.",
   },
   en: {
     dir: 'ltr',
@@ -501,6 +509,14 @@ export const translations: Record<Language, Translations> = {
     dossierSubject: "Your Strategic Financial Dossier - [Name]",
     leadCaptureTitle: "Don't settle for just a number. We've prepared your personal Strategic Dossier (PDF). Where should we send it?",
     leadCaptureBtn: "Send My Full Dossier",
+    // Strategic Moat (Phase 5)
+    overviewTitle: "Your Financial Strength Analysis",
+    noteIncome: "Your savings are excellent. To increase your budget, we should look at ways to support a higher monthly payment with the bank.",
+    noteEquity: "Your monthly income is very strong. The budget is currently limited by the initial cash needed for taxes and fees.",
+    noteLTV: "You are currently making the most of the bank's standard rules for financing. Our next step should be ensuring your profile is perfectly presented to get you the lowest possible interest rates.",
+    noteAge: "The loan term is limited by age, increasing the monthly payment. We should structure the loan to minimize this impact.",
+    whatIfText: "Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪100,000.",
+    expertCommitment: "This dossier will be reviewed by an expert to ensure it aligns with the latest 2025 bank rules.",
   },
   fr: {
     dir: 'ltr',
@@ -665,5 +681,13 @@ export const translations: Record<Language, Translations> = {
     dossierSubject: "Votre Dossier Stratégique Financier - [Name]",
     leadCaptureTitle: "Ne vous contentez pas d'un simple chiffre. Nous avons préparé votre Dossier Stratégique personnel (PDF). Où devons-nous l'envoyer ?",
     leadCaptureBtn: "Envoyer Mon Dossier Complet",
+    // Strategic Moat (Phase 5)
+    overviewTitle: "Analyse de votre force financière",
+    noteIncome: "Votre apport est excellent. Pour augmenter votre budget, il faudrait montrer à la banque une capacité de remboursement mensuel plus élevée.",
+    noteEquity: "Votre revenu mensuel est très solide. Le budget est actuellement limité par l'argent disponible pour payer les taxes et les frais de clôture.",
+    noteLTV: "Vous utilisez actuellement le maximum autorisé par les règles bancaires. La prochaine étape est de présenter votre profil de manière optimale pour obtenir les meilleurs taux d'intérêt.",
+    noteAge: "La durée du prêt est limitée par l'âge, ce qui augmente la mensualité. Il faut structurer le prêt pour minimiser cet impact.",
+    whatIfText: "Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ 100 000 ₪.",
+    expertCommitment: "Ce dossier sera revu par un expert pour assurer sa conformité aux règles bancaires 2025.",
   }
 };

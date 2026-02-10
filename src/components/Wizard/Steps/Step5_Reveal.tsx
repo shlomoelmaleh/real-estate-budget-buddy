@@ -276,8 +276,15 @@ export function Step5({
                             </span>
                         </Button>
                     </div>
+
+                    {/* Expert Commitment - Trust Signal */}
+                    <p className="text-xs text-center text-slate-400 mt-2 leading-relaxed max-w-sm mx-auto">
+                        <CheckCircle2 className="w-3 h-3 inline-block mr-1 opacity-70" />
+                        {t.expertCommitment}
+                    </p>
                 </div>
             </div>
         </div>
+
     );
 }

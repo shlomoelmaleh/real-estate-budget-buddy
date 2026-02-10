@@ -478,6 +478,14 @@ function generateEmailHtml(
       limitingAge: "מוגבל לפי גיל (משך הלוואה מקוצר)",
       limitingComfortable: "פרופיל נוח (מרווח זמין)",
       limitingInsufficient: "נתונים חסרים (לאימות)",
+      // Strategic Moat (Phase 5)
+      overviewTitle: "ניתוח העוצמה הפיננסית שלכם",
+      noteIncome: "החסכונות שלכם מצוינים. הדרך להגדיל את התקציב היא להראות לבנק יכולת החזר חודשית גבוהה יותר.",
+      noteEquity: "ההכנסה החודשית שלכם מצוינת. מה שמגביל את התקציב כרגע הוא גובה המזומנים הראשוני הנדרש למיסים והוצאות.",
+      noteLTV: "אתם מנצלים כרגע את המקסימום המותר לפי נהלי הבנק. השלב הבא הוא להבטיח שהפרופיל שלכם מוצג בצורה מושלמת כדי להשיג את הריביות הנמוכות ביותר.",
+      noteAge: "תקופת ההלוואה מוגבלת בשל גיל, מה שמעלה את ההחזר החודשי. מומלץ לבחון מבנה הלוואה הממזער את ההשפעה.",
+      whatIfText: "הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪100,000.",
+      expertCommitment: "התיק ייבדק בידי מומחה כדי לוודא תאימות לכללי בנק ישראל 2025.",
       // Section 2 - Funding
       fundingTitle: "פירוט מימון",
       loanAmount: "סכום משכנתא",
@@ -594,6 +602,14 @@ function generateEmailHtml(
       limitingAge: "Limited by Age (Shorter Loan Term)",
       limitingComfortable: "Comfortable Profile (Margin Available)",
       limitingInsufficient: "Insufficient Data (To Confirm)",
+      // Strategic Moat (Phase 5)
+      overviewTitle: "Your Financial Strength Analysis",
+      noteIncome: "Your savings are excellent. To increase your budget, we should look at ways to support a higher monthly payment with the bank.",
+      noteEquity: "Your monthly income is very strong. The budget is currently limited by the initial cash needed for taxes and fees.",
+      noteLTV: "You are currently making the most of the bank's standard rules for financing. Our next step should be ensuring your profile is perfectly presented to get you the lowest possible interest rates.",
+      noteAge: "The loan term is limited by age, increasing the monthly payment. We should structure the loan to minimize this impact.",
+      whatIfText: "Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪100,000.",
+      expertCommitment: "This dossier will be reviewed by an expert to ensure it aligns with the latest 2025 bank rules.",
       fundingTitle: "Funding Breakdown",
       loanAmount: "Loan Amount",
       equityOnProperty: "Equity on Property",
@@ -705,6 +721,14 @@ function generateEmailHtml(
       limitingAge: "Limité par l'âge (durée de prêt réduite)",
       limitingComfortable: "Profil confortable (marge disponible)",
       limitingInsufficient: "Données insuffisantes (à confirmer)",
+      // Strategic Moat (Phase 5)
+      overviewTitle: "Analyse de votre force financière",
+      noteIncome: "Votre apport est excellent. Pour augmenter votre budget, il faudrait montrer à la banque une capacité de remboursement mensuel plus élevée.",
+      noteEquity: "Votre revenu mensuel est très solide. Le budget est actuellement limité par l'argent disponible pour payer les taxes et les frais de clôture.",
+      noteLTV: "Vous utilisez actuellement le maximum autorisé par les règles bancaires. La prochaine étape est de présenter votre profil de manière optimale pour obtenir les meilleurs taux d'intérêt.",
+      noteAge: "La durée du prêt est limitée par l'âge, ce qui augmente la mensualité. Il faut structurer le prêt pour minimiser cet impact.",
+      whatIfText: "Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ 100 000 ₪.",
+      expertCommitment: "Ce dossier sera revu par un expert pour assurer sa conformité aux règles bancaires 2025.",
       fundingTitle: "Le montage financier",
       loanAmount: "Montant du Prêt",
       equityOnProperty: "Apport net sur le prix du bien",
@@ -1218,6 +1242,30 @@ function generateEmailHtml(
       <div style="padding: 16px 20px; font-size: 15px; color: #1e293b;">
         ${recipientNameEscaped ? `${t.greeting} ${recipientNameEscaped},` : `${t.greeting},`}
       </div>
+
+      ${!isAdvisorCopy ? `
+      <!-- STRATEGIC MOAT: OVERVIEW & WHAT-IF -->
+      <div class="section" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1px solid #fcd34d;">
+        <div class="section-title" style="color: #92400e; border-bottom-color: #fcd34d;">💡 ${t.overviewTitle}</div>
+        
+        <div style="font-size: 14px; color: #78350f; line-height: 1.6; margin-bottom: 12px;">
+          ${(() => {
+        if (limitingFactor.includes(t.limitingIncome)) return t.noteIncome;
+        if (limitingFactor.includes(t.limitingCash)) return t.noteEquity;
+        if (limitingFactor.includes(t.limitingAge)) return t.noteAge;
+        return t.noteLTV;
+      })()}
+        </div>
+
+        ${limitingFactor.includes(t.limitingIncome) ? `
+        <div style="background: white; border-radius: 8px; padding: 12px; margin-top: 12px; border-${alignStart}: 4px solid #f59e0b; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+          <p style="margin: 0; font-size: 13px; color: #b45309; font-weight: 600;">
+            ${t.whatIfText}
+          </p>
+        </div>
+        ` : ''}
+      </div>
+      ` : ''}
 
       ${isAdvisorCopy
       ? `
