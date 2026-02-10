@@ -35,6 +35,10 @@ import { calculatorSchema, CalculatorFormValues } from './budget/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 
+import { analyticsQueue } from '@/lib/analyticsQueue';
+
+// ... (imports remain the same)
+
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
   const { partner } = usePartner();
@@ -138,43 +142,46 @@ export function BudgetCalculator() {
     return 50;
   };
 
-  // --- FUNNEL TRACKING ---
+  // --- FUNNEL TRACKING (Granular) ---
 
-  const logFunnelEvent = async (stepReached: number) => {
-    try {
-      const partnerId = partner?.id || null;
-      console.log(`[Funnel] Logging Step ${stepReached} for session ${sessionId}`);
-
-      // Fire and forget
-      supabase.from('funnel_events').insert({
-        session_id: sessionId,
-        step_reached: stepReached,
-        partner_id: partnerId,
-        language: language
-      }).then(({ error }) => {
-        if (error) console.error('[Funnel] Error:', error);
-        else console.log(`[Funnel] Step ${stepReached} successfully logged`);
-      });
-    } catch (error) {
-      console.error('[Funnel] Exception:', error);
-    }
-  };
-
-  // Track Step 0 on mount - with a small delay to ensure network tab/context are ready
+  // Log 'entered' event whenever step changes
   useEffect(() => {
+    // Small delay to ensure component is fully mounted/viewable? 
+    // Not strictly necessary with React 18 but good for "entered" semantic.
     const timer = setTimeout(() => {
-      logFunnelEvent(0);
+      analyticsQueue.enqueue({
+        session_id: sessionId,
+        step_reached: step,
+        event_type: 'entered',
+        partner_id: partner?.id || null,
+        language: language
+      });
+      console.log(`[Funnel] Logged 'entered' for Step ${step}`);
     }, 500);
+
     return () => clearTimeout(timer);
-  }, []);
+  }, [step, sessionId, partner, language]);
+
 
   // --- WIZARD NAVIGATION ---
 
   const [animClass, setAnimClass] = useState("animate-in slide-in-from-right fade-in duration-500");
 
   const handleNext = async () => {
+    // Log 'completed' for current step (if valid)
+    const logCompletion = () => {
+      analyticsQueue.enqueue({
+        session_id: sessionId,
+        step_reached: step,
+        event_type: 'completed',
+        partner_id: partner?.id || null,
+        language: language
+      });
+      console.log(`[Funnel] Logged 'completed' for Step ${step}`);
+    };
+
     if (step === 0) {
-      logFunnelEvent(1); // Track transition from Welcome to Step 1
+      logCompletion();
       setIsExiting0(true);
       setTimeout(() => {
         setStep(1);
@@ -195,8 +202,8 @@ export function BudgetCalculator() {
 
     const isValid = await trigger(fields);
     if (isValid) {
+      logCompletion();
       const nextStep = step + 1;
-      logFunnelEvent(nextStep); // Track progress
       setAnimClass("animate-in slide-in-from-right fade-in duration-500");
       setStep(nextStep);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -217,7 +224,14 @@ export function BudgetCalculator() {
     if (!isValid) return;
 
     setIsLoading(true);
-    logFunnelEvent(5); // Track Reveal Step
+    // Log 'completed' for Step 4
+    analyticsQueue.enqueue({
+      session_id: sessionId,
+      step_reached: step,
+      event_type: 'completed',
+      partner_id: partner?.id || null,
+      language: language
+    });
     setAnimClass("animate-in fade-in duration-700"); // Gentle fade for Reveal
     setStep(5); // Move to Reveal step immediately to show loader
     window.scrollTo({ top: 0, behavior: 'smooth' });

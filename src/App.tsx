@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import AdminPartners from "./pages/admin/AdminPartners";
 import { AdminRoute } from "./components/auth/AdminRoute";
+import { BudgetErrorBoundary } from "@/components/BudgetErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -20,17 +21,23 @@ const App = () => (
     <LanguageProvider>
       {/* AccessibilityWidget only needs LanguageProvider */}
       <AccessibilityWidget />
-      
+
       <PartnerProvider>
         {/* FloatingWhatsApp needs both Language and Partner */}
         <FloatingWhatsApp />
-        
+
         <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
+
+
+              <Route path="/" element={
+                <BudgetErrorBoundary>
+                  <Index />
+                </BudgetErrorBoundary>
+              } />
               <Route path="/login" element={<Login />} />
               <Route
                 path="/admin/partners"

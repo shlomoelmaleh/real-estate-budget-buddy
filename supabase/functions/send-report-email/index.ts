@@ -138,51 +138,80 @@ const EmailRequestSchema = z.object({
   buildSha: z.string().max(40).nullable().optional(),
 });
 
-// INTERNAL ANALYSIS HELPERS (Lead Scoring Phase 3)
+// Elite 5-Tier Scoring System
 function calculateLeadScore(
   inputs: ReportEmailRequest['inputs'],
   results: ReportEmailRequest['results']
-): { score: number; priorityLabel: string; priorityColor: string } {
+): { score: number; priorityLabel: string; priorityColor: string; actionSla: string } {
   let score = 0;
   const maxBudget = results.maxPropertyValue;
   const netIncome = parseFloat(inputs.netIncome.replace(/,/g, '')) || 0;
   const monthlyPayment = results.monthlyPayment;
   const equityRemaining = results.equityRemaining;
   const equityInitial = parseFloat(inputs.equity.replace(/,/g, '')) || 0;
-  const targetPrice = parseFloat(inputs.targetPropertyPrice?.replace(/,/g, '') || '0');
+  const age = parseFloat(inputs.age) || 40;
 
-  // 1. Budget Size (Max 40 pts)
-  if (maxBudget > 5000000) score += 40;
+  // 1. Budget Size (Max 35 pts)
+  if (maxBudget > 5000000) score += 35;
   else if (maxBudget > 3000000) score += 25;
-  else if (maxBudget > 1500000) score += 10;
+  else if (maxBudget > 1500000) score += 15;
 
-  // 2. Financial Health (Max 30 pts)
-  // Calculate raw DTI
+  // 2. Financial Health (Max 25 pts)
   const dti = netIncome > 0 ? (monthlyPayment / netIncome) * 100 : 100;
-  if (dti < 30) score += 30;
-  else if (dti < 35) score += 15;
+  if (dti < 33) score += 25;
+  else if (dti < 40) score += 15;
 
-  // 3. Readiness (Max 30 pts)
-  if (equityRemaining > 100000) score += 30;
+  // 3. Readiness (Max 25 pts)
+  if (equityInitial >= 400000) score += 25;
+  else if (equityInitial >= 200000) score += 15;
 
-  // Bonus: Target Price Feasibility (within 5% of max budget)
-  if (targetPrice > 0 && maxBudget >= targetPrice * 0.95) {
-    score = Math.min(100, score + 20); // Cap at 100
-  }
+  // 4. Age Factor (+10 pts)
+  if (age < 35) score += 10;
 
-  // Determine Label
-  let priorityLabel = '❄️ COLD LEAD';
-  let priorityColor = '#3b82f6'; // Blue
+  // 5. Liquidity Bonus (+15 pts)
+  if (equityRemaining > 200000) score += 15;
 
-  if (score >= 80) {
-    priorityLabel = '🔥 HOT LEAD';
+  // Cap at 100
+  score = Math.min(100, score);
+
+  // Determine Tier & Action
+  let priorityLabel = '❄️ COLD';
+  let priorityColor = '#94a3b8'; // Slate
+  let actionSla = "Add to long-term newsletter.";
+
+  if (score >= 85) {
+    priorityLabel = '💎 PLATINUM';
+    priorityColor = '#7c3aed'; // Violet/Purple
+    actionSla = "Call within 1 hour.";
+  } else if (score >= 70) {
+    priorityLabel = '🔥 HOT';
     priorityColor = '#ef4444'; // Red
+    actionSla = "Call within 4 hours.";
   } else if (score >= 50) {
-    priorityLabel = '☀️ WARM LEAD';
-    priorityColor = '#f59e0b'; // Amber/Orange
+    priorityLabel = '☀️ WARM';
+    priorityColor = '#f59e0b'; // Amber
+    actionSla = "Call within 24 hours.";
+  } else if (score >= 30) {
+    priorityLabel = '🌤️ COOL';
+    priorityColor = '#3b82f6'; // Blue
+    actionSla = "Email follow-up.";
   }
 
-  return { score, priorityLabel, priorityColor };
+  return { score, priorityLabel, priorityColor, actionSla };
+}
+
+function calculateBonusPower(
+  monthlyPayment: number,
+  interestRate: number,
+  years: number
+): number {
+  if (interestRate <= 0 || years <= 0) return 0;
+  const additional = 500;
+  const r = interestRate / 100 / 12;
+  const n = years * 12;
+  // PV of annuity: PV = Pmt * (1 - (1+r)^-n) / r
+  const addedLoan = additional * (1 - Math.pow(1 + r, -n)) / r;
+  return Math.round(addedLoan);
 }
 
 function getLimitingFactorDescription(factor: string | undefined): string {
@@ -939,7 +968,13 @@ function generateEmailHtml(
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   // Internal Analysis Calculation (for Advisor Email)
-  const { score, priorityLabel, priorityColor } = calculateLeadScore(inputs, results);
+  const { score, priorityLabel, priorityColor, actionSla } = calculateLeadScore(inputs, results);
+
+  // Calculate Bonus Power for What-If
+  const interestRateVal = parseFloat(inputs.interest) || 5.0;
+  const yearsVal = results.loanTermYears || 30;
+  const bonusPower = calculateBonusPower(results.monthlyPayment, interestRateVal, yearsVal);
+
   const limitingFactorDescription = getLimitingFactorDescription(results.limitingFactor);
 
   return `
@@ -1260,7 +1295,12 @@ function generateEmailHtml(
         ${limitingFactor.includes(t.limitingIncome) ? `
         <div style="background: white; border-radius: 8px; padding: 12px; margin-top: 12px; border-${alignStart}: 4px solid #f59e0b; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           <p style="margin: 0; font-size: 13px; color: #b45309; font-weight: 600;">
-            ${t.whatIfText}
+            ${language === 'he'
+          ? `הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪${formatNumber(bonusPower)}.`
+          : language === 'fr'
+            ? `Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ ${formatNumber(bonusPower)} ₪.`
+            : `Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪${formatNumber(bonusPower)}.`
+        }
           </p>
         </div>
         ` : ''}
@@ -1272,8 +1312,11 @@ function generateEmailHtml(
       <!-- INTERNAL ANALYSIS SECTION (Lead Score) -->
       <div style="background: #1e293b; color: white; padding: 20px; border-bottom: 4px solid ${priorityColor}; margin: -16px -16px 20px -16px; border-radius: 0 0 12px 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <span style="background: ${priorityColor}; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px;">${priorityLabel}</span>
-          <span style="font-size: 24px; font-weight: 800; color: ${priorityColor};">${score}/100</span>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+             <span style="background: ${priorityColor}; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-block;">${priorityLabel}</span>
+             <span style="font-size: 11px; opacity: 0.8; font-weight: 600;">Action SLA: ${actionSla}</span>
+          </div>
+          <span style="font-size: 32px; font-weight: 800; color: ${priorityColor}; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${score}</span>
         </div>
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; opacity: 0.9;">Limiting Factor: ${limitingFactor}</div>
         <div style="font-size: 13px; opacity: 0.8; line-height: 1.4;">${limitingFactorDescription}</div>

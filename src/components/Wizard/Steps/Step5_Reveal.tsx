@@ -74,42 +74,65 @@ export function Step5({
         frame();
     };
 
+    // Ease-out cubic function for smooth deceleration
+    const easeOutCubic = (x: number): number => {
+        return 1 - Math.pow(1 - x, 3);
+    };
+
     useEffect(() => {
         if (!results || isLoading) return;
 
+        let animationFrameId: number;
+        let confettiTimeoutId: NodeJS.Timeout;
+        let dossierTimeoutId: NodeJS.Timeout;
+
         // Counting Engine with milestone tracking
         const target = results.maxPropertyValue;
-        const duration = 6000; // Increased to 6.0 seconds for maximum impact and clarity
-        const fps = 60;
-        const steps = duration / (1000 / fps);
-        const increment = target / steps;
+        const duration = 4000; // 4 seconds for the count
+        const startTime = performance.now();
 
-        let current = 0;
-        const timer = setInterval(() => {
-            current += increment;
+        // Tracker to prevent redundant state updates
+        let lastMilestone = 0;
 
-            // Determine highest milestone reached (only update if higher)
-            if (current >= MILESTONES.premium) {
-                setCurrentMilestone(prev => Math.max(prev, 3));
-            } else if (current >= MILESTONES.significant) {
-                setCurrentMilestone(prev => Math.max(prev, 2));
-            } else if (current >= MILESTONES.entry) {
-                setCurrentMilestone(prev => Math.max(prev, 1));
+        const animate = (currentTime: number) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easeProgress = easeOutCubic(progress);
+
+            const currentValue = Math.floor(easeProgress * target);
+            setDisplayValue(currentValue);
+
+            // Optimized Milestone Tracking (Only update react state when threshold crossed)
+            let newMilestone = lastMilestone;
+            if (currentValue >= MILESTONES.premium) newMilestone = 3;
+            else if (currentValue >= MILESTONES.significant) newMilestone = 2;
+            else if (currentValue >= MILESTONES.entry) newMilestone = 1;
+
+            if (newMilestone !== lastMilestone) {
+                lastMilestone = newMilestone;
+                setCurrentMilestone(newMilestone);
             }
 
-            if (current >= target) {
+            if (progress < 1) {
+                animationFrameId = requestAnimationFrame(animate);
+            } else {
                 setDisplayValue(target);
                 setHasCounted(true);
-                clearInterval(timer);
-                // Trigger confetti when counting completes
-                setTimeout(() => celebrate(), 200);
-                setTimeout(() => setShowDossier(true), 800); // Staggered reveal of dossier
-            } else {
-                setDisplayValue(current);
-            }
-        }, 1000 / fps);
 
-        return () => clearInterval(timer);
+                // Trigger celebration
+                confettiTimeoutId = setTimeout(() => celebrate(), 200);
+                dossierTimeoutId = setTimeout(() => setShowDossier(true), 800);
+            }
+        };
+
+        animationFrameId = requestAnimationFrame(animate);
+
+        // Robust Cleanup
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            clearTimeout(confettiTimeoutId);
+            clearTimeout(dossierTimeoutId);
+        };
     }, [results, isLoading]);
 
     if (isLoading) {

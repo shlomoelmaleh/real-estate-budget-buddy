@@ -296,7 +296,7 @@ export const translations: Record<Language, Translations> = {
     step1Desc: "אתם והמטרה שלכם",
     step2Title: "העוצמה",
     step2Desc: "הון עצמי והכנסות",
-    step3Title: "המעמד והתנאים",
+    step3Title: "מעמד ותנאים",
     step3Desc: "סטטוס בנקאי ומיסוי",
     step4Title: "יעדים ומגבלות",
     step4Desc: "יעדים ואזור נוחות",
@@ -524,7 +524,7 @@ export const translations: Record<Language, Translations> = {
     noteLTV: "You are currently making the most of the bank's standard rules for financing. Our next step should be ensuring your profile is perfectly presented to get you the lowest possible interest rates.",
     noteAge: "The loan term is limited by age, increasing the monthly payment. We should structure the loan to minimize this impact.",
     whatIfText: "Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪100,000.",
-    expertCommitment: "This dossier will be reviewed by an expert to ensure it aligns with the latest 2025 bank rules.",
+    expertCommitment: "✓ Validated against 2025 Israeli Bank Regulations | Expert review within 24h",
   },
   fr: {
     dir: 'ltr',
