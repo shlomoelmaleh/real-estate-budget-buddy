@@ -52,6 +52,7 @@ export interface CalculatorResults {
   equityRemaining: number;
   lawyerFeeTTC: number;
   brokerFeeTTC: number;
+  limitingFactor?: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
 }
 
 export interface AmortizationRow {

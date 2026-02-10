@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
-import { Loader2, Mail, Phone, FileText, CheckCircle2 } from 'lucide-react';
+import { Loader2, Mail, Phone, FileText, CheckCircle2, FolderOpen } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { StepRevealProps } from '../types';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,18 @@ export function Step5({
     const [currentMilestone, setCurrentMilestone] = useState<number>(0); // 0 = none, 1-3 = tier
     const fullName = watch ? watch('fullName') : '';
     const firstName = fullName?.split(' ')[0] || '';
+    const [showDossier, setShowDossier] = useState(false);
+
+    // Dynamic Diagnosis Hook
+    const getDiagnosisHook = () => {
+        switch (results.limitingFactor) {
+            case 'INCOME_LIMIT': return t.hookIncome;
+            case 'EQUITY_LIMIT': return t.hookEquity;
+            case 'LTV_LIMIT': return t.hookLTV;
+            case 'AGE_LIMIT': return t.hookAge;
+            default: return t.hookDefault;
+        }
+    };
 
     // Milestone thresholds
     const MILESTONES = {
@@ -91,6 +103,7 @@ export function Step5({
                 clearInterval(timer);
                 // Trigger confetti when counting completes
                 setTimeout(() => celebrate(), 200);
+                setTimeout(() => setShowDossier(true), 800); // Staggered reveal of dossier
             } else {
                 setDisplayValue(current);
             }
@@ -176,78 +189,93 @@ export function Step5({
                 </div>
             </div>
 
-            {/* Strategic Lock (Lead Capture) */}
-            <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/60 space-y-8 mt-8 shadow-sm">
-                <div className="space-y-2 text-center">
-                    <h3 className="font-semibold text-lg flex items-center justify-center gap-2 text-primary">
-                        <FileText className="w-5 h-5" />
-                        {t.leadCaptureBtn}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
-                        {t.leadCaptureTitle}
-                    </p>
-                </div>
+            {/* Dossier Teaser - Animated Entry */}
+            <div className={cn(
+                "transition-all duration-1000 ease-out transform",
+                showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            )}>
+                <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/60 space-y-8 mt-8 shadow-sm relative overflow-hidden">
 
-                {/* Form Fields & Button Container - Vertical Stack (Strict Gap 8) */}
-                <div className="flex flex-col gap-8 w-full max-w-md mx-auto">
-                    {/* 1. Email Field */}
-                    <div className="w-full">
-                        <Controller
-                            name="email"
-                            control={control}
-                            render={({ field }) => (
-                                <FormInput
-                                    label={t.email}
-                                    icon={<Mail className="w-4 h-4" />}
-                                    type="email"
-                                    {...field}
-                                    hasError={!!errors.email}
-                                    className="bg-white w-full"
-                                    placeholder="example@email.com"
-                                />
-                            )}
-                        />
+                    {/* Premium Header */}
+                    <div className="space-y-4 text-center relative z-10">
+                        <div className="inline-flex items-center justify-center p-4 rounded-full bg-blue-950/5 mb-2 ring-1 ring-blue-900/10">
+                            {/* Premium Icon composed of Folder + Text */}
+                            <div className="relative">
+                                <FolderOpen className="w-10 h-10 text-[#1e3a8a]" strokeWidth={1.5} />
+                                <FileText className="w-5 h-5 text-[#d97706] absolute -right-1 -bottom-1 bg-white rounded-full p-0.5 shadow-sm" />
+                            </div>
+                        </div>
+
+                        <h3 className="font-bold text-xl text-[#1e3a8a]">
+                            {t.dossierTeaser}
+                        </h3>
+
+                        <p className="text-base text-slate-600 leading-relaxed max-w-lg mx-auto font-medium">
+                            {getDiagnosisHook()}
+                        </p>
                     </div>
 
-                    {/* 2. Phone Field */}
-                    <div className="w-full">
-                        <Controller
-                            name="phone"
-                            control={control}
-                            render={({ field }) => (
-                                <FormInput
-                                    label={t.phone}
-                                    icon={<Phone className="w-4 h-4" />}
-                                    type="tel"
-                                    {...field}
-                                    hasError={!!errors.phone}
-                                    className="bg-white w-full"
-                                    placeholder="050-0000000"
-                                />
-                            )}
-                        />
-                    </div>
+                    {/* Form Fields & Button Container - Vertical Stack (Strict Gap 8) */}
+                    <div className="flex flex-col gap-8 w-full max-w-md mx-auto">
+                        {/* 1. Email Field */}
+                        <div className="w-full">
+                            <Controller
+                                name="email"
+                                control={control}
+                                render={({ field }) => (
+                                    <FormInput
+                                        label={t.email}
+                                        icon={<Mail className="w-4 h-4" />}
+                                        type="email"
+                                        {...field}
+                                        hasError={!!errors.email}
+                                        className="bg-white w-full"
+                                        placeholder="example@email.com"
+                                    />
+                                )}
+                            />
+                        </div>
 
-                    {/* 3. Send Button - Glowing pulse after confetti */}
-                    <Button
-                        type="button"
-                        onClick={onSendReport}
-                        disabled={isSending}
-                        className={cn(
-                            "w-full min-h-[4rem] py-4 h-auto text-sm sm:text-base md:text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center px-4 whitespace-normal",
-                            "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]",
-                            hasCounted && "animate-pulse shadow-primary/30"
-                        )}
-                    >
-                        {isSending ? (
-                            <Loader2 className="w-5 h-5 animate-spin mr-2 shrink-0" />
-                        ) : (
-                            <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 shrink-0" />
-                        )}
-                        <span className="text-balance leading-tight">
-                            {t.leadCaptureBtn}
-                        </span>
-                    </Button>
+                        {/* 2. Phone Field */}
+                        <div className="w-full">
+                            <Controller
+                                name="phone"
+                                control={control}
+                                render={({ field }) => (
+                                    <FormInput
+                                        label={t.phone}
+                                        icon={<Phone className="w-4 h-4" />}
+                                        type="tel"
+                                        {...field}
+                                        hasError={!!errors.phone}
+                                        className="bg-white w-full"
+                                        placeholder="050-0000000"
+                                    />
+                                )}
+                            />
+                        </div>
+
+                        {/* 3. Send Button - Glowing pulse after confetti */}
+                        <Button
+                            type="button"
+                            onClick={onSendReport}
+                            disabled={isSending}
+                            className={cn(
+                                "w-full min-h-[4rem] py-4 h-auto text-sm sm:text-base md:text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center px-4 whitespace-normal",
+                                "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]",
+                                hasCounted && "animate-pulse shadow-primary/30"
+                            )}
+                        >
+                            {isSending ? (
+                                <Loader2 className="w-5 h-5 animate-spin mr-2 shrink-0" />
+                            ) : (
+                                <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 shrink-0" />
+                            )}
+                            <span className="text-balance leading-tight">
+                                {t.leadCaptureBtn}
+                            </span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

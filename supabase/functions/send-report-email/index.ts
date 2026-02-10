@@ -457,14 +457,14 @@ function generateEmailHtml(
 
   const texts = {
     he: {
-      subject: "דוח מחשבון תקציב רכישת נכס",
-      subjectWithName: "דוח תיק של",
+      subject: "תיק האסטרטגיה הפיננסית שלך",
+      subjectWithName: "תיק אסטרטגיה עבור",
       fromPartner: "מאת",
       // Greeting
       greeting: "שלום",
       // Section 1 - Hero
-      heroTitle: 'סיכום פרויקט הנדל"ן שלך',
-      heroTitleWithName: "דוח תיק של",
+      heroTitle: "תיק האסטרטגיה הפיננסית שלך",
+      heroTitleWithName: "תיק אסטרטגיה עבור",
       // Client info for advisor copy
       clientInfoTitle: "פרטי הלקוח",
       clientName: "שם",
@@ -576,12 +576,12 @@ function generateEmailHtml(
       bridgeSentence: "פערים בתקציב ניתנים לעיתים לגישור באמצעות תכנון פיננסי יצירתי. הצוות שלנו יבדוק זאת לעומק.",
     },
     en: {
-      subject: "Property Budget Calculator - Complete Report",
-      subjectWithName: "Report for",
+      subject: "Your Strategic Financial Dossier",
+      subjectWithName: "Strategic Dossier for",
       fromPartner: "from",
       greeting: "Hello",
-      heroTitle: "Your Property Project Summary",
-      heroTitleWithName: "Report for",
+      heroTitle: "Your Strategic Financial Dossier",
+      heroTitleWithName: "Strategic Dossier for",
       clientInfoTitle: "Client Information",
       clientName: "Name",
       clientPhone: "Phone",
@@ -687,12 +687,12 @@ function generateEmailHtml(
       bridgeSentence: "Budget gaps can often be bridged with creative financial planning. Our team will review this.",
     },
     fr: {
-      subject: "Simulateur Budget Immobilier - Rapport Complet",
-      subjectWithName: "Rapport du dossier de",
+      subject: "Votre Dossier Stratégique Financier",
+      subjectWithName: "Dossier Stratégique pour",
       fromPartner: "de la part de",
       greeting: "Bonjour",
-      heroTitle: "Synthèse de votre projet immobilier",
-      heroTitleWithName: "Rapport du dossier de",
+      heroTitle: "Votre Dossier Stratégique Financier",
+      heroTitleWithName: "Dossier Stratégique pour",
       clientInfoTitle: "Coordonnées du client",
       clientName: "Nom",
       clientPhone: "Téléphone",
@@ -1829,9 +1829,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // יצירת תוכן האימייל (גרסאות נפרדות ללקוח ולאדמין)
     const t = (({
-      he: { subjectWithName: "דוח תיק של", fromPartner: "מאת" },
-      en: { subjectWithName: "Report for", fromPartner: "from" },
-      fr: { subjectWithName: "Rapport du dossier de", fromPartner: "de la part de" }
+      he: { subjectWithName: "תיק האסטרטגיה הפיננסית של", fromPartner: "מאת" },
+      en: { subjectWithName: "Strategic Dossier for", fromPartner: "from" },
+      fr: { subjectWithName: "Dossier Stratégique pour", fromPartner: "de la part de" }
     }) as Record<string, Record<string, string>>)[data.language] || { subjectWithName: "Report for", fromPartner: "from" };
 
     console.log(`[${requestId}] Before subject construction - partnerContact:`, JSON.stringify(partnerContact));

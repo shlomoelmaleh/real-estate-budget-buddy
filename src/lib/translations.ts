@@ -162,6 +162,15 @@ export interface Translations {
   milestone2: string;
   milestone3: string;
   revealComplete: string;
+  // Dossier Strategy
+  dossierTeaser: string;
+  unlockDossierBtn: string;
+  hookIncome: string;
+  hookEquity: string;
+  hookLTV: string;
+  hookAge: string;
+  hookDefault: string;
+  dossierSubject: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -289,8 +298,7 @@ export const translations: Record<Language, Translations> = {
     loadingText: "מנתח נתונים...",
     successTitle: "הנה פוטנציאל הרכישה המקסימלי שלכם:",
     successSubtitle: "כולל מסגרת משכנתא ועלויות נלוות משוערות",
-    leadCaptureTitle: "אל תשארו עם מספר בלבד. הכנו עבורכם 'מפת דרכים' אישית הכוללת ניתוח בנקאי מלא ותחזית מס. לאן לשלוח לכם אותה?",
-    leadCaptureBtn: "שלחו לי את הדו\"ח המלא",
+
     wizardWelcome: "ברוכים הבאים! כל חלום גדול מתחיל בתוכנית. בואו נמפה את שלכם.",
     wizardFoundation: "מצוין! העבודה הקשה שלכם בנתה יסודות.",
     wizardBlueprint: "כמעט שם. פרטים אלו עוזרים לנו למצוא את ההטבות.",
@@ -318,6 +326,17 @@ export const translations: Record<Language, Translations> = {
     milestone2: "עוצמה פיננסית משמעותית! 💪",
     milestone3: "דירוג כוח קנייה פרימיום! 🏆",
     revealComplete: "ניתוח המימון הושלם",
+    // Dossier Strategy
+    dossierTeaser: "תיק האסטרטגיה הפיננסית שלך מוכן",
+    unlockDossierBtn: "שלחו לי את התיק המלא (PDF)",
+    hookIncome: "הכנו עבורך אסטרטגיית 'ייעול החזר' שתעזור לך למקסם את אישור הבנק למרות מגבלות ההכנסה.",
+    hookEquity: "הכנו עבורך מפת עלויות מדויקת שתעזור לך לתכנן את תזרים המזומנים מול הוצאות המיסוי והסגירה.",
+    hookLTV: "הכנו עבורך ניתוח רגולטורי שיסביר את מגבלות המימון של בנק ישראל עבור הפרופיל שלך.",
+    hookAge: "הכנו עבורך תוכנית אופטימיזציה לפריסת המשכנתא בהתאם למגבלות הגיל.",
+    hookDefault: "הכנו עבורך ניתוח בנקאי מקיף שיעזור לך להבין את פוטנציאל הרכישה האמיתי שלך.",
+    dossierSubject: "תיק האסטרטגיה הפיננסית שלך - [Name]",
+    leadCaptureTitle: "אל תשארו עם מספר בלבד. הכנו עבורכם 'תיק אסטרטגיה' אישי הכוללת ניתוח בנקאי מלא ותחזית מס. לאן לשלוח לכם אותו?",
+    leadCaptureBtn: "שלחו לי את התיק המלא",
   },
   en: {
     dir: 'ltr',
@@ -443,8 +462,7 @@ export const translations: Record<Language, Translations> = {
     loadingText: "Analyzing regulations...",
     successTitle: "Your property acquisition potential is:",
     successSubtitle: "This potential includes your mortgage capacity and estimated closing costs.",
-    leadCaptureTitle: "We prepared a personal roadmap (PDF) including full bank analysis and tax forecast. Where should we send it?",
-    leadCaptureBtn: "Send My Full Report",
+
     wizardWelcome: "Welcome! Every great dream starts with a plan. Let's map yours.",
     wizardFoundation: "Great! Your hard work has built a foundation.",
     wizardBlueprint: "Almost there. These details help us find the specific benefits.",
@@ -472,6 +490,17 @@ export const translations: Record<Language, Translations> = {
     milestone2: "Significant Financial Power! 💪",
     milestone3: "Premium Purchasing Tier reached! 🏆",
     revealComplete: "Financial Analysis Complete",
+    // Dossier Strategy
+    dossierTeaser: "Your Strategic Financial Dossier is Ready",
+    unlockDossierBtn: "Send My Full Dossier (PDF)",
+    hookIncome: "We've prepared a 'Repayment Optimization' strategy to help you maximize bank approval despite income ceilings.",
+    hookEquity: "We've prepared a detailed cash-flow roadmap to help you navigate acquisition costs and taxes.",
+    hookLTV: "We've included a Regulatory Ceiling Analysis explaining the Bank of Israel's financing limits for your profile.",
+    hookAge: "We've prepared a loan-term optimization plan to address age-based repayment restrictions.",
+    hookDefault: "We've prepared a comprehensive banking analysis to help you understand your true purchasing power.",
+    dossierSubject: "Your Strategic Financial Dossier - [Name]",
+    leadCaptureTitle: "Don't settle for just a number. We've prepared your personal Strategic Dossier (PDF). Where should we send it?",
+    leadCaptureBtn: "Send My Full Dossier",
   },
   fr: {
     dir: 'ltr',
@@ -597,8 +626,7 @@ export const translations: Record<Language, Translations> = {
     loadingText: "Analyse en cours...",
     successTitle: "Voici votre potentiel d'acquisition :",
     successSubtitle: "Ce potentiel inclut votre capacité d'emprunt et les frais annexes estimés.",
-    leadCaptureTitle: "Ne restez pas avec un simple chiffre. Nous avons préparé votre feuille de route personnelle (PDF) incluant l'analyse bancaire et fiscale. Où souhaitez-vous la recevoir ?",
-    leadCaptureBtn: "Recevoir ma Stratégie Complète",
+
     wizardWelcome: "Bienvenue ! Tout grand rêve commence par un plan. Dessinons le vôtre.",
     wizardFoundation: "Super ! Vos fondations sont solides.",
     wizardBlueprint: "Presque fini. Régulations bancaires.",
@@ -626,5 +654,16 @@ export const translations: Record<Language, Translations> = {
     milestone2: "Puissance financière significative ! 💪",
     milestone3: "Niveau d'achat Premium atteint ! 🏆",
     revealComplete: "Analyse de financement terminée",
+    // Dossier Strategy
+    dossierTeaser: "Votre Dossier Stratégique Financier est Prêt",
+    unlockDossierBtn: "Envoyer Mon Dossier Complet (PDF)",
+    hookIncome: "Nous avons préparé une stratégie d'optimisation du remboursement pour maximiser l'accord bancaire.",
+    hookEquity: "Nous avons préparé une feuille de route détaillée des flux de trésorerie pour gérer les coûts d'acquisition.",
+    hookLTV: "Nous avons inclus une analyse des plafonds réglementaires expliquant les limites de financement de la Banque d'Israël.",
+    hookAge: "Nous avons préparé un plan d'optimisation de la durée du prêt adapté aux restrictions liées à l'âge.",
+    hookDefault: "Nous avons préparé une analyse bancaire complète pour vous aider à comprendre votre véritable pouvoir d'achat.",
+    dossierSubject: "Votre Dossier Stratégique Financier - [Name]",
+    leadCaptureTitle: "Ne vous contentez pas d'un simple chiffre. Nous avons préparé votre Dossier Stratégique personnel (PDF). Où devons-nous l'envoyer ?",
+    leadCaptureBtn: "Envoyer Mon Dossier Complet",
   }
 };
