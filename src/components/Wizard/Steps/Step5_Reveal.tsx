@@ -17,7 +17,8 @@ export function Step5({
     isLoading,
     onSendReport,
     isSending,
-    watch
+    watch,
+    onBack
 }: StepRevealProps) {
 
     const [displayValue, setDisplayValue] = useState(0);
@@ -29,6 +30,7 @@ export function Step5({
 
     // Dynamic Diagnosis Hook
     const getDiagnosisHook = () => {
+        if (!results) return t.hookDefault;
         switch (results.limitingFactor) {
             case 'INCOME_LIMIT': return t.hookIncome;
             case 'EQUITY_LIMIT': return t.hookEquity;
@@ -334,6 +336,29 @@ export function Step5({
                         <CheckCircle2 className="w-3 h-3 inline-block mr-1 opacity-70" />
                         {t.expertCommitment}
                     </p>
+
+                    {/* DEV MODE: Validation Hook */}
+                    {import.meta.env.DEV && (
+                        <div className="mt-6 flex flex-col gap-2">
+                            <button
+                                type="button"
+                                onClick={() => window.dispatchEvent(new CustomEvent('dev-mirror-preview'))}
+                                className="mx-auto block text-[10px] uppercase tracking-wider font-bold text-slate-400 border border-dashed border-slate-300 px-4 py-1.5 rounded-full hover:bg-slate-100 hover:text-slate-600 transition-all"
+                            >
+                                🔍 Architect: Validate Dossier Layout
+                            </button>
+
+                            {onBack && (
+                                <button
+                                    type="button"
+                                    onClick={onBack}
+                                    className="mx-auto block text-[10px] uppercase tracking-wider font-bold text-blue-400 border border-dashed border-blue-200 px-4 py-1.5 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                >
+                                    ↩️ Architect: Back to Editing
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

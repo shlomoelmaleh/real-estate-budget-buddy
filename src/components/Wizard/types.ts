@@ -17,4 +17,5 @@ export interface StepRevealProps extends StepProps {
     isLoading: boolean;
     onSendReport: () => void;
     isSending: boolean;
+    onBack?: () => void;
 }

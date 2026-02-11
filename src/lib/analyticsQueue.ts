@@ -85,6 +85,19 @@ class AnalyticsQueue {
         }));
 
         try {
+            // DRY-RUN PROTECTION for DEV mode
+            if (import.meta.env.DEV) {
+                console.log('%c[DEV MODE] Analytics Dry-Run Intercepted', 'background: #000; color: #00ff00; font-weight: bold; padding: 4px;');
+                console.table(payloads);
+                console.log('[DEV MODE] Funnel event intercepted. Data not sent to database.');
+
+                // Clear the queue as if it was sent successfully
+                this.queue = [];
+                this.saveQueue();
+                this.isFlushing = false;
+                return;
+            }
+
             // TRY BATCH INSERT FIRST (80% network reduction)
             console.log(`[Analytics] Attempting batch insert of ${payloads.length} events`);
             const { error: batchError } = await supabase.from('funnel_events').insert(payloads);

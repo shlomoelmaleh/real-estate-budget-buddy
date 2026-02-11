@@ -36,6 +36,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 
 import { analyticsQueue } from '@/lib/analyticsQueue';
+import { DevInspector } from './DevTools/DevInspector';
+import { ReportEmailRequest } from '@/lib/devMirror';
 
 // ... (imports remain the same)
 
@@ -440,6 +442,7 @@ export function BudgetCalculator() {
             onSendReport={handleSendReport}
             isSending={isSending}
             watch={watch}
+            onBack={handleBack}
           />
         );
       default: return null;
@@ -619,6 +622,28 @@ export function BudgetCalculator() {
           </main>
         </div>
       )}
+
+      {/* Dev Tools HUD (Only visible in DEV) */}
+      <DevInspector
+        formData={{
+          ...watch(),
+          ltv: (watch().isFirstProperty !== undefined && watch().isIsraeliCitizen !== undefined)
+            ? calculateLTV(watch().isFirstProperty, watch().isIsraeliCitizen).toString()
+            : "50",
+          maxAge,
+          interest,
+          ratio,
+          rentalYield,
+          rentRecognition,
+          lawyerPct,
+          brokerPct,
+          vatPct,
+          advisorFee,
+          otherFee,
+        } as unknown as ReportEmailRequest['inputs']}
+        results={results as unknown as ReportEmailRequest['results']}
+        language={language as ReportEmailRequest['language']}
+      />
     </div>
   );
 }
