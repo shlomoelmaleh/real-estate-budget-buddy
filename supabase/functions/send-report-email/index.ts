@@ -142,12 +142,14 @@ const EmailRequestSchema = z.object({
 // Elite 5-Tier Scoring System
 function calculateLeadScore(
   inputs: ReportEmailRequest['inputs'],
-  results: ReportEmailRequest['results']
+  results: ReportEmailRequest['results'],
+  lang: 'he' | 'en' | 'fr' = 'en'
 ): {
   score: number;
   priorityLabel: string;
   priorityColor: string;
   actionSla: string;
+  predictedTimeline: string;
   breakdown: {
     budget: number;
     health: number;
@@ -196,23 +198,28 @@ function calculateLeadScore(
   let priorityLabel = '❄️ COLD';
   let priorityColor = '#94a3b8'; // Slate
   let actionSla = "Add to long-term newsletter.";
+  let predictedTimeline = lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Planification)' : '3-6 months (Planning phase)';
 
   if (score >= 85) {
     priorityLabel = '💎 PLATINUM';
     priorityColor = '#7c3aed'; // Violet/Purple
     actionSla = "Call within 1 hour.";
+    predictedTimeline = lang === 'he' ? '1-2 שבועות (מוכנים לתנועה)' : lang === 'fr' ? '1-2 semaines (Prêt)' : '1-2 weeks (Ready to move)';
   } else if (score >= 70) {
     priorityLabel = '🔥 HOT';
     priorityColor = '#ef4444'; // Red
     actionSla = "Call within 4 hours.";
+    predictedTimeline = lang === 'he' ? '1-2 חודשים (חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Recherche active)' : '1-2 months (Active search)';
   } else if (score >= 50) {
     priorityLabel = '☀️ WARM';
     priorityColor = '#f59e0b'; // Amber
     actionSla = "Call within 24 hours.";
+    predictedTimeline = lang === 'he' ? '1-2 חודשים (חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Recherche active)' : '1-2 months (Active search)';
   } else if (score >= 30) {
     priorityLabel = '🌤️ COOL';
     priorityColor = '#3b82f6'; // Blue
     actionSla = "Email follow-up.";
+    predictedTimeline = lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Planification)' : '3-6 months (Planning phase)';
   }
 
   return {
@@ -220,6 +227,7 @@ function calculateLeadScore(
     priorityLabel,
     priorityColor,
     actionSla,
+    predictedTimeline,
     breakdown: {
       budget: budgetScore,
       health: healthScore,
@@ -1009,7 +1017,7 @@ function generateEmailHtml(
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   // Internal Analysis Calculation (for Advisor Email)
-  const { score, priorityLabel, priorityColor, actionSla, breakdown } = calculateLeadScore(inputs, results);
+  const { score, priorityLabel, priorityColor, actionSla, predictedTimeline, breakdown } = calculateLeadScore(inputs, results, language);
 
   // Calculate Bonus Power for What-If
   const interestRateVal = parseFloat(inputs.interest) || 5.0;
@@ -1352,49 +1360,41 @@ function generateEmailHtml(
       ? `
       <!-- INTERNAL ANALYSIS SECTION (Lead Score) -->
       <div style="background: #1e293b; color: white; padding: 20px; border-bottom: 4px solid ${priorityColor}; margin: -16px -16px 20px -16px; border-radius: 0 0 12px 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-             <span style="background: ${priorityColor}; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-block;">${priorityLabel}</span>
-             <span style="font-size: 11px; opacity: 0.8; font-weight: 600;">Action SLA: ${actionSla}</span>
-          </div>
-          <span style="font-size: 32px; font-weight: 800; color: ${priorityColor}; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${score}</span>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="vertical-align: top; padding-bottom: 10px;">
+              <span style="background: ${priorityColor}; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-block;">${priorityLabel}</span>
+            </td>
+            <td style="vertical-align: top; text-align: ${isRTL ? 'left' : 'right'}; padding-bottom: 10px;">
+              <span style="font-size: 32px; font-weight: 800; color: ${priorityColor}; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${score}</span>
+            </td>
+          </tr>
+        </table>
+        
+        <div style="margin-bottom: 8px;">
+          <strong style="color: #e2e8f0;">&#9889; Action SLA:</strong>
+          <span style="color: #cbd5e1; margin-${isRTL ? 'right' : 'left'}: 6px;">${actionSla}</span>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong style="color: #e2e8f0;">&#9201; ${language === 'he' ? 'לו״ז צפוי:' : language === 'fr' ? 'Délai prévu :' : 'Predicted Timeline:'}</strong>
+          <span style="color: ${priorityColor}; font-weight: 700; margin-${isRTL ? 'right' : 'left'}: 6px;">${predictedTimeline}</span>
         </div>
         
         <!-- Score Breakdown Grid -->
         <div style="background: #f8fafc; border-radius: 8px; padding: 12px; margin: 12px 0;">
-          <div style="font-size: 12px; color: #64748b; font-weight: 600; display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-around;">
-            <span>Budget: <strong style="color: #0f172a;">${breakdown.budget}/35</strong></span>
-            <span>|</span>
-            <span>Health: <strong style="color: #0f172a;">${breakdown.health}/25</strong></span>
-            <span>|</span>
-            <span>Ready: <strong style="color: #0f172a;">${breakdown.readiness}/25</strong></span>
-            <span>|</span>
-            <span>Age: <strong style="color: #0f172a;">${breakdown.age}/10</strong></span>
-            <span>|</span>
-            <span>Cash: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></span>
-          </div>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="font-size: 12px; color: #64748b; font-weight: 600; text-align: center;">
+              <td>Budget: <strong style="color: #0f172a;">${breakdown.budget}/35</strong></td>
+              <td>Health: <strong style="color: #0f172a;">${breakdown.health}/25</strong></td>
+              <td>Ready: <strong style="color: #0f172a;">${breakdown.readiness}/25</strong></td>
+              <td>Age: <strong style="color: #0f172a;">${breakdown.age}/10</strong></td>
+              <td>Cash: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></td>
+            </tr>
+          </table>
         </div>
         
-        <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; opacity: 0.9;">Limiting Factor: ${limitingFactor}</div>
-        <div style="font-size: 13px; opacity: 0.8; line-height: 1.4;">${limitingFactorDescription}</div>
-        
-        <!-- Predicted Timeline -->
-        <table style="width: 100%; margin-top: 14px; padding-top: 12px; border-top: 1px solid #475569; border-collapse: collapse;">
-          <tr>
-            <td style="font-size: 13px; color: #94a3b8; padding: 4px 0; vertical-align: middle;">
-              &#9201; ${lang === 'he' ? 'לו״ז צפוי:' : lang === 'fr' ? 'Délai prévu :' : 'Predicted Timeline:'}
-            </td>
-          </tr>
-          <tr>
-            <td style="font-size: 16px; font-weight: 700; color: ${priorityColor}; padding: 4px 0;">${
-            score >= 85
-              ? (lang === 'he' ? '1-2 שבועות (מוכנים לתנועה)' : lang === 'fr' ? "1-2 semaines (Prêt à l'achat)" : '1-2 weeks (Ready to move)')
-              : score >= 50
-                ? (lang === 'he' ? '1-2 חודשים (שלב חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Phase de recherche active)' : '1-2 months (Active search phase)')
-                : (lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Phase de planification)' : '3-6 months (Planning phase)')
-          }</td>
-          </tr>
-        </table>
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #e2e8f0;">Limiting Factor: ${limitingFactor}</div>
+        <div style="font-size: 13px; color: #94a3b8; line-height: 1.4;">${limitingFactorDescription}</div>
       </div>
 
       <!-- CLIENT INFO SECTION (Advisor Only) -->
@@ -1951,7 +1951,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Raw data.partnerId:`, data.partnerId, 'Raw data.partner_id:', data.partner_id);
 
     // Calculate Lead Score & Analysis for Database
-    const leadAnalysis = calculateLeadScore(data.inputs, data.results);
+    const leadAnalysis = calculateLeadScore(data.inputs, data.results, data.language);
     const limitingFactorDesc = getLimitingFactorDescription(data.results.limitingFactor);
 
     // Prepare full results object with analysis
