@@ -26,7 +26,6 @@ import { Step0 } from './Wizard/Steps/Step0_Welcome';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DevInspector } from './DevTools/DevInspector';
-import { ReportEmailRequest } from '@/lib/devMirror';
 import { useBudgetWizard } from '@/hooks/useBudgetWizard';
 
 // ... (imports remain the same)
@@ -84,13 +83,6 @@ export function BudgetCalculator() {
     t,
   });
 
-  // Helper for LTV calculation (for DevInspector only)
-  const calculateLTV = (isFirstProperty: boolean, isIsraeliCitizen: boolean): number => {
-    if (!isFirstProperty) return 50;
-    if (isIsraeliCitizen) return 75;
-    return 50;
-  };
-
   // --- PARTNER DISPLAY INFO ---
   const displayName = partner?.name || t.advisorName;
   const displayPhone = partner?.phone || t.advisorPhone;
@@ -120,18 +112,6 @@ export function BudgetCalculator() {
     if (digitsFromPhone) return `https://wa.me/${digitsFromPhone}`;
     return 'https://wa.me/972549997711';
   };
-
-  // Logic constants for DevInspector
-  const maxAge = '80';
-  const interest = '5.0';
-  const ratio = '33';
-  const rentalYield = '3.0';
-  const rentRecognition = '80';
-  const lawyerPct = '1.0';
-  const brokerPct = '2.0';
-  const vatPct = '18';
-  const advisorFee = '9,000';
-  const otherFee = '3,000';
 
   const isRTL = language === 'he';
 
@@ -352,24 +332,8 @@ export function BudgetCalculator() {
 
       {/* Dev Tools HUD (Only visible in DEV) */}
       <DevInspector
-        formData={{
-          ...watch(),
-          ltv: (watch().isFirstProperty !== undefined && watch().isIsraeliCitizen !== undefined)
-            ? calculateLTV(watch().isFirstProperty, watch().isIsraeliCitizen).toString()
-            : "50",
-          maxAge,
-          interest,
-          ratio,
-          rentalYield,
-          rentRecognition,
-          lawyerPct,
-          brokerPct,
-          vatPct,
-          advisorFee,
-          otherFee,
-        } as unknown as ReportEmailRequest['inputs']}
-        results={results as unknown as ReportEmailRequest['results']}
-        language={language as ReportEmailRequest['language']}
+        formData={watch()}
+        results={results}
       />
     </div>
   );
