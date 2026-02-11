@@ -80,6 +80,7 @@ const EmailRequestSchema = z.object({
     vatPct: z.string().max(10),
     advisorFee: z.string().max(30),
     otherFee: z.string().max(30),
+    expectedRent: z.string().max(30).optional(),
     targetPropertyPrice: z.string().max(30).optional(),
   }),
   results: z.object({
@@ -351,6 +352,7 @@ interface ReportEmailRequest {
     vatPct: string;
     advisorFee: string;
     otherFee: string;
+    expectedRent?: string;
     targetPropertyPrice?: string;
   };
   results: {
@@ -478,6 +480,10 @@ function generateEmailHtml(
 
   // Calculate correct DTI using adjusted income (income + recognized rent)
   const dtiEstimatedCorrected = adjustedIncomeForDTI > 0 ? monthlyPayment / adjustedIncomeForDTI : null;
+
+  // Define the dynamic label based on input
+  const hasManualRent = inputs.expectedRent && parseFloat(inputs.expectedRent.replace(/,/g, "")) > 0;
+  const rentLabel = hasManualRent ? t.labelUserRent : t.labelEstimatedRent;
 
   // Financial Dashboard calculations
   const monthlyRent = results.rentIncome || 0;
@@ -1577,9 +1583,9 @@ function generateEmailHtml(
     }
           ${inputs.isRented
       ? `
-          <div class="row" style="margin-bottom: 4px;">
-            <span class="label">${t.estimatedRentalIncome}</span>
-            <span class="value">₪ ${formatNumber(results.rentIncome)}</span>
+          <div class="row" style="margin-bottom: 4px; ${hasManualRent ? "background-color: #fffbf0; border-radius: 4px; border: 1px solid #fde68a; padding: 4px !important;" : ""}">
+            <span class="label" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">${rentLabel}</span>
+            <span class="value" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">₪ ${formatNumber(results.rentIncome)}</span>
           </div>
           ${!inputs.isFirstProperty
         ? `
@@ -1772,6 +1778,12 @@ function generateEmailHtml(
             <div class="a-label">${t.loanTerm}</div>
             <div class="a-value">${results.loanTermYears} ${t.years}</div>
           </div>
+          ${inputs.isRented ? `
+          <div class="assumption-item" style="${hasManualRent ? "background: #fffbf0; border-color: #fcd34d;" : ""}">
+            <div class="a-label">${rentLabel}</div>
+            <div class="a-value">₪ ${formatNumber(results.rentIncome)}</div>
+          </div>
+          ` : ""}
         </div>
 
         ${data.csvData

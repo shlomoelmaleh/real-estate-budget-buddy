@@ -108,6 +108,8 @@ export interface Translations {
   netIncomeLabel: string;
   expectedRent: string;
   expectedRentPlaceholder: string;
+  labelEstimatedRent: string;
+  labelUserRent: string;
   helperSimulation: string;
   targetPropertyPrice: string;
   targetPropertyPriceHelper: string;
@@ -283,6 +285,8 @@ export const translations: Record<Language, Translations> = {
     netIncomeLabel: "הכנסה נטו פנויה",
     expectedRent: "שכירות חודשית צפויה",
     expectedRentPlaceholder: "השאר ריק לחישוב אוטומטי (3% תשואה שנתית)",
+    labelEstimatedRent: "הכנסה משכירות משוערת (3% שנתי)",
+    labelUserRent: "הכנסה משכירות צפויה (לפי קלט משתמש)",
     helperSimulation: "סימולציה ראשונית לצורך סדר גודל. בהמשך נחדד לפי הנתונים המדויקים.",
     targetPropertyPrice: "מחיר הנכס המבוקש (היעד שלכם)",
     targetPropertyPriceHelper: "אופציונלי: לצורך השוואה מול התקציב המחושב בלבד.",
@@ -455,6 +459,8 @@ export const translations: Record<Language, Translations> = {
     netIncomeLabel: "Available net income",
     expectedRent: "Expected Monthly Rent",
     expectedRentPlaceholder: "Leave empty for auto-calc (3% annual yield)",
+    labelEstimatedRent: "Estimated rental income (3% annual)",
+    labelUserRent: "Expected monthly rent (User Input)",
     helperSimulation: "Indicative estimate to frame your budget; we'll refine it with your details.",
     targetPropertyPrice: "Target Property Price (Your Goal)",
     targetPropertyPriceHelper: "Optional: Only for comparing against your calculated budget.",
@@ -627,6 +633,8 @@ export const translations: Record<Language, Translations> = {
     netIncomeLabel: "Revenu net disponible",
     expectedRent: "Loyer mensuel attendu",
     expectedRentPlaceholder: "Laissez vide pour calcul auto (3% rendement annuel)",
+    labelEstimatedRent: "Revenu locatif estimé (3% annuel)",
+    labelUserRent: "Loyer mensuel attendu (Saisi par l'utilisateur)",
     helperSimulation: "Simulation indicative pour cadrer votre budget. Nous affinerons ensuite selon votre situation.",
     targetPropertyPrice: "Prix visé (votre objectif)",
     targetPropertyPriceHelper: "Optionnel : pour comparer avec votre budget estimé.",
