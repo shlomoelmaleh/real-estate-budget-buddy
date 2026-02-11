@@ -58,7 +58,9 @@ export type Database = {
       }
       funnel_events: {
         Row: {
+          client_timestamp: string | null
           created_at: string
+          event_type: string | null
           id: string
           language: string
           partner_id: string | null
@@ -66,7 +68,9 @@ export type Database = {
           step_reached: number
         }
         Insert: {
+          client_timestamp?: string | null
           created_at?: string
+          event_type?: string | null
           id?: string
           language: string
           partner_id?: string | null
@@ -74,7 +78,9 @@ export type Database = {
           step_reached: number
         }
         Update: {
+          client_timestamp?: string | null
           created_at?: string
+          event_type?: string | null
           id?: string
           language?: string
           partner_id?: string | null
