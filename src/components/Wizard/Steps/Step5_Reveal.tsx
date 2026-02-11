@@ -86,27 +86,38 @@ export function Step5({
         // ACCESSIBILITY: Detect reduced motion preference
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        let animationFrameId: number;
+        let intervalId: NodeJS.Timeout;
         let confettiTimeoutId: NodeJS.Timeout;
         let dossierTimeoutId: NodeJS.Timeout;
 
-        // Counting Engine with milestone tracking
+        // Heartbeat Engine Configuration
         const target = results.maxPropertyValue;
-        const duration = 4000; // 4 seconds for the count
-        const startTime = performance.now();
+        const totalBeats = 10;
+        const beatInterval = 250; // ms
+        let currentBeat = 0;
 
         // Tracker to prevent redundant state updates
         let lastMilestone = 0;
 
-        const animate = (currentTime: number) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const easeProgress = easeOutCubic(progress);
+        if (prefersReducedMotion) {
+            // Immediate jump for reduced motion
+            setDisplayValue(target);
+            setHasCounted(true);
+            setCurrentMilestone(3); // Max milestone
+            setShowDossier(true);
+            return;
+        }
 
-            const currentValue = Math.floor(easeProgress * target);
+        const beat = () => {
+            currentBeat++;
+
+            // Linear increment with a "snap" feel
+            const progress = currentBeat / totalBeats;
+            const currentValue = Math.floor(progress * target);
+
             setDisplayValue(currentValue);
 
-            // Optimized Milestone Tracking (Only update react state when threshold crossed)
+            // optimized Milestone Tracking (Heartbeat sync)
             let newMilestone = lastMilestone;
             if (currentValue >= MILESTONES.premium) newMilestone = 3;
             else if (currentValue >= MILESTONES.significant) newMilestone = 2;
@@ -117,23 +128,25 @@ export function Step5({
                 setCurrentMilestone(newMilestone);
             }
 
-            if (progress < 1) {
-                animationFrameId = requestAnimationFrame(animate);
-            } else {
-                setDisplayValue(target);
+            if (currentBeat >= totalBeats) {
+                clearInterval(intervalId);
+                setDisplayValue(target); // Ensure exact final value
                 setHasCounted(true);
 
-                // Trigger celebration
-                confettiTimeoutId = setTimeout(() => celebrate(), 200);
-                dossierTimeoutId = setTimeout(() => setShowDossier(true), 800);
+                // Trigger celebration immediately after last beat (2.5s mark)
+                confettiTimeoutId = setTimeout(() => celebrate(), 0);
+
+                // Reveal Dossier 500ms after completion
+                dossierTimeoutId = setTimeout(() => setShowDossier(true), 500);
             }
         };
 
-        animationFrameId = requestAnimationFrame(animate);
+        // Start the Heartbeat
+        intervalId = setInterval(beat, beatInterval);
 
         // Robust Cleanup
         return () => {
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            if (intervalId) clearInterval(intervalId);
             clearTimeout(confettiTimeoutId);
             clearTimeout(dossierTimeoutId);
         };
