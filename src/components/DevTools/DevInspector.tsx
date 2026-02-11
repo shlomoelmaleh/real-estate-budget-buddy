@@ -16,9 +16,6 @@ interface DevInspectorProps {
 }
 
 export const DevInspector: React.FC<DevInspectorProps> = ({ formData, results, language }) => {
-    // 1. Guard: Return null if not in DEV mode
-    if (!import.meta.env.DEV) return null;
-
     const [isOpen, setIsOpen] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
     const [viewMode, setViewMode] = useState<'client' | 'advisor'>('client');
@@ -59,6 +56,9 @@ export const DevInspector: React.FC<DevInspectorProps> = ({ formData, results, l
     ) : 0;
 
     const limitingFactorDesc = results ? getLimitingFactorDescription(results.limitingFactor) : "Calculation pending...";
+
+    // Guard: Return null if not in DEV mode (after all hooks)
+    if (!import.meta.env.DEV) return null;
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
@@ -151,6 +151,33 @@ export const DevInspector: React.FC<DevInspectorProps> = ({ formData, results, l
                     >
                         <Eye size={14} className="group-hover:scale-110 transition-transform" />
                         LIVE PREVIEW DOSSIER
+                    </button>
+
+                    {/* Test Remote Logging */}
+                    <button
+                        onClick={async () => {
+                            try {
+                                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                                if (!supabaseUrl) { alert('SUPABASE_URL not set'); return; }
+                                const res = await fetch(`${supabaseUrl}/functions/v1/log-error`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        error_type: 'manual_test',
+                                        message: 'Manual Test from Advisor',
+                                        url: window.location.href,
+                                        timestamp: new Date().toISOString(),
+                                    }),
+                                });
+                                const data = await res.json();
+                                alert(res.ok ? '✅ Log sent successfully' : `❌ Failed: ${JSON.stringify(data)}`);
+                            } catch (err) {
+                                alert(`❌ Network error: ${err}`);
+                            }
+                        }}
+                        className="w-full bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-800 rounded py-2 transition-colors flex items-center justify-center gap-2 font-bold"
+                    >
+                        🔴 TEST REMOTE LOGGING
                     </button>
 
                 </div>

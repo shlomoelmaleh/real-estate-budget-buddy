@@ -174,10 +174,10 @@ function calculateLeadScore(
   else if (maxBudget > 3000000) budgetScore = 25;
   else if (maxBudget > 1500000) budgetScore = 15;
 
-  // 2. Financial Health (Max 25 pts)
+  // 2. Financial Health (Max 25 pts) - DTI = (monthlyPayment / netIncome) * 100
   const dti = netIncome > 0 ? (monthlyPayment / netIncome) * 100 : 100;
-  if (dti < 33) healthScore = 25;
-  else if (dti < 40) healthScore = 15;
+  if (dti < 30) healthScore = 25;
+  else if (dti <= 35) healthScore = 15;
 
   // 3. Readiness (Max 25 pts)
   if (equityInitial >= 400000) readinessScore = 25;
@@ -1694,6 +1694,14 @@ function generateEmailHtml(
         `
       : ""
     }
+
+        ${isAdvisorCopy && inputs.isRented && hasManualRent ? `
+        <!-- RENT WARNING - Advisor Alert -->
+        <div style="background: #fffbeb; border: 3px solid #f59e0b; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+          <div style="font-size: 14px; font-weight: 800; color: #dc2626; margin-bottom: 6px;">⚠️ ${language === 'he' ? 'שימו לב: שכירות הוזנה ידנית' : language === 'fr' ? 'Attention : Loyer saisi manuellement' : 'Warning: Rent Entered Manually'}</div>
+          <div style="font-size: 13px; color: #92400e; font-weight: 600;">${language === 'he' ? 'הלקוח הזין סכום שכירות צפוי באופן ידני (₪' + formatNumber(results.rentIncome) + '). יש לאמת מול חוזה שכירות בפועל.' : language === 'fr' ? 'Le client a saisi un loyer manuellement (₪' + formatNumber(results.rentIncome) + '). À vérifier avec le bail réel.' : 'The client entered an expected rent manually (₪' + formatNumber(results.rentIncome) + '). Please verify against an actual lease agreement.'}</div>
+        </div>
+        ` : ''}
 
         <!-- Amortization Summary Block -->
         <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid #e2e8f0;">

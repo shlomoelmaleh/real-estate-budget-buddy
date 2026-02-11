@@ -163,19 +163,38 @@ export function Step5({
                     } catch { }
                 }
 
-                // Audio feedback - C5 note (523.25Hz) for 100ms
+                // Audio feedback - Dual-Tone Harmonic Chord (C5 + E5) with fade envelope
                 try {
                     if (window.AudioContext || (window as any).webkitAudioContext) {
                         const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
                         const ctx = new AudioContextClass();
-                        const osc = ctx.createOscillator();
-                        osc.frequency.value = 523.25; // C5 note
-                        osc.connect(ctx.destination);
-                        osc.start();
-                        setTimeout(() => {
-                            osc.stop();
-                            ctx.close();
-                        }, 100);
+                        const now = ctx.currentTime;
+
+                        // Create gain node for envelope (attack + release)
+                        const gainNode = ctx.createGain();
+                        gainNode.gain.setValueAtTime(0, now);
+                        gainNode.gain.linearRampToValueAtTime(0.3, now + 0.1); // Attack: fade in over 0.1s
+                        gainNode.gain.linearRampToValueAtTime(0, now + 0.7);   // Release: fade out over 0.6s
+                        gainNode.connect(ctx.destination);
+
+                        // Oscillator 1: C5 (523.25Hz)
+                        const osc1 = ctx.createOscillator();
+                        osc1.type = 'sine';
+                        osc1.frequency.value = 523.25;
+                        osc1.connect(gainNode);
+                        osc1.start(now);
+                        osc1.stop(now + 0.8);
+
+                        // Oscillator 2: E5 (659.25Hz)
+                        const osc2 = ctx.createOscillator();
+                        osc2.type = 'sine';
+                        osc2.frequency.value = 659.25;
+                        osc2.connect(gainNode);
+                        osc2.start(now);
+                        osc2.stop(now + 0.8);
+
+                        // Cleanup
+                        setTimeout(() => ctx.close(), 1000);
                     }
                 } catch { }
 
