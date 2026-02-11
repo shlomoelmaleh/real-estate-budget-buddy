@@ -85,7 +85,7 @@ interface CalculatorResults {
   lawyerFeeTTC: number;
   brokerFeeTTC: number;
   limitingFactor: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
-  marketRent: number;
+  estimatedMarketRent: number;
   rentWarning: 'high' | 'low' | null;
 }
 
@@ -223,14 +223,14 @@ function solveMaximumBudget(
       }
 
       // RENT VALIDATION ENGINE
-      // Calculate market rent (3% annual yield / 12 months)
-      const marketRent = (price * 0.03) / 12;
+      // Calculate market rent using the user's rentalYield parameter
+      const estimatedMarketRent = (price * (rentalYield / 100)) / 12;
 
       // Determine rent warning flags
       let rentWarning: 'high' | 'low' | null = null;
-      if (actualRent > marketRent * 1.5) {
+      if (actualRent > estimatedMarketRent * 1.5) {
         rentWarning = 'high'; // 50% above market
-      } else if (actualRent > 0 && actualRent < marketRent * 0.7) {
+      } else if (actualRent > 0 && actualRent < estimatedMarketRent * 0.7) {
         rentWarning = 'low'; // 30% below market
       }
 
@@ -252,7 +252,7 @@ function solveMaximumBudget(
         lawyerFeeTTC,
         brokerFeeTTC,
         limitingFactor,
-        marketRent,
+        estimatedMarketRent,
         rentWarning
       };
     } else {

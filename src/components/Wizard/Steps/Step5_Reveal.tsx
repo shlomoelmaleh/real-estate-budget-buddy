@@ -111,6 +111,34 @@ export function Step5({
             setHasCounted(true);
             setCurrentMilestone(3); // Max milestone
             setShowDossier(true);
+
+            // Audio feedback even with reduced motion
+            try {
+                if (window.AudioContext || (window as any).webkitAudioContext) {
+                    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+                    const ctx = new AudioContextClass();
+                    const now = ctx.currentTime;
+                    const gainNode = ctx.createGain();
+                    gainNode.gain.setValueAtTime(0, now);
+                    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.1);
+                    gainNode.gain.linearRampToValueAtTime(0, now + 0.7);
+                    gainNode.connect(ctx.destination);
+                    const osc1 = ctx.createOscillator();
+                    osc1.type = 'sine';
+                    osc1.frequency.value = 523.25;
+                    osc1.connect(gainNode);
+                    osc1.start(now);
+                    osc1.stop(now + 0.8);
+                    const osc2 = ctx.createOscillator();
+                    osc2.type = 'sine';
+                    osc2.frequency.value = 659.25;
+                    osc2.connect(gainNode);
+                    osc2.start(now);
+                    osc2.stop(now + 0.8);
+                    setTimeout(() => ctx.close(), 1000);
+                }
+            } catch { }
+
             return;
         }
 
@@ -160,6 +188,7 @@ export function Step5({
                                     message: `Step5 counter drift: ${drift.toFixed(0)}ms`,
                                     stack: `Expected: ${expectedDuration}ms, Actual: ${totalDuration.toFixed(0)}ms`,
                                     url: window.location.href,
+                                    user_agent: navigator.userAgent,
                                     timestamp: new Date().toISOString(),
                                 }),
                             }).catch(() => { });
@@ -374,7 +403,7 @@ export function Step5({
                             />
                         </div>
 
-                        {/* 3. Send Button - Glowing pulse after confetti */}
+                        {/* 3. Send Button */}
                         <Button
                             type="button"
                             onClick={onSendReport}

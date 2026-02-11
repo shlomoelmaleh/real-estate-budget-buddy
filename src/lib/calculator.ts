@@ -53,6 +53,8 @@ export interface CalculatorResults {
   lawyerFeeTTC: number;
   brokerFeeTTC: number;
   limitingFactor?: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
+  rentWarning?: 'high' | 'low' | null;
+  estimatedMarketRent?: number;
 }
 
 export interface AmortizationRow {

@@ -102,6 +102,8 @@ const EmailRequestSchema = z.object({
     lawyerFeeTTC: z.number().nonnegative().max(1e9),
     brokerFeeTTC: z.number().nonnegative().max(1e9),
     limitingFactor: z.enum(['EQUITY_LIMIT', 'INCOME_LIMIT', 'LTV_LIMIT', 'AGE_LIMIT', 'INSUFFICIENT_DATA', 'UNKNOWN']).optional(),
+    rentWarning: z.enum(['high', 'low']).nullable().optional(),
+    estimatedMarketRent: z.number().nonnegative().optional(),
   }),
   amortizationSummary: z.object({
     totalMonths: z.number().int().positive().max(600),
@@ -382,6 +384,8 @@ interface ReportEmailRequest {
     lawyerFeeTTC: number;
     brokerFeeTTC: number;
     limitingFactor?: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
+    rentWarning?: 'high' | 'low' | null;
+    estimatedMarketRent?: number;
   };
   amortizationSummary: {
     totalMonths: number;
@@ -655,6 +659,8 @@ function generateEmailHtml(
       bridgeSentence: "פערים בתקציב ניתנים לעיתים לגישור באמצעות תכנון פיננסי יצירתי. הצוות שלנו יבדוק זאת לעומק.",
       labelEstimatedRent: "הכנסה משכירות משוערת (3% שנתי)",
       labelUserRent: "הכנסה משכירות צפויה (לפי קלט משתמש)",
+      rentWarningHigh: "⚠️ השכירות הצפויה שלכם (₪{actual}) גבוהה משמעותית מהממוצע בשוק (₪{market}). מומלץ לאמת מול מודעות עדכניות כדי להימנע מלחץ פיננסי.",
+      rentWarningLow: "ℹ️ השכירות הצפויה שלכם (₪{actual}) נמוכה מהממוצע בשוק (₪{market}). הערכה שמרנית זו מותירה מרווח ביטחון חיובי.",
     },
     en: {
       subject: "Your Strategic Financial Dossier",
@@ -776,6 +782,8 @@ function generateEmailHtml(
       bridgeSentence: "Budget gaps can often be bridged with creative financial planning. Our team will review this.",
       labelEstimatedRent: "Estimated rental income (3% annual)",
       labelUserRent: "Expected monthly rent (User Input)",
+      rentWarningHigh: "⚠️ Your expected rent (₪{actual}) is significantly above typical market rates (₪{market}). We recommend verifying this with local listings to avoid financial stress.",
+      rentWarningLow: "ℹ️ Your expected rent (₪{actual}) is below typical market rates (₪{market}). This conservative estimate leaves room for a stronger financial position.",
     },
     fr: {
       subject: "Votre Dossier Stratégique Financier",
@@ -898,6 +906,8 @@ function generateEmailHtml(
       bridgeSentence: "Un écart peut souvent être comblé par une ingénierie financière adaptée. Notre équipe va analyser cela.",
       labelEstimatedRent: "Revenu locatif estimé (3% annuel)",
       labelUserRent: "Loyer mensuel attendu (Saisi par l'utilisateur)",
+      rentWarningHigh: "⚠️ Votre loyer attendu (₪{actual}) est nettement supérieur aux taux du marché (₪{market}). Nous recommandons de vérifier avec les annonces locales.",
+      rentWarningLow: "ℹ️ Votre loyer attendu (₪{actual}) est inférieur aux taux du marché (₪{market}). Cette estimation conservatrice laisse une marge de sécurité.",
     },
   };
 
@@ -1632,6 +1642,24 @@ function generateEmailHtml(
     }
           <div style="font-size: 10px; color: #64748b; margin-top: 8px; font-style: italic;">${t.monthlySummaryNote}</div>
         </div>
+        
+        ${(() => {
+      const rw = results.rentWarning;
+      const emr = results.estimatedMarketRent;
+      if (!rw || !emr) return '';
+      const actualRentFmt = formatNumber(results.rentIncome);
+      const marketRentFmt = formatNumber(emr);
+      const isHigh = rw === 'high';
+      const borderColor = isHigh ? '#ef4444' : '#f59e0b';
+      const bgColor = isHigh ? '#fef2f2' : '#fffbeb';
+      const textColor = isHigh ? '#991b1b' : '#92400e';
+      const rawMsg = isHigh ? (t as any).rentWarningHigh : (t as any).rentWarningLow;
+      const msg = rawMsg?.replace('{actual}', actualRentFmt).replace('{market}', marketRentFmt) || '';
+      return `
+        <div style="margin-top: 12px; padding: 12px 14px; background: ${bgColor}; border-radius: 8px; border: 1px solid ${borderColor};">
+          <div style="font-size: 12px; color: ${textColor}; line-height: 1.5;">${msg}</div>
+        </div>`;
+    })()}
         
         <!-- Charts -->
         ${yearlyBalanceData && yearlyBalanceData.length > 0
