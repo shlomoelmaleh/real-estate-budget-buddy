@@ -238,7 +238,7 @@ export function BudgetCalculator() {
                           return step < 4 ? (
                             <Button
                               onClick={() => {
-                                if (navigator.vibrate) navigator.vibrate(10);
+                                if ('vibrate' in navigator && typeof navigator.vibrate === 'function') navigator.vibrate(10);
                                 handleNext();
                               }}
                               className={cn(
@@ -255,7 +255,7 @@ export function BudgetCalculator() {
                           ) : (
                             <Button
                               onClick={() => {
-                                if (navigator.vibrate) navigator.vibrate(10);
+                                if ('vibrate' in navigator && typeof navigator.vibrate === 'function') navigator.vibrate(10);
                                 handleCalculate();
                               }}
                               className={cn(
@@ -272,7 +272,7 @@ export function BudgetCalculator() {
                           <Button
                             variant="outline"
                             onClick={() => {
-                              if (navigator.vibrate) navigator.vibrate(10);
+                              if ('vibrate' in navigator && typeof navigator.vibrate === 'function') navigator.vibrate(10);
                               handleBack();
                             }}
                             className="w-full sm:flex-1 py-6 text-base"
