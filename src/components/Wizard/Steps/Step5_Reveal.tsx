@@ -25,6 +25,7 @@ export function Step5({
     const fullName = watch ? watch('fullName') : '';
     const firstName = fullName?.split(' ')[0] || '';
     const [showDossier, setShowDossier] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
 
     // Dynamic Diagnosis Hook
     const getDiagnosisHook = () => {
