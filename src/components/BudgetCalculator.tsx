@@ -70,6 +70,7 @@ export function BudgetCalculator() {
     isLoading,
     isSending,
     showConfirmation,
+    calcData,
     handleNext,
     handleBack,
     handleCalculate,
@@ -141,6 +142,8 @@ export function BudgetCalculator() {
             isSending={isSending}
             watch={watch}
             onBack={handleBack}
+            calcData={calcData}
+            language={language as 'he' | 'en' | 'fr'}
           />
         );
       default: return null;

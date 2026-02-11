@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/FormInput';
 import { cn } from '@/lib/utils';
 import { formatNumber } from '@/lib/calculator';
+import { DevEmailPreview } from '@/components/DevTools/DevEmailPreview';
+import type { ReportEmailRequest } from '@/lib/devMirror';
 
 export function Step5({
     control,
@@ -18,7 +20,9 @@ export function Step5({
     onSendReport,
     isSending,
     watch,
-    onBack
+    onBack,
+    calcData,
+    language = 'he',
 }: StepRevealProps) {
 
     const [displayValue, setDisplayValue] = useState(0);
@@ -420,6 +424,13 @@ export function Step5({
                             )}
                         </div>
                     )}
+
+                    {/* Dev Email Preview Dialog */}
+                    <DevEmailPreview
+                        inputs={calcData?.inputs as ReportEmailRequest['inputs'] | null}
+                        results={calcData?.results as ReportEmailRequest['results'] | null}
+                        language={language}
+                    />
                 </div>
             </div>
         </div>
