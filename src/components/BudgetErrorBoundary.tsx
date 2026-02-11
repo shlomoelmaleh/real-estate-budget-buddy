@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
     children?: ReactNode;
@@ -21,6 +22,35 @@ export class BudgetErrorBoundary extends Component<Props, State> {
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error("Uncaught error:", error, errorInfo);
+
+        // Silent Error Reporting to Supabase
+        try {
+            const errorData = {
+                error_message: error.message,
+                error_stack: error.stack || "",
+                component_stack: errorInfo.componentStack || "",
+                browser_info: navigator.userAgent,
+                timestamp: new Date().toISOString(),
+                url: window.location.href
+            };
+
+            // Fire and forget - don't await or block UI recovery
+            supabase.from('activity_logs').insert({
+                event_type: 'STATUS_CHANGE',
+                description: `Error: ${error.message}`,
+                metadata: errorData,
+                timestamp: new Date().toISOString()
+            }).then(({ error: insertError }) => {
+                if (insertError) {
+                    console.error('[ErrorBoundary] Failed to log error to Supabase:', insertError);
+                } else {
+                    console.log('[ErrorBoundary] Error logged successfully');
+                }
+            });
+        } catch (loggingError) {
+            // Catch any errors in the logging itself
+            console.error('[ErrorBoundary] Exception while logging error:', loggingError);
+        }
     }
 
     public render() {

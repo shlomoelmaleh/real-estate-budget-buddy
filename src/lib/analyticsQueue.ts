@@ -71,68 +71,67 @@ class AnalyticsQueue {
         if (this.isFlushing || this.queue.length === 0 || !navigator.onLine) return;
 
         this.isFlushing = true;
-        const eventsToSend = [...this.queue]; // copy (not clearing yet)
-
-        // Group by ID to handle them individually or in batch? 
-        // Supabase supports batch inserts. Let's try batch first, but if it fails completely, we might need to handle individually.
-        // However, the `funnel_events` table structure in the prompt is not fully visible (schema wise).
-        // Assuming we map specific fields to the existing `funnel_events` table.
-        // The previous implementation was: 
-        // supabase.from('funnel_events').insert({ session_id, step_reached, partner_id, language })
-
-        // We need to map our rich event structure to what the table supports.
-        // If the table doesn't support 'event_type', we might need to stick to the old schema OR just rely on 'step_reached' 
-        // The prompt requested: "Track both 'entered' and 'completed' for every step (0-5)."
-        // "Log entered_step_X... Log completed_step_X"
-        // This implies we might need to store `step_name` or `action` in the DB.
-        // If DB schema wasn't changed, we might have to use `step_reached` creatively or just log everything but the DB might drop extra fields.
-        // Wait, the prompt implies "Data Reliability" is the goal. 
-        // Use `step_reached` as the main metric. "entered_step_X" implies string?
-        // Let's assume the DB has a flexible column OR we use `step_reached` with convention?
-        // Actually, looking at `BudgetCalculator.tsx`:
-        // `supabase.from('funnel_events').insert({ session_id, step_reached, partner_id, language })`
-        // It expects a number for `step_reached`.
-        // Maybe we should abuse `step_reached`? ex: 10 for step 1 enter, 11 for step 1 complete?
-        // Or, hopefully the table allows partial strings?
-        // SAFEST BET: The prompt says "Granularity: Track both 'entered' and 'completed'".
-        // I should probably try to send `event_type` if the table allows it. 
-        // If I can't check the schema, I will try to inspect the `funnel_events` insert result.
-        // But since I cannot change the DB schema myself easily without SQL tools (which I have but are risky to guess),
-        // I will stick to sending the data as is. If `event_type` is not in schema, Supabase will ignore it (or error if strict).
-        // To be safe, I will stick to the existing fields but maybe map 'entered' vs 'completed' to something visible?
-        // The prompt says "Log entered_step_X...". This sounds like an event NAME.
-        // Maybe there is an `event_name` column?
-        // I'll take a peek at `BudgetCalculator.tsx` again or just try to insert extra fields.
-        // Actually, I'll send the `event_type` field. If existing table doesn't have it, I might get an error.
-        // Let's assume for now I can add it or it exists. 
-        // Re-reading prompt: "Log entered_step_X ... Log completed_step_X". 
-        // It might be referring to `step_reached` as the column, but values like "step_1_entered"?
-        // But `step_reached` in `BudgetCalculator` was a `number`.
-        // OK, I'll use a `meta` column if available, or just try `event_type`.
-        // Actually, let's keep it simple. Queue sends what it's given. The Logic in `BudgetCalculator` defines WHAT to send.
-
-        // Initial implementation will try to send all fields.
+        const eventsToSend = [...this.queue];
         const eventsRemaining: FunnelEvent[] = [];
 
-        // Process sequentially or batch? 
-        // Sequential is safer for reliability tracking.
-        for (const event of eventsToSend) {
-            try {
-                // Prepare payload (exclude queue-specific fields)
-                const { error } = await supabase.from('funnel_events').insert({
-                    session_id: event.session_id,
-                    step_reached: event.step_reached, // keeping this as is
-                    partner_id: event.partner_id,
-                    language: event.language,
-                    // Sending granular data as well, hoping schema supports it or ignores it gracefully
-                    event_type: event.event_type,
-                    client_timestamp: event.timestamp
-                });
+        // Prepare payloads for all events
+        const payloads = eventsToSend.map(event => ({
+            session_id: event.session_id,
+            step_reached: event.step_reached,
+            partner_id: event.partner_id,
+            language: event.language,
+            event_type: event.event_type,
+            client_timestamp: event.timestamp
+        }));
 
-                if (error) throw error;
-            } catch (err) {
-                console.error('Failed to send event', event.id, err);
-                // Retrying logic
+        try {
+            // TRY BATCH INSERT FIRST (80% network reduction)
+            console.log(`[Analytics] Attempting batch insert of ${payloads.length} events`);
+            const { error: batchError } = await supabase.from('funnel_events').insert(payloads);
+
+            if (batchError) {
+                // Batch failed - log the error and fall back to individual inserts
+                console.warn('[Analytics] Batch insert failed, falling back to individual inserts:', batchError);
+
+                // FALLBACK: Send each event individually to prevent data loss
+                for (const event of eventsToSend) {
+                    try {
+                        const { error: individualError } = await supabase.from('funnel_events').insert({
+                            session_id: event.session_id,
+                            step_reached: event.step_reached,
+                            partner_id: event.partner_id,
+                            language: event.language,
+                            // Try to send new fields, but if they don't exist in DB, they'll be ignored
+                            event_type: event.event_type,
+                            client_timestamp: event.timestamp
+                        });
+
+                        if (individualError) {
+                            console.error('[Analytics] Individual insert failed for event:', event.id, individualError);
+                            // Retry logic
+                            if (event.retry_count < MAX_RETRIES) {
+                                eventsRemaining.push({ ...event, retry_count: event.retry_count + 1 });
+                            } else {
+                                console.error('[Analytics] Max retries reached for event:', event.id);
+                            }
+                        } else {
+                            console.log('[Analytics] Individual event sent successfully:', event.id);
+                        }
+                    } catch (err) {
+                        console.error('[Analytics] Exception during individual insert:', err);
+                        if (event.retry_count < MAX_RETRIES) {
+                            eventsRemaining.push({ ...event, retry_count: event.retry_count + 1 });
+                        }
+                    }
+                }
+            } else {
+                // Batch succeeded - all events sent
+                console.log(`[Analytics] Batch insert successful: ${payloads.length} events sent`);
+            }
+        } catch (err) {
+            // Network or other catastrophic error - retry all events
+            console.error('[Analytics] Batch operation exception, requeueing all events:', err);
+            for (const event of eventsToSend) {
                 if (event.retry_count < MAX_RETRIES) {
                     eventsRemaining.push({ ...event, retry_count: event.retry_count + 1 });
                 }

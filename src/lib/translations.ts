@@ -343,7 +343,7 @@ export const translations: Record<Language, Translations> = {
     hookAge: "הכנו עבורך תוכנית אופטימיזציה לפריסת המשכנתא בהתאם למגבלות הגיל.",
     hookDefault: "הכנו עבורך ניתוח בנקאי מקיף שיעזור לך להבין את פוטנציאל הרכישה האמיתי שלך.",
     dossierSubject: "תיק האסטרטגיה הפיננסית שלך - [Name]",
-    leadCaptureTitle: "אל תשארו עם מספר בלבד. הכנו עבורכם 'תיק אסטרטגיה' אישי הכוללת ניתוח בנקאי מלא ותחזית מס. לאן לשלוח לכם אותו?",
+    leadCaptureTitle: "הכנו עבורכם מפת דרכים אסטרטגית (PDF) הכוללת ניתוח בנקאי מלא. לאן לשלוח לכם אותה?",
     leadCaptureBtn: "שלחו לי את התיק המלא",
     // Strategic Moat (Phase 5)
     overviewTitle: "ניתוח העוצמה הפיננסית שלכם",
@@ -515,7 +515,7 @@ export const translations: Record<Language, Translations> = {
     hookAge: "We've prepared a loan-term optimization plan to address age-based repayment restrictions.",
     hookDefault: "We've prepared a comprehensive banking analysis to help you understand your true purchasing power.",
     dossierSubject: "Your Strategic Financial Dossier - [Name]",
-    leadCaptureTitle: "Don't settle for just a number. We've prepared your personal Strategic Dossier (PDF). Where should we send it?",
+    leadCaptureTitle: "We've prepared your personalized Strategic Roadmap (PDF) including full bank analysis. Where should we send your strategy?",
     leadCaptureBtn: "Send My Full Dossier",
     // Strategic Moat (Phase 5)
     overviewTitle: "Your Financial Strength Analysis",
@@ -687,7 +687,7 @@ export const translations: Record<Language, Translations> = {
     hookAge: "Nous avons préparé un plan d'optimisation de la durée du prêt adapté aux restrictions liées à l'âge.",
     hookDefault: "Nous avons préparé une analyse bancaire complète pour vous aider à comprendre votre véritable pouvoir d'achat.",
     dossierSubject: "Votre Dossier Stratégique Financier - [Name]",
-    leadCaptureTitle: "Ne vous contentez pas d'un simple chiffre. Nous avons préparé votre Dossier Stratégique personnel (PDF). Où devons-nous l'envoyer ?",
+    leadCaptureTitle: "Nous avons préparé votre Feuille de Route Stratégique (PDF) incluant une analyse bancaire complète. Où souhaitez-vous la recevoir ?",
     leadCaptureBtn: "Envoyer Mon Dossier Complet",
     // Strategic Moat (Phase 5)
     overviewTitle: "Analyse de votre force financière",

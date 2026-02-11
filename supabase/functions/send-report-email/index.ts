@@ -142,8 +142,25 @@ const EmailRequestSchema = z.object({
 function calculateLeadScore(
   inputs: ReportEmailRequest['inputs'],
   results: ReportEmailRequest['results']
-): { score: number; priorityLabel: string; priorityColor: string; actionSla: string } {
-  let score = 0;
+): {
+  score: number;
+  priorityLabel: string;
+  priorityColor: string;
+  actionSla: string;
+  breakdown: {
+    budget: number;
+    health: number;
+    readiness: number;
+    age: number;
+    liquidity: number;
+  }
+} {
+  let budgetScore = 0;
+  let healthScore = 0;
+  let readinessScore = 0;
+  let ageScore = 0;
+  let liquidityScore = 0;
+
   const maxBudget = results.maxPropertyValue;
   const netIncome = parseFloat(inputs.netIncome.replace(/,/g, '')) || 0;
   const monthlyPayment = results.monthlyPayment;
@@ -152,27 +169,27 @@ function calculateLeadScore(
   const age = parseFloat(inputs.age) || 40;
 
   // 1. Budget Size (Max 35 pts)
-  if (maxBudget > 5000000) score += 35;
-  else if (maxBudget > 3000000) score += 25;
-  else if (maxBudget > 1500000) score += 15;
+  if (maxBudget > 5000000) budgetScore = 35;
+  else if (maxBudget > 3000000) budgetScore = 25;
+  else if (maxBudget > 1500000) budgetScore = 15;
 
   // 2. Financial Health (Max 25 pts)
   const dti = netIncome > 0 ? (monthlyPayment / netIncome) * 100 : 100;
-  if (dti < 33) score += 25;
-  else if (dti < 40) score += 15;
+  if (dti < 33) healthScore = 25;
+  else if (dti < 40) healthScore = 15;
 
   // 3. Readiness (Max 25 pts)
-  if (equityInitial >= 400000) score += 25;
-  else if (equityInitial >= 200000) score += 15;
+  if (equityInitial >= 400000) readinessScore = 25;
+  else if (equityInitial >= 200000) readinessScore = 15;
 
-  // 4. Age Factor (+10 pts)
-  if (age < 35) score += 10;
+  // 4. Age Factor (Max 10 pts)
+  if (age < 35) ageScore = 10;
 
-  // 5. Liquidity Bonus (+15 pts)
-  if (equityRemaining > 200000) score += 15;
+  // 5. Liquidity Bonus (Max 15 pts)
+  if (equityRemaining > 200000) liquidityScore = 15;
 
-  // Cap at 100
-  score = Math.min(100, score);
+  // Total Score
+  const score = Math.min(100, budgetScore + healthScore + readinessScore + ageScore + liquidityScore);
 
   // Determine Tier & Action
   let priorityLabel = '❄️ COLD';
@@ -197,7 +214,19 @@ function calculateLeadScore(
     actionSla = "Email follow-up.";
   }
 
-  return { score, priorityLabel, priorityColor, actionSla };
+  return {
+    score,
+    priorityLabel,
+    priorityColor,
+    actionSla,
+    breakdown: {
+      budget: budgetScore,
+      health: healthScore,
+      readiness: readinessScore,
+      age: ageScore,
+      liquidity: liquidityScore
+    }
+  };
 }
 
 function calculateBonusPower(
@@ -968,7 +997,7 @@ function generateEmailHtml(
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   // Internal Analysis Calculation (for Advisor Email)
-  const { score, priorityLabel, priorityColor, actionSla } = calculateLeadScore(inputs, results);
+  const { score, priorityLabel, priorityColor, actionSla, breakdown } = calculateLeadScore(inputs, results);
 
   // Calculate Bonus Power for What-If
   const interestRateVal = parseFloat(inputs.interest) || 5.0;
@@ -1318,6 +1347,22 @@ function generateEmailHtml(
           </div>
           <span style="font-size: 32px; font-weight: 800; color: ${priorityColor}; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${score}</span>
         </div>
+        
+        <!-- Score Breakdown Grid -->
+        <div style="background: #f8fafc; border-radius: 8px; padding: 12px; margin: 12px 0;">
+          <div style="font-size: 12px; color: #64748b; font-weight: 600; display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-around;">
+            <span>Budget: <strong style="color: #0f172a;">${breakdown.budget}/35</strong></span>
+            <span>|</span>
+            <span>Health: <strong style="color: #0f172a;">${breakdown.health}/25</strong></span>
+            <span>|</span>
+            <span>Ready: <strong style="color: #0f172a;">${breakdown.readiness}/25</strong></span>
+            <span>|</span>
+            <span>Age: <strong style="color: #0f172a;">${breakdown.age}/10</strong></span>
+            <span>|</span>
+            <span>Cash: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></span>
+          </div>
+        </div>
+        
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; opacity: 0.9;">Limiting Factor: ${limitingFactor}</div>
         <div style="font-size: 13px; opacity: 0.8; line-height: 1.4;">${limitingFactorDescription}</div>
       </div>

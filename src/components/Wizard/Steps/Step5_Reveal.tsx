@@ -80,7 +80,11 @@ export function Step5({
     };
 
     useEffect(() => {
-        if (!results || isLoading) return;
+        // VALIDATION GUARD: Ensure results are valid
+        if (!results || isLoading || results.maxPropertyValue <= 0) return;
+
+        // ACCESSIBILITY: Detect reduced motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         let animationFrameId: number;
         let confettiTimeoutId: NodeJS.Timeout;
@@ -129,7 +133,7 @@ export function Step5({
 
         // Robust Cleanup
         return () => {
-            cancelAnimationFrame(animationFrameId);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
             clearTimeout(confettiTimeoutId);
             clearTimeout(dossierTimeoutId);
         };
