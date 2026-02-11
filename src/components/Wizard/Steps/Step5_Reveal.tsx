@@ -196,38 +196,35 @@ export function Step5({
                     } catch { }
                 }
 
-                // Audio feedback - Dual-Tone Harmonic Chord (C5 + E5) with fade envelope
+                // Audio feedback - "Golden Chime" (Major-7th Chord: C5, E5, G5, B5)
+                // Symbolizes "Sophistication" and "Premium Resolution"
                 try {
-                    if (window.AudioContext || (window as any).webkitAudioContext) {
-                        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+                    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+                    if (AudioContextClass) {
                         const ctx = new AudioContextClass();
                         const now = ctx.currentTime;
 
-                        // Create gain node for envelope (attack + release)
-                        const gainNode = ctx.createGain();
-                        gainNode.gain.setValueAtTime(0, now);
-                        gainNode.gain.linearRampToValueAtTime(0.3, now + 0.1); // Attack: fade in over 0.1s
-                        gainNode.gain.linearRampToValueAtTime(0, now + 0.7);   // Release: fade out over 0.6s
-                        gainNode.connect(ctx.destination);
+                        // Master Gain for Envelope
+                        const masterGain = ctx.createGain();
+                        masterGain.gain.setValueAtTime(0, now);
+                        masterGain.gain.linearRampToValueAtTime(0.15, now + 0.05); // Attack: 0.05s to 15% volume
+                        masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2); // Decay: 1.2s fade out
+                        masterGain.connect(ctx.destination);
 
-                        // Oscillator 1: C5 (523.25Hz)
-                        const osc1 = ctx.createOscillator();
-                        osc1.type = 'sine';
-                        osc1.frequency.value = 523.25;
-                        osc1.connect(gainNode);
-                        osc1.start(now);
-                        osc1.stop(now + 0.8);
+                        // Frequencies for C Major 7th (Just Intonation approximations or standard equal temp)
+                        const frequencies = [523.25, 659.25, 783.99, 987.77];
 
-                        // Oscillator 2: E5 (659.25Hz)
-                        const osc2 = ctx.createOscillator();
-                        osc2.type = 'sine';
-                        osc2.frequency.value = 659.25;
-                        osc2.connect(gainNode);
-                        osc2.start(now);
-                        osc2.stop(now + 0.8);
+                        frequencies.forEach(freq => {
+                            const osc = ctx.createOscillator();
+                            osc.type = 'triangle'; // Warmer, more instrumental tone
+                            osc.frequency.value = freq;
+                            osc.connect(masterGain);
+                            osc.start(now);
+                            osc.stop(now + 1.5); // Stop after envelope finishes
+                        });
 
                         // Cleanup
-                        setTimeout(() => ctx.close(), 1000);
+                        setTimeout(() => ctx.close(), 1600);
                     }
                 } catch { }
 

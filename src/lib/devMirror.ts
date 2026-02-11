@@ -738,7 +738,7 @@ function generateEmailHtml(
   };
 
   // --- LOGIC ---
-  const t = texts[language];
+  const t = texts[language] || texts.he;
   const rentLabel = hasManualRent ? t.labelUserRent : t.labelEstimatedRent;
 
   const advisorName = partnerContact?.name || t.advisorName;
@@ -785,7 +785,7 @@ function generateEmailHtml(
   const dir = language === "he" ? "rtl" : "ltr";
   const isRTL = language === "he";
   const alignStart = isRTL ? "right" : "left";
-   const alignEnd = isRTL ? "left" : "right";
+  const alignEnd = isRTL ? "left" : "right";
 
   // Compute limiting factors - analyze ALL potential constraints and list them all
   let limitingFactor = t.limitingInsufficient; // Default string value
@@ -1488,32 +1488,32 @@ function generateEmailHtml(
             <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
           </div>
           ${parseNumber(inputs.budgetCap) > 0
-        ? `
+      ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
             <span class="value">₪ ${inputs.budgetCap}</span>
           </div>
           `
-        : ""
-      }
+      : ""
+    }
           ${inputs.isRented
-        ? `
+      ? `
           <div class="row" style="margin-bottom: 4px; ${hasManualRent ? "background-color: #fffbf0; border-radius: 4px; border: 1px solid #fde68a; padding: 4px !important;" : ""}">
             <span class="label" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">${rentLabel}</span>
             <span class="value" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">₪ ${formatNumber(results.rentIncome)}</span>
           </div>
           ${!inputs.isFirstProperty
-          ? `
+        ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.rentalIncomeRetained}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
           `
-          : ""
-        }
-          `
         : ""
       }
+          `
+      : ""
+    }
           <div class="row" style="margin-top: 8px; border-top: 1px dashed #86efac; padding-top: 8px;">
             <span class="label" style="color: #166534; font-weight: 700;">${t.netMonthlyBalance}</span>
             <span class="value" style="color: ${netBalanceColor}; font-weight: 800; font-size: 15px; direction: ltr;">${netBalanceFormatted}</span>
@@ -1522,22 +1522,22 @@ function generateEmailHtml(
         </div>
         
         ${(() => {
-        const rw = results.rentWarning;
-        const emr = results.estimatedMarketRent;
-        if (!rw || !emr) return '';
-        const actualRentFmt = formatNumber(results.rentIncome);
-        const marketRentFmt = formatNumber(emr);
-        const isHigh = rw === 'high';
-        const borderColor = isHigh ? '#ef4444' : '#f59e0b';
-        const bgColor = isHigh ? '#fef2f2' : '#fffbeb';
-        const textColor = isHigh ? '#991b1b' : '#92400e';
-        const rawMsg = isHigh ? (t as any).rentWarningHigh : (t as any).rentWarningLow;
-        const msg = rawMsg?.replace('{actual}', actualRentFmt).replace('{market}', marketRentFmt) || '';
-        return `
+      const rw = results.rentWarning;
+      const emr = results.estimatedMarketRent;
+      if (!rw || !emr) return '';
+      const actualRentFmt = formatNumber(results.rentIncome);
+      const marketRentFmt = formatNumber(emr);
+      const isHigh = rw === 'high';
+      const borderColor = isHigh ? '#ef4444' : '#f59e0b';
+      const bgColor = isHigh ? '#fef2f2' : '#fffbeb';
+      const textColor = isHigh ? '#991b1b' : '#92400e';
+      const rawMsg = isHigh ? (t as any).rentWarningHigh : (t as any).rentWarningLow;
+      const msg = rawMsg?.replace('{actual}', actualRentFmt).replace('{market}', marketRentFmt) || '';
+      return `
         <div style="margin-top: 12px; padding: 12px 14px; background: ${bgColor}; border-radius: 8px; border: 1px solid ${borderColor};">
           <div style="font-size: 12px; color: ${textColor}; line-height: 1.5;">${msg}</div>
         </div>`;
-      })()}
+    })()}
         
         <!-- Charts -->
       <div class="section">
@@ -1552,23 +1552,23 @@ function generateEmailHtml(
           <table class="vchart">
             <tr style="height: 100%;">
               ${(yearlyBalanceData || []).map((d) => {
-        const maxVal = (yearlyBalanceData || [])[0]?.balance || 1;
-        const h = Math.round((d.balance / maxVal) * 100);
-        return `
+      const maxVal = (yearlyBalanceData || [])[0]?.balance || 1;
+      const h = Math.round((d.balance / maxVal) * 100);
+      return `
                   <td>
                     <div class="vbar vbar-balance" style="height: ${h}%;"></div>
                   </td>
                 `;
-      }).join("")}
+    }).join("")}
             </tr>
             <tr>
               ${(yearlyBalanceData || []).map((d, i) => {
-        // Show year label every 5 years
-        if (i % 5 === 0 || i === (yearlyBalanceData || []).length - 1) {
-          return `<td class="vlabel">${d.year}</td>`;
-        }
-        return `<td></td>`;
-      }).join("")}
+      // Show year label every 5 years
+      if (i % 5 === 0 || i === (yearlyBalanceData || []).length - 1) {
+        return `<td class="vlabel">${d.year}</td>`;
+      }
+      return `<td></td>`;
+    }).join("")}
             </tr>
           </table>
         </div>
@@ -1582,13 +1582,13 @@ function generateEmailHtml(
           <table class="vchart">
             <tr style="height: 100%;">
               ${(paymentBreakdownData || []).map((d) => {
-        const total = d.principal + d.interest;
-        const maxPayment = Math.max(...(paymentBreakdownData || []).map(p => p.principal + p.interest)) || 1;
-        const hTotal = Math.round((total / maxPayment) * 100);
-        const hPrincipal = Math.round((d.principal / total) * 100);
-        const hInterest = 100 - hPrincipal;
+      const total = d.principal + d.interest;
+      const maxPayment = Math.max(...(paymentBreakdownData || []).map(p => p.principal + p.interest)) || 1;
+      const hTotal = Math.round((total / maxPayment) * 100);
+      const hPrincipal = Math.round((d.principal / total) * 100);
+      const hInterest = 100 - hPrincipal;
 
-        return `
+      return `
                   <td>
                     <div class="vstack" style="height: ${hTotal}%;">
                       <div class="vbar-interest" style="height: ${hInterest}%;"></div>
@@ -1596,15 +1596,15 @@ function generateEmailHtml(
                     </div>
                   </td>
                 `;
-      }).join("")}
+    }).join("")}
             </tr>
             <tr>
               ${(paymentBreakdownData || []).map((d, i) => {
-        if (i % 5 === 0 || i === (paymentBreakdownData || []).length - 1) {
-          return `<td class="vlabel">${d.year}</td>`;
-        }
-        return `<td></td>`;
-      }).join("")}
+      if (i % 5 === 0 || i === (paymentBreakdownData || []).length - 1) {
+        return `<td class="vlabel">${d.year}</td>`;
+      }
+      return `<td></td>`;
+    }).join("")}
             </tr>
           </table>
           <div class="chart-legend">

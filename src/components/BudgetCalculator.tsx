@@ -351,6 +351,7 @@ export function BudgetCalculator() {
       <DevInspector
         formData={watch()}
         results={results}
+        language={language}
       />
     </div >
   );

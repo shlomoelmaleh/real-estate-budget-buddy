@@ -153,11 +153,15 @@ export function DevInspector({ formData, results, language = 'he' }: DevInspecto
 
                         {/* Content */}
                         <div className="flex-1 bg-slate-100 overflow-auto p-8 flex justify-center">
-                            <div className="bg-white shadow-xl min-h-[1000px] w-full max-w-[800px] mx-auto transition-all duration-300">
+                            <div className="bg-white shadow-xl h-[800px] w-full max-w-[800px] mx-auto transition-all duration-300 rounded-lg overflow-hidden">
                                 {results ? (
-                                    <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                                    <iframe
+                                        title="Email Preview"
+                                        srcDoc={htmlContent}
+                                        className="w-full h-full border-none bg-white"
+                                    />
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center h-[400px] text-slate-400">
+                                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                         <Activity size={48} className="mb-4 opacity-50" />
                                         <p>No results calculated yet.</p>
                                         <p className="text-sm mt-2">Complete the wizard to generate preview.</p>
