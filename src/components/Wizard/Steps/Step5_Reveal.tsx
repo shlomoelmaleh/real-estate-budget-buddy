@@ -209,7 +209,7 @@ export function Step5({
                     <div className="py-2 overflow-hidden px-2">
                         <span className={cn(
                             "font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight break-all transition-all duration-100 ease-in-out",
-                            isVisible ? "opacity-100 scale-100 blur-0" : "opacity-40 scale-95 blur-sm",
+                            isVisible ? "opacity-100 scale-110" : "opacity-0 scale-90",
                             // Responsive scaling: smaller on mobile for large numbers
                             formatNumber(displayValue).length > 8
                                 ? "text-3xl sm:text-5xl md:text-6xl" // Long numbers (e.g. ₪ 10,000,000)
