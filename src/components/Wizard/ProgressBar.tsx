@@ -25,65 +25,67 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
     const progressPercent = ((effectiveStep - 1) / (totalSteps - 1)) * 100;
 
     return (
-        <div className="w-full max-w-[800px] mx-auto mb-8 sm:mb-12 px-6 relative">
+        <div className="w-full max-w-[800px] mx-auto mb-8 sm:mb-12 px-6 pt-12 relative">
             {/* Mobile-only Active Step Title (Above Bar) */}
-            <div className="md:hidden text-center mb-4">
+            <div className="md:hidden text-center mb-4 absolute top-2 left-0 right-0">
                 <span className="text-xs font-black uppercase tracking-widest text-primary animate-in fade-in slide-in-from-top-2 duration-500">
                     {getStepTitle(effectiveStep)}
                 </span>
             </div>
 
-            {/* Layer 1 & 2: Background Track & Active Progress Line */}
-            <div className="absolute top-[52px] md:top-8 left-10 right-10 h-[1.5px] md:h-[2px] bg-slate-200 z-0">
-                <div
-                    className={cn(
-                        "h-full bg-primary transition-all duration-700 ease-in-out absolute",
-                        isRtl ? "right-0" : "left-0"
-                    )}
-                    style={{ width: `${progressPercent}%` }}
-                />
-            </div>
+            <div className="relative">
+                {/* Layer 1 & 2: Background Track & Active Progress Line */}
+                <div className="absolute top-4 left-10 right-10 h-[1.5px] md:h-[2px] bg-slate-200 z-0">
+                    <div
+                        className={cn(
+                            "h-full bg-primary transition-all duration-700 ease-in-out absolute",
+                            isRtl ? "right-0" : "left-0"
+                        )}
+                        style={{ width: `${progressPercent}%` }}
+                    />
+                </div>
 
-            {/* Layer 3: Interactive Stations (Dots) */}
-            <div className="flex justify-between items-start relative z-10 w-full">
-                {Array.from({ length: totalSteps }).map((_, index) => {
-                    const stepNum = index + 1;
-                    const isCompleted = stepNum < currentStep;
-                    const isActive = stepNum === currentStep;
+                {/* Layer 3: Interactive Stations (Dots) */}
+                <div className="flex justify-between items-start relative z-10 w-full">
+                    {Array.from({ length: totalSteps }).map((_, index) => {
+                        const stepNum = index + 1;
+                        const isCompleted = stepNum < currentStep;
+                        const isActive = stepNum === currentStep;
 
-                    return (
-                        <div key={stepNum} className="flex flex-col items-center relative">
-                            {/* The Dot */}
-                            <div className={cn(
-                                "w-7 h-7 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0 relative z-20",
-                                isCompleted ? "bg-primary border-primary text-white" :
-                                    isActive ? "border-primary text-primary font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" :
-                                        "border-slate-200 text-slate-300"
-                            )}>
-                                {isCompleted ? (
-                                    <Check className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                                ) : (
-                                    <span className="text-[10px] md:text-sm font-bold">{stepNum}</span>
-                                )}
-                            </div>
-
-                            {/* Active Pulse Ring (Blinking animation) */}
-                            {isActive && (
-                                <div className="absolute top-0 w-7 h-7 md:w-8 md:h-8 rounded-full border border-primary animate-ping z-10" />
-                            )}
-                            {/* Layer 4: Labels (Below Dot - Hidden on Mobile) */}
-                            <div className="mt-4 absolute top-8 w-24 md:w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden md:block">
-                                <span className={cn(
-                                    "text-xs font-semibold transition-colors duration-300 block leading-tight",
-                                    isActive ? "text-primary font-bold" :
-                                        isCompleted ? "text-slate-600" : "text-slate-400"
+                        return (
+                            <div key={stepNum} className="flex flex-col items-center relative">
+                                {/* The Dot */}
+                                <div className={cn(
+                                    "w-7 h-7 md:w-8 md:h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500 bg-white shrink-0 relative z-20",
+                                    isCompleted ? "bg-primary border-primary text-white" :
+                                        isActive ? "border-primary text-primary font-bold shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" :
+                                            "border-slate-200 text-slate-300"
                                 )}>
-                                    {getStepTitle(stepNum)}
-                                </span>
+                                    {isCompleted ? (
+                                        <Check className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    ) : (
+                                        <span className="text-[10px] md:text-sm font-bold">{stepNum}</span>
+                                    )}
+                                </div>
+
+                                {/* Active Pulse Ring (Blinking animation) */}
+                                {isActive && (
+                                    <div className="absolute top-0 w-7 h-7 md:w-8 md:h-8 rounded-full border border-primary animate-ping z-10" />
+                                )}
+                                {/* Layer 4: Labels (Below Dot - Hidden on Mobile) */}
+                                <div className="mt-4 absolute top-8 w-24 md:w-32 left-1/2 -translate-x-1/2 text-center pointer-events-none hidden md:block">
+                                    <span className={cn(
+                                        "text-xs font-semibold transition-colors duration-300 block leading-tight",
+                                        isActive ? "text-primary font-bold" :
+                                            isCompleted ? "text-slate-600" : "text-slate-400"
+                                    )}>
+                                        {getStepTitle(stepNum)}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
