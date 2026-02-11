@@ -2,3 +2,6 @@ project_id = "qtjbzvwgnqvtvykvjvgq"
 
 [functions.calculate-budget]
 verify_jwt = false
+
+[functions.log-error]
+verify_jwt = false

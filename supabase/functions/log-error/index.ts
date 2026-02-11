@@ -3,70 +3,86 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface ErrorPayload {
-    error_type: string
-    message: string
-    stack?: string
-    user_agent?: string
-    url?: string
-    timestamp?: string
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 serve(async (req) => {
-    // Handle CORS preflight
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return new Response(null, { headers: corsHeaders })
     }
 
     try {
-        // Parse request body
-        const payload: ErrorPayload = await req.json()
+        // Initialize Supabase client
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+        const supabase = createClient(supabaseUrl, supabaseKey)
 
-        // Validate required fields
-        if (!payload.error_type || !payload.message) {
+        // Rate limiting: 10 requests per minute per IP
+        const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+        const { data: rateData, error: rateError } = await supabase.rpc('atomic_rate_limit', {
+            p_identifier: `ip:${clientIP}`,
+            p_endpoint: 'log-error',
+            p_max_requests: 10,
+            p_window_minutes: 1
+        })
+
+        if (rateError) {
+            console.error('Rate limit check failed:', rateError)
+        } else if (rateData && rateData.length > 0 && !rateData[0].allowed) {
+            return new Response(
+                JSON.stringify({ error: 'Rate limited' }),
+                { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        // Parse and validate request body
+        const raw = await req.json()
+
+        const error_type = typeof raw.error_type === 'string' ? raw.error_type.slice(0, 200) : null
+        const message = typeof raw.message === 'string' ? raw.message.slice(0, 2000) : null
+
+        if (!error_type || !message) {
             return new Response(
                 JSON.stringify({ error: 'Missing required fields: error_type, message' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
-        // Initialize Supabase client
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-        const supabase = createClient(supabaseUrl, supabaseKey)
+        const stack = typeof raw.stack === 'string' ? raw.stack.slice(0, 5000) : null
+        const user_agent = typeof raw.user_agent === 'string' ? raw.user_agent.slice(0, 500) : null
+        const url = typeof raw.url === 'string' ? raw.url.slice(0, 2000) : null
+        const client_timestamp = typeof raw.timestamp === 'string' ? raw.timestamp.slice(0, 50) : new Date().toISOString()
 
-        // Insert error log into activity_logs table
+        // Insert error log using correct schema fields
         const { error } = await supabase.from('activity_logs').insert({
-            action: 'error',
-            details: {
-                error_type: payload.error_type,
-                message: payload.message,
-                stack: payload.stack || null,
-                user_agent: payload.user_agent || null,
-                url: payload.url || null,
-                client_timestamp: payload.timestamp || new Date().toISOString(),
+            event_type: 'STATUS_CHANGE' as const,
+            description: `Client Error: ${error_type}: ${message.slice(0, 200)}`,
+            metadata: {
+                error_type,
+                message,
+                stack,
+                user_agent,
+                url,
+                client_timestamp,
             },
         })
 
         if (error) {
             console.error('Failed to log error:', error)
             return new Response(
-                JSON.stringify({ error: 'Failed to insert log', details: error.message }),
+                JSON.stringify({ error: 'Failed to insert log' }),
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
         return new Response(
-            JSON.stringify({ success: true, message: 'Error logged successfully' }),
+            JSON.stringify({ success: true }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     } catch (err) {
         console.error('Log-error function error:', err)
         return new Response(
-            JSON.stringify({ error: 'Internal server error', message: err instanceof Error ? err.message : String(err) }),
+            JSON.stringify({ error: 'Internal server error' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
