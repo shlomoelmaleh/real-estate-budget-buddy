@@ -291,6 +291,19 @@ export function BudgetCalculator() {
                     </p>
                   </div>
                 </div>
+
+                {/* DEV MODE: Back to Editor */}
+                {import.meta.env.DEV && (
+                  <div className="text-center pt-4">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowConfirmation(false)}
+                      className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 border border-dashed border-slate-300"
+                    >
+                      ↩️ Architect: Back to Editor
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -330,14 +343,15 @@ export function BudgetCalculator() {
               </div>
             </footer>
           </main>
-        </div>
-      )}
+        </div >
+      )
+      }
 
       {/* Dev Tools HUD (Only visible in DEV) */}
       <DevInspector
         formData={watch()}
         results={results}
       />
-    </div>
+    </div >
   );
 }

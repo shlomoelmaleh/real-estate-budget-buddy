@@ -62,6 +62,8 @@ export interface ReportEmailRequest {
     lawyerFeeTTC: number;
     brokerFeeTTC: number;
     limitingFactor?: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
+    rentWarning?: 'high' | 'low' | null;
+    estimatedMarketRent?: number | null;
   };
   amortizationSummary: {
     totalMonths: number;
@@ -97,11 +99,9 @@ export function calculateLeadScore(
   actionSla: string;
   breakdown: {
     budget: number;
-    health: number;
-    readiness: number;
-    age: number;
     liquidity: number;
-  }
+  };
+  predictedTimeline: string;
 } {
   let budgetScore = 0;
   let healthScore = 0;
@@ -112,9 +112,10 @@ export function calculateLeadScore(
   const maxBudget = results.maxPropertyValue;
   const netIncome = parseFloat(inputs.netIncome.replace(/,/g, '')) || 0;
   const monthlyPayment = results.monthlyPayment;
-  const equityRemaining = results.equityRemaining;
+  // const equityRemaining = results.equityRemaining; // Unused in scoring logic below but usually available
   const equityInitial = parseFloat(inputs.equity.replace(/,/g, '')) || 0;
   const age = parseFloat(inputs.age) || 40;
+  const equityRemaining = results.equityRemaining;
 
   // 1. Budget Size (Max 35 pts)
   if (maxBudget > 5000000) budgetScore = 35;
@@ -132,34 +133,41 @@ export function calculateLeadScore(
 
   // 4. Age Factor (Max 10 pts)
   if (age < 35) ageScore = 10;
+  else if (age < 45) ageScore = 5;
 
   // 5. Liquidity Bonus (Max 15 pts)
   if (equityRemaining > 200000) liquidityScore = 15;
+  else if (equityRemaining > 50000) liquidityScore = 5;
 
   // Total Score
   const score = Math.min(100, budgetScore + healthScore + readinessScore + ageScore + liquidityScore);
 
-  // Determine Tier & Action
+  // Determine Tier, Action, and Timeline
   let priorityLabel = '❄️ COLD';
   let priorityColor = '#94a3b8'; // Slate
   let actionSla = "Add to long-term newsletter.";
+  let predictedTimeline = "> 12 Months";
 
   if (score >= 85) {
     priorityLabel = '💎 PLATINUM';
-    priorityColor = '#7c3aed'; // Violet/Purple
+    priorityColor = '#7c3aed'; // Violet
     actionSla = "Call within 1 hour.";
+    predictedTimeline = "Immediate (0-3 Months)";
   } else if (score >= 70) {
     priorityLabel = '🔥 HOT';
     priorityColor = '#ef4444'; // Red
     actionSla = "Call within 4 hours.";
+    predictedTimeline = "Short Term (3-6 Months)";
   } else if (score >= 50) {
     priorityLabel = '☀️ WARM';
     priorityColor = '#f59e0b'; // Amber
     actionSla = "Call within 24 hours.";
+    predictedTimeline = "Medium Term (6-12 Months)";
   } else if (score >= 30) {
     priorityLabel = '🌤️ COOL';
     priorityColor = '#3b82f6'; // Blue
     actionSla = "Email follow-up.";
+    predictedTimeline = "Long Term (12+ Months)";
   }
 
   return {
@@ -167,6 +175,7 @@ export function calculateLeadScore(
     priorityLabel,
     priorityColor,
     actionSla,
+    predictedTimeline,
     breakdown: {
       budget: budgetScore,
       health: healthScore,
@@ -473,6 +482,8 @@ function generateEmailHtml(
       bridgeSentence: "פערים בתקציב ניתנים לעיתים לגישור באמצעות תכנון פיננסי יצירתי. הצוות שלנו יבדוק זאת לעומק.",
       labelEstimatedRent: "הכנסה משכירות משוערת (3% שנתי)",
       labelUserRent: "הכנסה משכירות צפויה (לפי קלט משתמש)",
+      rentWarningHigh: "נמצא פער של כ-40% בין שכר הדירה שהוזן (₪{actual}) לממוצע באזור (₪{market}). הבנק עשוי להכיר רק בנמוך מביניהם, מה שישפיע על התקציב.",
+      rentWarningLow: "שכר הדירה שהוזן (₪{actual}) נמוך מהממוצע באזור (₪{market}).",
     },
     en: {
       subject: "Your Strategic Financial Dossier",
@@ -594,6 +605,8 @@ function generateEmailHtml(
       bridgeSentence: "Budget gaps can often be bridged with creative financial planning. Our team will review this.",
       labelEstimatedRent: "Estimated rental income (3% annual)",
       labelUserRent: "Expected monthly rent (User Input)",
+      rentWarningHigh: "A gap of ~40% was found between entered rent (₪{actual}) and market average (₪{market}). The bank may use the lower value, affecting your budget.",
+      rentWarningLow: "Entered rent (₪{actual}) is lower than market average (₪{market}).",
     },
     fr: {
       subject: "Votre Dossier Stratégique Financier",
@@ -716,6 +729,8 @@ function generateEmailHtml(
       bridgeSentence: "Un écart peut souvent être comblé par une ingénierie financière adaptée. Notre équipe va analyser cela.",
       labelEstimatedRent: "Revenu locatif estimé (3% annuel)",
       labelUserRent: "Loyer mensuel attendu (Saisi par l'utilisateur)",
+      rentWarningHigh: "Un écart d'environ 40% a été détecté entre le loyer saisi (₪{actual}) et la moyenne du marché (₪{market}). La banque pourrait retenir la valeur la plus basse.",
+      rentWarningLow: "Le loyer saisi (₪{actual}) est inférieur à la moyenne du marché (₪{market}).",
     },
   };
 
@@ -769,8 +784,11 @@ function generateEmailHtml(
   const alignStart = isRTL ? "right" : "left";
   const alignEnd = isRTL ? "left" : "right";
 
+  const alignEnd = isRTL ? "left" : "right";
+
   // Compute limiting factors - analyze ALL potential constraints and list them all
-  let limitingFactor: string;
+  let limitingFactor = t.limitingInsufficient; // Default string value
+
   const hasCriticalData = equityInitial > 0 && incomeNet > 0 && monthlyPayment > 0;
 
   if (!hasCriticalData) {
@@ -836,13 +854,11 @@ function generateEmailHtml(
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
   // Internal Analysis Calculation (for Advisor Email)
-  const { score, priorityLabel, priorityColor, actionSla, breakdown } = calculateLeadScore(inputs, results);
+  // Calculate Bonus Power logic (Strategic Moat)
+  const bonusPower = calculateBonusPower(500, parseFloat(inputs.interest) || 5.0, results.loanTermYears);
 
-  // Calculate Bonus Power for What-If
-  const interestRateVal = parseFloat(inputs.interest) || 5.0;
-  const yearsVal = results.loanTermYears || 30;
-  const bonusPower = calculateBonusPower(results.monthlyPayment, interestRateVal, yearsVal);
-
+  // Lead Scoring (for internal use in Advisor Email)
+  const { score, priorityLabel, priorityColor, actionSla, predictedTimeline, breakdown, } = calculateLeadScore(data.inputs, data.results);
   const limitingFactorDescription = getLimitingFactorDescription(results.limitingFactor);
 
   return `
@@ -855,7 +871,7 @@ function generateEmailHtml(
       <style type="text/css">
         body, table, td {direction: ${dir}; text-align: ${alignStart};}
       </style>
-      <![endif]-->
+      ![endif]-->
       <style>
         * { direction: ${dir} !important; box-sizing: border-box; }
         body {
@@ -1287,7 +1303,71 @@ function generateEmailHtml(
       </div>
       ` : ''}
 
-      <!-- SECTION 1: Hero - Maximum Purchasing Power -->
+      ${!isAdvisorCopy ? `
+      <!-- STRATEGIC MOAT: OVERVIEW & WHAT-IF -->
+      <div class="section" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; color: white;">
+        <div class="section-title" style="color: #93c5fd; border-bottom-color: #334155;">💡 ${t.overviewTitle}</div>
+        
+        <div style="font-size: 14px; color: #e2e8f0; line-height: 1.6; margin-bottom: 12px;">
+          ${(() => {
+        if (limitingFactor.includes(t.limitingIncome)) return t.noteIncome;
+        if (limitingFactor.includes(t.limitingCash)) return t.noteEquity;
+        if (limitingFactor.includes(t.limitingAge)) return t.noteAge;
+        return t.noteLTV;
+      })()}
+        </div>
+
+        ${limitingFactor.includes(t.limitingIncome) ? `
+        <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-top: 12px; border-${alignStart}: 4px solid #f59e0b; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+          <p style="margin: 0; font-size: 13px; color: #fbbf24; font-weight: 600;">
+            ${t.whatIfText.replace('₪100,000', `₪${formatNumber(bonusPower)}`)}
+          </p>
+        </div>
+        ` : ''}
+      </div>
+      ` : ''}
+
+      ${isAdvisorCopy
+      ? `
+      <!-- INTERNAL ANALYSIS SECTION (Lead Score) -->
+      <div style="background: #1e293b; color: white; padding: 20px; border-bottom: 4px solid ${priorityColor}; margin: -16px -16px 20px -16px; border-radius: 0 0 12px 12px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="vertical-align: top; padding-bottom: 10px;">
+              <span style="background: ${priorityColor}; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px; display: inline-block;">${priorityLabel}</span>
+            </td>
+            <td style="vertical-align: top; text-align: ${isRTL ? 'left' : 'right'}; padding-bottom: 10px;">
+              <span style="font-size: 32px; font-weight: 800; color: ${priorityColor}; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">${score}</span>
+            </td>
+          </tr>
+        </table>
+        
+        <div style="margin-bottom: 8px;">
+          <strong style="color: #e2e8f0;">&#9889; Action SLA:</strong>
+          <span style="color: #cbd5e1; margin-${isRTL ? 'right' : 'left'}: 6px;">${actionSla}</span>
+        </div>
+        <div style="margin-bottom: 12px;">
+          <strong style="color: #e2e8f0;">&#9201; ${language === 'he' ? 'לו״ז צפוי:' : language === 'fr' ? 'Délai prévu :' : 'Predicted Timeline:'}</strong>
+          <span style="color: ${priorityColor}; font-weight: 700; margin-${isRTL ? 'right' : 'left'}: 6px;">${predictedTimeline}</span>
+        </div>
+        
+        <!-- Score Breakdown Grid -->
+        <div style="background: #f8fafc; border-radius: 8px; padding: 12px; margin: 12px 0;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="font-size: 12px; color: #64748b; font-weight: 600; text-align: center;">
+              <td>Budget: <strong style="color: #0f172a;">${breakdown.budget}/35</strong></td>
+              <td>Health: <strong style="color: #0f172a;">${breakdown.health}/25</strong></td>
+              <td>Ready: <strong style="color: #0f172a;">${breakdown.readiness}/25</strong></td>
+              <td>Age: <strong style="color: #0f172a;">${breakdown.age}/10</strong></td>
+              <td>Cash: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #e2e8f0;">Limiting Factor: ${limitingFactor}</div>
+        <div style="font-size: 13px; color: #94a3b8; line-height: 1.4;">${limitingFactorDescription}</div>
+      </div>
+
       <div class="section hero-section">
         <div class="section-title">💎 ${t.heroTitle}</div>
         <div style="font-size: 13px; color: #047857; margin-bottom: 4px;">${t.maxPropertyLabel}</div>
@@ -1406,41 +1486,58 @@ function generateEmailHtml(
             <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
           </div>
           ${parseNumber(inputs.budgetCap) > 0
-      ? `
+        ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
             <span class="value">₪ ${inputs.budgetCap}</span>
           </div>
           `
-      : ""
-    }
+        : ""
+      }
           ${inputs.isRented
-      ? `
+        ? `
           <div class="row" style="margin-bottom: 4px; ${hasManualRent ? "background-color: #fffbf0; border-radius: 4px; border: 1px solid #fde68a; padding: 4px !important;" : ""}">
             <span class="label" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">${rentLabel}</span>
             <span class="value" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">₪ ${formatNumber(results.rentIncome)}</span>
           </div>
           ${!inputs.isFirstProperty
-        ? `
+          ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.rentalIncomeRetained}</span>
             <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
           `
+          : ""
+        }
+          `
         : ""
       }
-          `
-      : ""
-    }
           <div class="row" style="margin-top: 8px; border-top: 1px dashed #86efac; padding-top: 8px;">
             <span class="label" style="color: #166534; font-weight: 700;">${t.netMonthlyBalance}</span>
             <span class="value" style="color: ${netBalanceColor}; font-weight: 800; font-size: 15px; direction: ltr;">${netBalanceFormatted}</span>
           </div>
-          <div style="margin-top: 6px; font-size: 10px; color: #166534; opacity: 0.8;">${t.monthlySummaryNote}</div>
+          <div style="font-size: 10px; color: #64748b; margin-top: 8px; font-style: italic;">${t.monthlySummaryNote}</div>
         </div>
-      </div>
-
-      <!-- CHARTS SECTION -->
+        
+        ${(() => {
+        const rw = results.rentWarning;
+        const emr = results.estimatedMarketRent;
+        if (!rw || !emr) return '';
+        const actualRentFmt = formatNumber(results.rentIncome);
+        const marketRentFmt = formatNumber(emr);
+        const isHigh = rw === 'high';
+        const borderColor = isHigh ? '#ef4444' : '#f59e0b';
+        const bgColor = isHigh ? '#fef2f2' : '#fffbeb';
+        const textColor = isHigh ? '#991b1b' : '#92400e';
+        const rawMsg = isHigh ? (t as any).rentWarningHigh : (t as any).rentWarningLow;
+        const msg = rawMsg?.replace('{actual}', actualRentFmt).replace('{market}', marketRentFmt) || '';
+        return `
+        <div style="margin-top: 12px; padding: 12px 14px; background: ${bgColor}; border-radius: 8px; border: 1px solid ${borderColor};">
+          <div style="font-size: 12px; color: ${textColor}; line-height: 1.5;">${msg}</div>
+        </div>`;
+      })()}
+        
+        <!-- Charts -->
       <div class="section">
         <div class="section-title">📉 ${t.chartBalanceTitle}</div>
         
@@ -1453,23 +1550,23 @@ function generateEmailHtml(
           <table class="vchart">
             <tr style="height: 100%;">
               ${(yearlyBalanceData || []).map((d) => {
-      const maxVal = (yearlyBalanceData || [])[0]?.balance || 1;
-      const h = Math.round((d.balance / maxVal) * 100);
-      return `
+        const maxVal = (yearlyBalanceData || [])[0]?.balance || 1;
+        const h = Math.round((d.balance / maxVal) * 100);
+        return `
                   <td>
                     <div class="vbar vbar-balance" style="height: ${h}%;"></div>
                   </td>
                 `;
-    }).join("")}
+      }).join("")}
             </tr>
             <tr>
               ${(yearlyBalanceData || []).map((d, i) => {
-      // Show year label every 5 years
-      if (i % 5 === 0 || i === (yearlyBalanceData || []).length - 1) {
-        return `<td class="vlabel">${d.year}</td>`;
-      }
-      return `<td></td>`;
-    }).join("")}
+        // Show year label every 5 years
+        if (i % 5 === 0 || i === (yearlyBalanceData || []).length - 1) {
+          return `<td class="vlabel">${d.year}</td>`;
+        }
+        return `<td></td>`;
+      }).join("")}
             </tr>
           </table>
         </div>
@@ -1483,13 +1580,13 @@ function generateEmailHtml(
           <table class="vchart">
             <tr style="height: 100%;">
               ${(paymentBreakdownData || []).map((d) => {
-      const total = d.principal + d.interest;
-      const maxPayment = Math.max(...(paymentBreakdownData || []).map(p => p.principal + p.interest)) || 1;
-      const hTotal = Math.round((total / maxPayment) * 100);
-      const hPrincipal = Math.round((d.principal / total) * 100);
-      const hInterest = 100 - hPrincipal;
+        const total = d.principal + d.interest;
+        const maxPayment = Math.max(...(paymentBreakdownData || []).map(p => p.principal + p.interest)) || 1;
+        const hTotal = Math.round((total / maxPayment) * 100);
+        const hPrincipal = Math.round((d.principal / total) * 100);
+        const hInterest = 100 - hPrincipal;
 
-      return `
+        return `
                   <td>
                     <div class="vstack" style="height: ${hTotal}%;">
                       <div class="vbar-interest" style="height: ${hInterest}%;"></div>
@@ -1497,15 +1594,15 @@ function generateEmailHtml(
                     </div>
                   </td>
                 `;
-    }).join("")}
+      }).join("")}
             </tr>
             <tr>
               ${(paymentBreakdownData || []).map((d, i) => {
-      if (i % 5 === 0 || i === (paymentBreakdownData || []).length - 1) {
-        return `<td class="vlabel">${d.year}</td>`;
-      }
-      return `<td></td>`;
-    }).join("")}
+        if (i % 5 === 0 || i === (paymentBreakdownData || []).length - 1) {
+          return `<td class="vlabel">${d.year}</td>`;
+        }
+        return `<td></td>`;
+      }).join("")}
             </tr>
           </table>
           <div class="chart-legend">
