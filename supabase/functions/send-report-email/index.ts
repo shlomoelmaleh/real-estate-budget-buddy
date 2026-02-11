@@ -1379,9 +1379,9 @@ function generateEmailHtml(
         <div style="font-size: 13px; opacity: 0.8; line-height: 1.4;">${limitingFactorDescription}</div>
         
         <!-- Predicted Timeline -->
-        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; gap: 8px;">
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">
           <span style="font-size: 13px; opacity: 0.7;">⏱ ${lang === 'he' ? 'לו״ז צפוי:' : lang === 'fr' ? 'Délai prévu :' : 'Predicted Timeline:'}</span>
-          <span style="font-size: 14px; font-weight: 700; color: ${priorityColor};">${
+          <span style="font-size: 14px; font-weight: 700; color: ${priorityColor}; margin-${isRTL ? 'right' : 'left'}: 8px;">${
             score >= 85
               ? (lang === 'he' ? '1-2 שבועות (מוכנים לתנועה)' : lang === 'fr' ? '1-2 semaines (Prêt à l\'achat)' : '1-2 weeks (Ready to move)')
               : score >= 50
