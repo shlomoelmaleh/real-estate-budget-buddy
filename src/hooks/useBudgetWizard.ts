@@ -1,0 +1,357 @@
+import { useState, useEffect } from 'react';
+import { UseFormGetValues, UseFormTrigger } from 'react-hook-form';
+import { CalculatorFormValues } from '@/components/budget/types';
+import { CalculatorResults, parseFormattedNumber, AmortizationRow } from '@/lib/calculator';
+import { analyticsQueue } from '@/lib/analyticsQueue';
+import { toast } from 'sonner';
+
+export interface UseBudgetWizardProps {
+    partner: { id: string } | null;
+    language: string;
+    trigger: UseFormTrigger<CalculatorFormValues>;
+    getValues: UseFormGetValues<CalculatorFormValues>;
+    t: any;
+}
+
+export function useBudgetWizard({
+    partner,
+    language,
+    trigger,
+    getValues,
+    t,
+}: UseBudgetWizardProps) {
+    // --- STATE MANAGEMENT ---
+    const [step, setStep] = useState(0);
+    const [sessionId] = useState(() => {
+        try {
+            return crypto.randomUUID();
+        } catch (e) {
+            return Math.random().toString(36).substring(2) + Date.now().toString(36);
+        }
+    });
+    const [isExiting0, setIsExiting0] = useState(false);
+    const [results, setResults] = useState<CalculatorResults | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSending, setIsSending] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [animClass, setAnimClass] = useState('animate-in slide-in-from-right fade-in duration-500');
+
+    // Store calculation data for email
+    const [calcData, setCalcData] = useState<{
+        inputs: Record<string, unknown>;
+        results: Record<string, unknown>;
+        amortizationSummary: Record<string, unknown>;
+        yearlyBalanceData: Array<Record<string, unknown>>;
+        paymentBreakdownData: Array<Record<string, unknown>>;
+        csvData: string;
+    } | null>(null);
+
+    // --- FUNNEL TRACKING ---
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            analyticsQueue.enqueue({
+                session_id: sessionId,
+                step_reached: step,
+                event_type: 'entered',
+                partner_id: partner?.id || null,
+                language: language,
+            });
+            console.log(`[Funnel] Logged 'entered' for Step ${step}`);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [step, sessionId, partner, language]);
+
+    // --- HELPER FUNCTIONS ---
+    const calculateLTV = (isFirstProperty: boolean, isIsraeliCitizen: boolean): number => {
+        if (!isFirstProperty) return 50;
+        if (isIsraeliCitizen) return 75;
+        return 50;
+    };
+
+    const logCompletion = () => {
+        analyticsQueue.enqueue({
+            session_id: sessionId,
+            step_reached: step,
+            event_type: 'completed',
+            partner_id: partner?.id || null,
+            language: language,
+        });
+        console.log(`[Funnel] Logged 'completed' for Step ${step}`);
+    };
+
+    // --- NAVIGATION LOGIC ---
+    const handleNext = async () => {
+        if (step === 0) {
+            logCompletion();
+            setIsExiting0(true);
+            setTimeout(() => {
+                setStep(1);
+                setIsExiting0(false);
+                window.scrollTo({ top: 0 });
+            }, 500);
+            return;
+        }
+
+        let fields: (keyof CalculatorFormValues)[] = [];
+
+        switch (step) {
+            case 1:
+                fields = ['fullName', 'age', 'targetPropertyPrice'];
+                break;
+            case 2:
+                fields = ['equity', 'netIncome'];
+                break;
+            case 3:
+                fields = ['isFirstProperty', 'isIsraeliCitizen', 'isIsraeliTaxResident'];
+                break;
+            default:
+                break;
+        }
+
+        const isValid = await trigger(fields);
+        if (isValid) {
+            logCompletion();
+            const nextStep = step + 1;
+            setAnimClass('animate-in slide-in-from-right fade-in duration-500');
+            setStep(nextStep);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleBack = () => {
+        setAnimClass('animate-in slide-in-from-left fade-in duration-500');
+        setStep((s) => Math.max(0, s - 1));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // --- CALCULATION LOGIC ---
+    const handleCalculate = async () => {
+        const isValid = await trigger(['isRented', 'expectedRent', 'targetPropertyPrice', 'budgetCap']);
+        if (!isValid) return;
+
+        setIsLoading(true);
+        logCompletion();
+        setAnimClass('animate-in fade-in duration-700');
+        setStep(5);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        const data = getValues();
+
+        // Logic constants
+        const maxAge = '80';
+        const interest = '5.0';
+        const ratio = '33';
+        const rentalYield = '3.0';
+        const rentRecognition = '80';
+        const lawyerPct = '1.0';
+        const brokerPct = '2.0';
+        const vatPct = '18';
+        const advisorFee = '9,000';
+        const otherFee = '3,000';
+
+        const calculatedLTV = calculateLTV(data.isFirstProperty, data.isIsraeliCitizen);
+        const inputs = {
+            equity: parseFormattedNumber(data.equity),
+            ltv: calculatedLTV,
+            netIncome: parseFormattedNumber(data.netIncome),
+            ratio: parseFormattedNumber(ratio),
+            age: parseFormattedNumber(data.age),
+            maxAge: parseFormattedNumber(maxAge),
+            interest: parseFloat(interest) || 0,
+            isRented: data.isRented,
+            rentalYield: parseFloat(rentalYield) || 0,
+            rentRecognition: parseFormattedNumber(rentRecognition),
+            budgetCap: data.budgetCap ? parseFormattedNumber(data.budgetCap) : null,
+            isFirstProperty: data.isFirstProperty,
+            isIsraeliTaxResident: data.isIsraeliTaxResident,
+            expectedRent: data.expectedRent ? parseFormattedNumber(data.expectedRent) : null,
+            lawyerPct: parseFloat(lawyerPct) || 0,
+            brokerPct: parseFloat(brokerPct) || 0,
+            vatPct: parseFormattedNumber(vatPct),
+            advisorFee: parseFormattedNumber(advisorFee),
+            otherFee: parseFormattedNumber(otherFee),
+        };
+
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-budget`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+                        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                    },
+                    body: JSON.stringify(inputs),
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[Calculate] Function error:', response.status, errorText);
+                throw new Error(`Calculation failed: ${response.status}`);
+            }
+
+            const { results: calcResults, amortization: amortRows } = await response.json();
+
+            if (calcResults) {
+                // Prepare chart data
+                const yearlyBalanceData: { year: number; balance: number }[] = [];
+                for (let i = 0; i < amortRows.length; i++) {
+                    if ((i + 1) % 12 === 0 || i === amortRows.length - 1) {
+                        yearlyBalanceData.push({
+                            year: Math.ceil((i + 1) / 12),
+                            balance: amortRows[i].closing,
+                        });
+                    }
+                }
+
+                const paymentBreakdownData: { year: number; interest: number; principal: number }[] = [];
+                for (let yearIndex = 0; yearIndex < Math.ceil(amortRows.length / 12); yearIndex++) {
+                    const startMonth = yearIndex * 12;
+                    const endMonth = Math.min(startMonth + 12, amortRows.length);
+                    let yearlyInterest = 0;
+                    let yearlyPrincipal = 0;
+                    for (let i = startMonth; i < endMonth; i++) {
+                        yearlyInterest += amortRows[i].interest;
+                        yearlyPrincipal += amortRows[i].principal;
+                    }
+                    paymentBreakdownData.push({
+                        year: yearIndex + 1,
+                        interest: yearlyInterest,
+                        principal: yearlyPrincipal,
+                    });
+                }
+
+                // CSV generation
+                const asciiHeaders = ['Month', 'Opening', 'Payment', 'Principal', 'Interest', 'Closing'];
+                const isRTL = language === 'he';
+                const headers = isRTL ? [...asciiHeaders].reverse() : asciiHeaders;
+                const csvHeader = headers.join(',') + '\n';
+                const csvRows = (amortRows || [])
+                    .map((row: AmortizationRow) => {
+                        const values = isRTL
+                            ? [row.closing, row.interest, row.principal, row.payment, row.opening, row.month]
+                            : [row.month, row.opening, row.payment, row.principal, row.interest, row.closing];
+                        return values.map((v) => (typeof v === 'number' ? v.toFixed(2) : v)).join(',');
+                    })
+                    .join('\n');
+                const csvData = csvHeader + csvRows;
+
+                const amortizationSummary = {
+                    totalMonths: amortRows.length,
+                    firstPayment:
+                        amortRows.length > 0
+                            ? { principal: amortRows[0].principal, interest: amortRows[0].interest }
+                            : { principal: 0, interest: 0 },
+                    lastPayment:
+                        amortRows.length > 0
+                            ? {
+                                principal: amortRows[amortRows.length - 1].principal,
+                                interest: amortRows[amortRows.length - 1].interest,
+                            }
+                            : { principal: 0, interest: 0 },
+                };
+
+                const simulationInputs = {
+                    ...data,
+                    ltv: calculatedLTV.toString(),
+                    maxAge,
+                    interest,
+                    rentalYield,
+                    rentRecognition,
+                    lawyerPct,
+                    brokerPct,
+                    vatPct,
+                    advisorFee,
+                    otherFee,
+                    ratio,
+                    targetPropertyPrice: data.targetPropertyPrice || '',
+                };
+
+                const simulationResults = {
+                    ...calcResults,
+                    shekelRatio: calcResults.totalCost / calcResults.loanAmount,
+                };
+
+                setCalcData({
+                    inputs: simulationInputs,
+                    results: simulationResults,
+                    amortizationSummary,
+                    yearlyBalanceData,
+                    paymentBreakdownData,
+                    csvData,
+                });
+
+                // Artificial loading delay
+                setTimeout(() => {
+                    setResults(calcResults);
+                    setIsLoading(false);
+                }, 2000);
+            } else {
+                toast.error('Calculation failed');
+                setStep(4);
+                setIsLoading(false);
+            }
+        } catch (error) {
+            toast.error(t.emailError || 'An error occurred.');
+            setStep(4);
+            setIsLoading(false);
+        }
+    };
+
+    // --- EMAIL SUBMISSION LOGIC ---
+    const handleSendReport = async () => {
+        const isValid = await trigger(['email', 'phone']);
+        if (!isValid) return;
+
+        setIsSending(true);
+        const data = getValues();
+        const partnerId = partner?.id || null;
+
+        try {
+            const { supabase } = await import('@/integrations/supabase/client');
+
+            const { error: emailError } = await supabase.functions.invoke('send-report-email', {
+                body: {
+                    recipientEmail: data.email,
+                    recipientName: data.fullName || 'Client',
+                    recipientPhone: data.phone,
+                    language: language,
+                    inputs: calcData.inputs,
+                    results: calcData.results,
+                    amortizationSummary: calcData.amortizationSummary,
+                    yearlyBalanceData: calcData.yearlyBalanceData,
+                    paymentBreakdownData: calcData.paymentBreakdownData,
+                    csvData: calcData.csvData,
+                    partnerId,
+                },
+            });
+
+            if (emailError) throw emailError;
+
+            setShowConfirmation(true);
+        } catch (error) {
+            toast.error(t.emailError);
+        }
+        setIsSending(false);
+    };
+
+    return {
+        step,
+        sessionId,
+        isExiting0,
+        results,
+        isLoading,
+        isSending,
+        showConfirmation,
+        animClass,
+        calcData,
+        handleNext,
+        handleBack,
+        handleCalculate,
+        handleSendReport,
+        setShowConfirmation,
+    };
+}

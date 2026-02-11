@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Calculator,
   Mail,
   CheckCircle2,
   ChevronRight,
@@ -10,16 +9,9 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
-import { HeroHeader } from './HeroHeader';
 import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
-import {
-  parseFormattedNumber,
-  CalculatorResults,
-  AmortizationRow
-} from '@/lib/calculator';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 import logoEshel from '@/assets/logo-eshel.png';
 
 // Wizard Components
@@ -33,11 +25,9 @@ import { Step5 } from './Wizard/Steps/Step5_Reveal';
 import { Step0 } from './Wizard/Steps/Step0_Welcome';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
-
-import { analyticsQueue } from '@/lib/analyticsQueue';
 import { DevInspector } from './DevTools/DevInspector';
 import { ReportEmailRequest } from '@/lib/devMirror';
+import { useBudgetWizard } from '@/hooks/useBudgetWizard';
 
 // ... (imports remain the same)
 
@@ -46,34 +36,10 @@ export function BudgetCalculator() {
   const { partner } = usePartner();
   const confirmationRef = useRef<HTMLDivElement>(null);
 
-  // State - Step 0 is Welcome Screen
-  const [step, setStep] = useState(0); // Initial state changed to 0
-  const [sessionId] = useState(() => {
-    try {
-      return crypto.randomUUID();
-    } catch (e) {
-      return Math.random().toString(36).substring(2) + Date.now().toString(36);
-    }
-  }); // Session ID for funnel tracking
-  const [isExiting0, setIsExiting0] = useState(false); // For transition out of Step 0
-  const [results, setResults] = useState<CalculatorResults | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // For calculation
-  const [isSending, setIsSending] = useState(false); // For email
-  const [showConfirmation, setShowConfirmation] = useState(false);
-
-  // Store calculation data for the email step
-  const [calcData, setCalcData] = useState<{
-    inputs: Record<string, unknown>;
-    results: Record<string, unknown>;
-    amortizationSummary: Record<string, unknown>;
-    yearlyBalanceData: Array<Record<string, unknown>>;
-    paymentBreakdownData: Array<Record<string, unknown>>;
-    csvData: string;
-  } | null>(null);
-
+  // Form management
   const {
     control,
-    trigger, // Used for manual validation per step
+    trigger,
     formState: { errors },
     getValues,
     watch,
@@ -97,36 +63,65 @@ export function BudgetCalculator() {
     },
   });
 
-  // Partner Display Info
+  // Business logic from custom hook
+  const {
+    step,
+    isExiting0,
+    results,
+    isLoading,
+    isSending,
+    showConfirmation,
+    handleNext,
+    handleBack,
+    handleCalculate,
+    handleSendReport,
+    setShowConfirmation,
+  } = useBudgetWizard({
+    partner,
+    language,
+    trigger,
+    getValues,
+    t,
+  });
+
+  // Helper for LTV calculation (for DevInspector only)
+  const calculateLTV = (isFirstProperty: boolean, isIsraeliCitizen: boolean): number => {
+    if (!isFirstProperty) return 50;
+    if (isIsraeliCitizen) return 75;
+    return 50;
+  };
+
+  // --- PARTNER DISPLAY INFO ---
   const displayName = partner?.name || t.advisorName;
   const displayPhone = partner?.phone || t.advisorPhone;
   const displayEmail = partner?.email || t.advisorEmail;
-  const displayTitle = partner?.name ? (partner?.name || t.advisorTitle) : t.advisorTitle;
+  const displayTitle = partner?.name ? partner?.name || t.advisorTitle : t.advisorTitle;
   const displayLogo = partner?.logo_url || logoEshel;
 
+  // WhatsApp link logic
   const normalizeToWaMeDigits = (raw: string) => {
-    const digitsOnly = (raw || "").replace(/[^0-9]/g, "");
-    if (!digitsOnly) return "";
-    let d = digitsOnly.startsWith("00") ? digitsOnly.slice(2) : digitsOnly;
-    if (d.startsWith("9720")) d = `972${d.slice(4)}`;
-    else if (d.startsWith("0")) d = `972${d.slice(1)}`;
-    else if (d.length === 9 && d.startsWith("5")) d = `972${d}`;
+    const digitsOnly = (raw || '').replace(/[^0-9]/g, '');
+    if (!digitsOnly) return '';
+    let d = digitsOnly.startsWith('00') ? digitsOnly.slice(2) : digitsOnly;
+    if (d.startsWith('9720')) d = `972${d.slice(4)}`;
+    else if (d.startsWith('0')) d = `972${d.slice(1)}`;
+    else if (d.length === 9 && d.startsWith('5')) d = `972${d}`;
     return d;
   };
 
   const buildWhatsAppHref = () => {
-    const rawWhatsApp = partner?.whatsapp || "";
+    const rawWhatsApp = partner?.whatsapp || '';
     if (rawWhatsApp) {
-      if (rawWhatsApp.startsWith("http://") || rawWhatsApp.startsWith("https://")) return rawWhatsApp;
+      if (rawWhatsApp.startsWith('http://') || rawWhatsApp.startsWith('https://')) return rawWhatsApp;
       const digits = normalizeToWaMeDigits(rawWhatsApp);
       if (digits) return `https://wa.me/${digits}`;
     }
-    const digitsFromPhone = normalizeToWaMeDigits(partner?.phone || "");
+    const digitsFromPhone = normalizeToWaMeDigits(partner?.phone || '');
     if (digitsFromPhone) return `https://wa.me/${digitsFromPhone}`;
-    return "https://wa.me/972549997711";
+    return 'https://wa.me/972549997711';
   };
 
-  // Logic Constants
+  // Logic constants for DevInspector
   const maxAge = '80';
   const interest = '5.0';
   const ratio = '33';
@@ -138,286 +133,9 @@ export function BudgetCalculator() {
   const advisorFee = '9,000';
   const otherFee = '3,000';
 
-  const calculateLTV = (isFirstProperty: boolean, isIsraeliCitizen: boolean): number => {
-    if (!isFirstProperty) return 50;
-    if (isIsraeliCitizen) return 75;
-    return 50;
-  };
-
-  // --- FUNNEL TRACKING (Granular) ---
-
-  // Log 'entered' event whenever step changes
-  useEffect(() => {
-    // Small delay to ensure component is fully mounted/viewable? 
-    // Not strictly necessary with React 18 but good for "entered" semantic.
-    const timer = setTimeout(() => {
-      analyticsQueue.enqueue({
-        session_id: sessionId,
-        step_reached: step,
-        event_type: 'entered',
-        partner_id: partner?.id || null,
-        language: language
-      });
-      console.log(`[Funnel] Logged 'entered' for Step ${step}`);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [step, sessionId, partner, language]);
-
-
-  // --- WIZARD NAVIGATION ---
-
-  const [animClass, setAnimClass] = useState("animate-in slide-in-from-right fade-in duration-500");
-
-  const handleNext = async () => {
-    // Log 'completed' for current step (if valid)
-    const logCompletion = () => {
-      analyticsQueue.enqueue({
-        session_id: sessionId,
-        step_reached: step,
-        event_type: 'completed',
-        partner_id: partner?.id || null,
-        language: language
-      });
-      console.log(`[Funnel] Logged 'completed' for Step ${step}`);
-    };
-
-    if (step === 0) {
-      logCompletion();
-      setIsExiting0(true);
-      setTimeout(() => {
-        setStep(1);
-        setIsExiting0(false);
-        window.scrollTo({ top: 0 });
-      }, 500); // Duration of the exit animation
-      return;
-    }
-
-    let fields: (keyof CalculatorFormValues)[] = [];
-
-    switch (step) {
-      case 1: fields = ['fullName', 'age', 'targetPropertyPrice']; break;
-      case 2: fields = ['equity', 'netIncome']; break;
-      case 3: fields = ['isFirstProperty', 'isIsraeliCitizen', 'isIsraeliTaxResident']; break;
-      default: break;
-    }
-
-    const isValid = await trigger(fields);
-    if (isValid) {
-      logCompletion();
-      const nextStep = step + 1;
-      setAnimClass("animate-in slide-in-from-right fade-in duration-500");
-      setStep(nextStep);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
   const isRTL = language === 'he';
 
-  const handleBack = () => {
-    setAnimClass("animate-in slide-in-from-left fade-in duration-500");
-    setStep(s => Math.max(0, s - 1)); // Allowing back to 0 (Welcome)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // --- CALCULATION PHASE ---
-
-  const handleCalculate = async () => {
-    // Validate Step 4
-    const isValid = await trigger(['isRented', 'expectedRent', 'targetPropertyPrice', 'budgetCap']);
-    if (!isValid) return;
-
-    setIsLoading(true);
-    // Log 'completed' for Step 4
-    analyticsQueue.enqueue({
-      session_id: sessionId,
-      step_reached: step,
-      event_type: 'completed',
-      partner_id: partner?.id || null,
-      language: language
-    });
-    setAnimClass("animate-in fade-in duration-700"); // Gentle fade for Reveal
-    setStep(5); // Move to Reveal step immediately to show loader
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    const data = getValues();
-
-    // Prepare Inputs
-    const calculatedLTV = calculateLTV(data.isFirstProperty, data.isIsraeliCitizen);
-    const inputs = {
-      equity: parseFormattedNumber(data.equity),
-      ltv: calculatedLTV,
-      netIncome: parseFormattedNumber(data.netIncome),
-      ratio: parseFormattedNumber(ratio),
-      age: parseFormattedNumber(data.age),
-      maxAge: parseFormattedNumber(maxAge),
-      interest: parseFloat(interest) || 0,
-      isRented: data.isRented,
-      rentalYield: parseFloat(rentalYield) || 0,
-      rentRecognition: parseFormattedNumber(rentRecognition),
-      budgetCap: data.budgetCap ? parseFormattedNumber(data.budgetCap) : null,
-      isFirstProperty: data.isFirstProperty,
-      isIsraeliTaxResident: data.isIsraeliTaxResident,
-      expectedRent: data.expectedRent ? parseFormattedNumber(data.expectedRent) : null,
-      lawyerPct: parseFloat(lawyerPct) || 0,
-      brokerPct: parseFloat(brokerPct) || 0,
-      vatPct: parseFormattedNumber(vatPct),
-      advisorFee: parseFormattedNumber(advisorFee),
-      otherFee: parseFormattedNumber(otherFee),
-    };
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-budget`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-          },
-          body: JSON.stringify(inputs),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[Calculate] Function error:', response.status, errorText);
-        throw new Error(`Calculation failed: ${response.status}`);
-      }
-
-      const { results: calcResults, amortization: amortRows } = await response.json();
-
-      if (calcResults) {
-        // Prepare additional data for email later
-        const yearlyBalanceData: { year: number; balance: number }[] = [];
-        for (let i = 0; i < amortRows.length; i++) {
-          if ((i + 1) % 12 === 0 || i === amortRows.length - 1) {
-            yearlyBalanceData.push({
-              year: Math.ceil((i + 1) / 12),
-              balance: amortRows[i].closing,
-            });
-          }
-        }
-
-        const paymentBreakdownData: { year: number; interest: number; principal: number }[] = [];
-        for (let yearIndex = 0; yearIndex < Math.ceil(amortRows.length / 12); yearIndex++) {
-          const startMonth = yearIndex * 12;
-          const endMonth = Math.min(startMonth + 12, amortRows.length);
-          let yearlyInterest = 0;
-          let yearlyPrincipal = 0;
-          for (let i = startMonth; i < endMonth; i++) {
-            yearlyInterest += amortRows[i].interest;
-            yearlyPrincipal += amortRows[i].principal;
-          }
-          paymentBreakdownData.push({
-            year: yearIndex + 1,
-            interest: yearlyInterest,
-            principal: yearlyPrincipal,
-          });
-        }
-
-        const asciiHeaders = ['Month', 'Opening', 'Payment', 'Principal', 'Interest', 'Closing'];
-        const isRTL = language === 'he';
-        const headers = isRTL ? [...asciiHeaders].reverse() : asciiHeaders;
-        const csvHeader = headers.join(",") + "\n";
-        const csvRows = (amortRows || []).map((row: AmortizationRow) => {
-          const values = isRTL
-            ? [row.closing, row.interest, row.principal, row.payment, row.opening, row.month]
-            : [row.month, row.opening, row.payment, row.principal, row.interest, row.closing];
-          return values.map(v => typeof v === 'number' ? v.toFixed(2) : v).join(",");
-        }).join("\n");
-        const csvData = csvHeader + csvRows;
-
-        const amortizationSummary = {
-          totalMonths: amortRows.length,
-          firstPayment: amortRows.length > 0 ? { principal: amortRows[0].principal, interest: amortRows[0].interest } : { principal: 0, interest: 0 },
-          lastPayment: amortRows.length > 0 ? { principal: amortRows[amortRows.length - 1].principal, interest: amortRows[amortRows.length - 1].interest } : { principal: 0, interest: 0 },
-        };
-
-        const simulationInputs = {
-          ...data,
-          ltv: calculatedLTV.toString(),
-          maxAge, interest, rentalYield, rentRecognition, lawyerPct, brokerPct, vatPct, advisorFee, otherFee, ratio,
-          targetPropertyPrice: data.targetPropertyPrice || '',
-        };
-
-        const simulationResults = {
-          ...calcResults,
-          shekelRatio: calcResults.totalCost / calcResults.loanAmount,
-        };
-
-        setCalcData({
-          inputs: simulationInputs,
-          results: simulationResults,
-          amortizationSummary,
-          yearlyBalanceData,
-          paymentBreakdownData,
-          csvData
-        });
-
-        // Artificial loading delay for 2 seconds
-        setTimeout(() => {
-          setResults(calcResults);
-          setIsLoading(false);
-        }, 2000);
-
-      } else {
-        toast.error('Calculation failed');
-        setStep(4);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      toast.error(t.emailError || 'An error occurred.');
-      setStep(4);
-      setIsLoading(false);
-    }
-  };
-
-  // --- SEND REPORT PHASE ---
-
-  const handleSendReport = async () => {
-    // Validate Lead Capture fields
-    const isValid = await trigger(['email', 'phone']);
-    if (!isValid) return;
-
-    setIsSending(true);
-    const data = getValues();
-    const partnerId = partner?.id || null;
-
-    try {
-      const { supabase } = await import('@/integrations/supabase/client');
-
-      const { error: emailError } = await supabase.functions.invoke('send-report-email', {
-        body: {
-          recipientEmail: data.email,
-          recipientName: data.fullName || 'Client',
-          recipientPhone: data.phone,
-          language: language,
-          inputs: calcData.inputs,
-          results: calcData.results,
-          amortizationSummary: calcData.amortizationSummary,
-          yearlyBalanceData: calcData.yearlyBalanceData,
-          paymentBreakdownData: calcData.paymentBreakdownData,
-          csvData: calcData.csvData,
-          partnerId,
-        },
-      });
-
-      if (emailError) throw emailError;
-
-      setShowConfirmation(true);
-      setTimeout(() => {
-        confirmationRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-
-    } catch (error) {
-      toast.error(t.emailError);
-    }
-    setIsSending(false);
-  };
-
-  // --- RENDER ---
+  // --- RENDER HELPERS ---
 
   const getStepContent = () => {
     switch (step) {
@@ -519,7 +237,10 @@ export function BudgetCalculator() {
 
                           return step < 4 ? (
                             <Button
-                              onClick={handleNext}
+                              onClick={() => {
+                                if (navigator.vibrate) navigator.vibrate(10);
+                                handleNext();
+                              }}
                               className={cn(
                                 "w-full sm:flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
                                 "shadow-lg shadow-primary/20",
@@ -533,7 +254,10 @@ export function BudgetCalculator() {
                             </Button>
                           ) : (
                             <Button
-                              onClick={handleCalculate}
+                              onClick={() => {
+                                if (navigator.vibrate) navigator.vibrate(10);
+                                handleCalculate();
+                              }}
                               className={cn(
                                 "w-full sm:flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
                                 isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
@@ -547,7 +271,10 @@ export function BudgetCalculator() {
                         {step > 1 && (
                           <Button
                             variant="outline"
-                            onClick={handleBack}
+                            onClick={() => {
+                              if (navigator.vibrate) navigator.vibrate(10);
+                              handleBack();
+                            }}
                             className="w-full sm:flex-1 py-6 text-base"
                           >
                             {isRTL ? <ChevronRight className="w-4 h-4 mr-2" /> : <ChevronLeft className="w-4 h-4 mr-2" />}

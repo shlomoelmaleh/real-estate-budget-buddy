@@ -94,6 +94,7 @@ export function Step5({
         const stages = 5;
         const intervalTime = 600; // ms
         const increment = Math.ceil(target / stages);
+        const perfStart = performance.now(); // Performance tracking
 
         let currentStage = 0;
 
@@ -136,6 +137,47 @@ export function Step5({
             if (currentStage >= stages) {
                 clearInterval(intervalId);
                 setHasCounted(true);
+
+                // Animation drift monitoring
+                const totalDuration = performance.now() - perfStart;
+                const expectedDuration = stages * intervalTime;
+                const drift = totalDuration - expectedDuration;
+
+                if (drift > 200) {
+                    // Log drift to backend
+                    try {
+                        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                        if (supabaseUrl) {
+                            fetch(`${supabaseUrl}/functions/v1/log-error`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    error_type: 'animation_drift',
+                                    message: `Step5 counter drift: ${drift.toFixed(0)}ms`,
+                                    stack: `Expected: ${expectedDuration}ms, Actual: ${totalDuration.toFixed(0)}ms`,
+                                    url: window.location.href,
+                                    timestamp: new Date().toISOString(),
+                                }),
+                            }).catch(() => { });
+                        }
+                    } catch { }
+                }
+
+                // Audio feedback - C5 note (523.25Hz) for 100ms
+                try {
+                    if (window.AudioContext || (window as any).webkitAudioContext) {
+                        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+                        const ctx = new AudioContextClass();
+                        const osc = ctx.createOscillator();
+                        osc.frequency.value = 523.25; // C5 note
+                        osc.connect(ctx.destination);
+                        osc.start();
+                        setTimeout(() => {
+                            osc.stop();
+                            ctx.close();
+                        }, 100);
+                    }
+                } catch { }
 
                 // Trigger celebration exactly on the final "Fade In"
                 confettiTimeoutId = setTimeout(() => celebrate(), 0);

@@ -21,6 +21,25 @@ export class BudgetErrorBoundary extends Component<Props, State> {
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error("Uncaught error:", error, errorInfo);
+
+        // Remote error logging (silent failure)
+        try {
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            if (supabaseUrl) {
+                fetch(`${supabaseUrl}/functions/v1/log-error`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        error_type: 'react_error_boundary',
+                        message: error.message,
+                        stack: error.stack || '',
+                        user_agent: navigator.userAgent,
+                        url: window.location.href,
+                        timestamp: new Date().toISOString(),
+                    }),
+                }).catch(() => { }); // Silent failure - don't break UI
+            }
+        } catch { }
     }
 
     public render() {

@@ -85,6 +85,8 @@ interface CalculatorResults {
   lawyerFeeTTC: number;
   brokerFeeTTC: number;
   limitingFactor: 'EQUITY_LIMIT' | 'INCOME_LIMIT' | 'LTV_LIMIT' | 'AGE_LIMIT' | 'INSUFFICIENT_DATA';
+  marketRent: number;
+  rentWarning: 'high' | 'low' | null;
 }
 
 interface AmortizationRow {
@@ -220,6 +222,18 @@ function solveMaximumBudget(
         limitingFactor = 'EQUITY_LIMIT';
       }
 
+      // RENT VALIDATION ENGINE
+      // Calculate market rent (3% annual yield / 12 months)
+      const marketRent = (price * 0.03) / 12;
+
+      // Determine rent warning flags
+      let rentWarning: 'high' | 'low' | null = null;
+      if (actualRent > marketRent * 1.5) {
+        rentWarning = 'high'; // 50% above market
+      } else if (actualRent > 0 && actualRent < marketRent * 0.7) {
+        rentWarning = 'low'; // 30% below market
+      }
+
       bestResult = {
         maxPropertyValue: price,
         loanAmount: loan,
@@ -237,7 +251,9 @@ function solveMaximumBudget(
         equityRemaining: equity - equityUsed,
         lawyerFeeTTC,
         brokerFeeTTC,
-        limitingFactor
+        limitingFactor,
+        marketRent,
+        rentWarning
       };
     } else {
       high = price;

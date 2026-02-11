@@ -22,6 +22,12 @@ class AnalyticsQueue {
 
     constructor() {
         this.loadQueue();
+        // Stale cleanup: Remove events older than 24h
+        const DAY_MS = 24 * 60 * 60 * 1000;
+        this.queue = this.queue.filter(item =>
+            Date.now() - new Date(item.timestamp).getTime() < DAY_MS
+        );
+        this.saveQueue();
         // Start periodic flush
         this.timer = setInterval(() => this.flush(), FLUSH_INTERVAL);
         // Flush on visibility change (tab close/hide)
@@ -53,12 +59,27 @@ class AnalyticsQueue {
     }
 
     public enqueue(event: Omit<FunnelEvent, 'id' | 'timestamp' | 'retry_count'>) {
+        // Sanitization
+        const sanitizedEvent = {
+            session_id: String(event.session_id).slice(0, 100),
+            step_reached: Math.max(0, Math.min(5, event.step_reached)),
+            language: (['he', 'en', 'fr'].includes(event.language) ? event.language : 'he') as string,
+            partner_id: event.partner_id,
+            event_type: event.event_type || 'entered'
+        };
+
         const newEvent: FunnelEvent = {
-            ...event,
+            ...sanitizedEvent,
             id: crypto.randomUUID(),
             timestamp: new Date().toISOString(),
             retry_count: 0
         };
+
+        // Overflow protection: Remove oldest 20 items if queue is at capacity
+        if (this.queue.length >= 100) {
+            this.queue.splice(0, 20);
+        }
+
         this.queue.push(newEvent);
         this.saveQueue();
         // Attempt immediate flush if online
