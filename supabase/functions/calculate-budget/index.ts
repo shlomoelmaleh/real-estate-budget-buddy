@@ -155,92 +155,9 @@ function solveMaximumBudget(
     age
   } = inputs;
 
-  // Scenario A: Fixed rent - solve directly without binary search for price
-  // When expectedRent is provided, it's a FIXED additional income
-  const hasFixedRent = expectedRent !== null && expectedRent > 0;
+  // Unified Rent Handling Logic
+  // Decouple isFirstProperty (regulatory/LTV) from isRented (cash flow)
 
-  if (hasFixedRent && !isFirstProperty) {
-    // ... (Scenario A logic - kept mostly same but adding limitingFactor)
-    // For brevity, I will apply the logic to the main loop primarily or duplicate it if needed.
-    // Actually, Scenario A needs it too. Let's fully implement it.
-
-    const fixedRent = expectedRent;
-    const bankRecognizedIncome = netIncome + (fixedRent * 0.8);
-    const bankMaxPayment = bankRecognizedIncome * (ratio / 100);
-    const userEffectiveLimit = (budgetCap && budgetCap > 0) ? budgetCap + fixedRent : Infinity;
-    const maxPayment = Math.min(bankMaxPayment, userEffectiveLimit);
-    const maxLoanByPayment = maxPayment / amortizationFactor;
-
-    let low = 0;
-    let high = equity * 20;
-    let iterations = 0;
-    let bestResult: CalculatorResults | null = null;
-
-    while (high - low > TOLERANCE && iterations < MAX_ITERATIONS) {
-      iterations++;
-      const price = (low + high) / 2;
-      const purchaseTax = computePurchaseTax(price, taxProfile);
-      const closingCosts = calculateClosingCosts(price, purchaseTax, lawyerPct, brokerPct, vatPct, advisorFee, otherFee);
-      const maxLoanByLTV = price * (ltv / 100);
-      const maxLoan = Math.min(maxLoanByPayment, maxLoanByLTV);
-      const requiredEquity = price + closingCosts - maxLoan;
-
-      if (requiredEquity <= equity + TOLERANCE) {
-        low = price;
-        const loan = maxLoan;
-        const payment = loan * amortizationFactor;
-        const lawyerFeeTTC = price * (lawyerPct / 100) * (1 + vatPct / 100);
-        const brokerFeeTTC = price * (brokerPct / 100) * (1 + vatPct / 100);
-
-        // LIMITING FACTOR LOGIC SCENARIO A
-        let limitingFactor: CalculatorResults['limitingFactor'] = 'EQUITY_LIMIT'; // Default
-
-        // Check 1: Income/Payment Limit
-        if (Math.abs(payment - maxPayment) < 10) {
-          limitingFactor = 'INCOME_LIMIT';
-          // Refinement: Age limit?
-          if (maxLoanTermMonths < 360 && age > 45) {
-            // If we are payment limited AND term is short due to age, it's AGE_LIMIT
-            limitingFactor = 'AGE_LIMIT';
-          }
-        }
-        // Check 2: LTV Limit
-        else if (Math.abs(loan - maxLoanByLTV) < 10) {
-          limitingFactor = 'LTV_LIMIT';
-        }
-        // Check 3: Equity Limit (Implicit if not the others, but let's be sure)
-        else {
-          // If we are here, we likely hit equity constraint in the loop
-          limitingFactor = 'EQUITY_LIMIT';
-        }
-
-        bestResult = {
-          maxPropertyValue: price,
-          loanAmount: loan,
-          actualLTV: (loan / price) * 100,
-          monthlyPayment: payment,
-          rentIncome: fixedRent,
-          netPayment: payment - fixedRent,
-          closingCosts: closingCosts,
-          totalInterest: (payment * maxLoanTermMonths) - loan,
-          totalCost: payment * maxLoanTermMonths,
-          loanTermYears: maxLoanTermMonths / 12,
-          purchaseTax,
-          taxProfile,
-          equityUsed: price + closingCosts - loan,
-          equityRemaining: equity - (price + closingCosts - loan),
-          lawyerFeeTTC,
-          brokerFeeTTC,
-          limitingFactor
-        };
-      } else {
-        high = price;
-      }
-    }
-    return bestResult;
-  }
-
-  // SCENARIO B: Dynamic rent
   let low = 0;
   let high = equity * 20;
   let iterations = 0;
@@ -253,13 +170,24 @@ function solveMaximumBudget(
     const purchaseTax = computePurchaseTax(price, taxProfile);
     const closingCosts = calculateClosingCosts(price, purchaseTax, lawyerPct, brokerPct, vatPct, advisorFee, otherFee);
 
-    const estimatedRent = isRented ? (price * (rentalYield / 100)) / 12 : 0;
-    const bankRecognizedIncome = isFirstProperty ? netIncome : netIncome + (estimatedRent * 0.8);
+    // 1. Determine Actual Rent (User Input overrides 3% Yield)
+    const hasUserRent = expectedRent !== null && expectedRent > 0;
+    const actualRent = hasUserRent
+      ? expectedRent
+      : (isRented ? (price * (rentalYield / 100)) / 12 : 0);
+
+    // 2. Bank Regulatory Income (The "Bank" View)
+    // Rule: First property = 0% recognition. Investment property = 80% recognition.
+    const rentRecognitionRate = isFirstProperty ? 0 : 0.8;
+    const bankRecognizedIncome = netIncome + (actualRent * rentRecognitionRate);
     const bankMaxPayment = bankRecognizedIncome * (ratio / 100);
-    const userEffectiveLimit = (budgetCap && budgetCap > 0) ? budgetCap + estimatedRent : Infinity;
+
+    // 3. User Cash Flow Limit (The "Real World" View)
+    const userEffectiveLimit = (budgetCap && budgetCap > 0) ? budgetCap + actualRent : Infinity;
+
+    // 4. Final Constraints
     const maxPayment = Math.min(bankMaxPayment, userEffectiveLimit);
     const maxLoanByPayment = maxPayment / amortizationFactor;
-
     const maxLoanByLTV = price * (ltv / 100);
     const maxLoan = Math.min(maxLoanByPayment, maxLoanByLTV);
     const requiredEquity = price + closingCosts - maxLoan;
@@ -271,42 +199,25 @@ function solveMaximumBudget(
       const lawyerFeeTTC = price * (lawyerPct / 100) * (1 + vatPct / 100);
       const brokerFeeTTC = price * (brokerPct / 100) * (1 + vatPct / 100);
 
-      // LIMITING FACTOR LOGIC SCENARIO B
+      // LIMITING FACTOR LOGIC
       let limitingFactor: CalculatorResults['limitingFactor'] = 'EQUITY_LIMIT'; // Default
 
-      // Check 1: Income/Payment Limit
-      // If the loan requested based on payment is smaller than or equal to LTV loan, we are payment limited
-      if (maxLoanByPayment < maxLoanByLTV) {
-        limitingFactor = 'INCOME_LIMIT';
-        if (maxLoanTermMonths < 360 && age > 45) {
-          limitingFactor = 'AGE_LIMIT';
-        }
-      }
-      // Check 2: LTV Limit
-      else {
-        // We are potentially LTV limited
-        limitingFactor = 'LTV_LIMIT';
-      }
-
-      // Check 3: Equity Limit
-      // While the above logic finds the limit for a *given price*, the overall max price 
-      // is determined by where the loop stops.
-      // If we used all equity, that's an equity limit.
       const equityUsed = price + closingCosts - loan;
-      if (equity - equityUsed < 1000) {
-        // We used almost all equity -> Equity Limit takes precedence unless we hit a hard cap elsewhere that stopped us earlier?
-        // Actually, if we hit LTV limit, we might have excess equity. 
-        // If we hit Income limit, we might have excess equity.
-        // If we ran out of equity, that is the hard stop.
-        limitingFactor = 'EQUITY_LIMIT';
-      } else {
-        // We have excess equity, so we must be limited by Income or LTV
+      const hasExcessEquity = equity - equityUsed >= 1000;
+
+      if (hasExcessEquity) {
+        // We have excess equity, so limit is Income or LTV
         if (maxLoanByPayment < maxLoanByLTV) {
           limitingFactor = 'INCOME_LIMIT';
-          if (maxLoanTermMonths < 360 && age > 45) limitingFactor = 'AGE_LIMIT';
+          if (maxLoanTermMonths < 360 && age > 45) {
+            limitingFactor = 'AGE_LIMIT';
+          }
         } else {
           limitingFactor = 'LTV_LIMIT';
         }
+      } else {
+        // Used almost all equity -> Equity Limit
+        limitingFactor = 'EQUITY_LIMIT';
       }
 
       bestResult = {
@@ -314,8 +225,8 @@ function solveMaximumBudget(
         loanAmount: loan,
         actualLTV: (loan / price) * 100,
         monthlyPayment: payment,
-        rentIncome: estimatedRent,
-        netPayment: payment - estimatedRent,
+        rentIncome: actualRent,
+        netPayment: payment - actualRent,
         closingCosts: closingCosts,
         totalInterest: (payment * maxLoanTermMonths) - loan,
         totalCost: payment * maxLoanTermMonths,
