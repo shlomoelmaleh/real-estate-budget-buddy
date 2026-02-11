@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import { Loader2, Mail, Phone, FileText, CheckCircle2, FolderOpen } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { motion, AnimatePresence } from 'framer-motion';
 import { StepRevealProps } from '../types';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/FormInput';
@@ -74,7 +75,7 @@ export function Step5({
         frame();
     };
 
-    // Strict 10-Step Heartbeat Logic
+    // 5-Stage Heartbeat Reveal Logic
     useEffect(() => {
         // VALIDATION GUARD: Ensure results are valid
         if (!results || isLoading || results.maxPropertyValue <= 0) return;
@@ -88,11 +89,11 @@ export function Step5({
 
         // Configuration
         const target = results.maxPropertyValue;
-        const steps = 10;
-        const intervalTime = 250; // ms
-        const increment = Math.ceil(target / steps); // Calculate jump size
+        const stages = 5;
+        const intervalTime = 600; // ms
+        const increment = Math.ceil(target / stages);
 
-        let currentStep = 0;
+        let currentStage = 0;
 
         // Tracker to prevent redundant state updates
         let lastMilestone = 0;
@@ -106,19 +107,19 @@ export function Step5({
             return;
         }
 
-        const beat = () => {
-            currentStep++;
+        const pulse = () => {
+            currentStage++;
 
-            // Calculate current value (Instantly snap to next increment)
-            // Ensure we don't exceed target on intermediate steps, but strictly hit target on last step
-            let currentValue = currentStep * increment;
-            if (currentStep >= steps) {
+            // Calculate current value based on stage (20%, 40%, 60%, 80%, 100%)
+            let currentValue = currentStage * increment;
+            if (currentStage >= stages) {
                 currentValue = target;
             }
 
+            // Update value for the "Fade In"
             setDisplayValue(currentValue);
 
-            // Milestone Synchronization (Check immediately at the beat)
+            // Milestone Synchronization (Check on the "Fade In")
             let newMilestone = lastMilestone;
             if (currentValue >= MILESTONES.premium) newMilestone = 3;
             else if (currentValue >= MILESTONES.significant) newMilestone = 2;
@@ -130,20 +131,20 @@ export function Step5({
             }
 
             // Completion
-            if (currentStep >= steps) {
+            if (currentStage >= stages) {
                 clearInterval(intervalId);
                 setHasCounted(true);
 
-                // Trigger celebration exactly at 10th beat (2.5s)
+                // Trigger celebration exactly on the final "Fade In"
                 confettiTimeoutId = setTimeout(() => celebrate(), 0);
 
-                // Reveal Dossier 500ms after the sequence ends
-                dossierTimeoutId = setTimeout(() => setShowDossier(true), 500);
+                // Reveal Dossier 800ms after final value appears
+                dossierTimeoutId = setTimeout(() => setShowDossier(true), 800);
             }
         };
 
-        // Start the Staccato Heartbeat
-        intervalId = setInterval(beat, intervalTime);
+        // Initial Start
+        intervalId = setInterval(pulse, intervalTime);
 
         // Robust Cleanup
         return () => {
@@ -206,16 +207,26 @@ export function Step5({
                     </div>
 
 
-                    <div className="py-2 overflow-hidden px-2">
-                        <span className={cn(
-                            "font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight break-all",
-                            // Responsive scaling: smaller on mobile for large numbers
-                            formatNumber(displayValue).length > 8
-                                ? "text-3xl sm:text-5xl md:text-6xl" // Long numbers (e.g. ₪ 10,000,000)
-                                : "text-4xl sm:text-5xl md:text-6xl" // Standard numbers
-                        )}>
-                            ₪ {formatNumber(displayValue)}
-                        </span>
+                    {/* Fixed Height Container for Heartbeat Animation */}
+                    <div className="h-20 sm:h-24 md:h-28 flex items-center justify-center overflow-visible">
+                        <AnimatePresence mode="wait">
+                            <motion.span
+                                key={displayValue}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 1.1 }}
+                                transition={{ duration: 0.2 }}
+                                className={cn(
+                                    "font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight break-all",
+                                    // Responsive scaling: smaller on mobile for large numbers
+                                    formatNumber(displayValue).length > 8
+                                        ? "text-3xl sm:text-5xl md:text-6xl" // Long numbers (e.g. ₪ 10,000,000)
+                                        : "text-4xl sm:text-5xl md:text-6xl" // Standard numbers
+                                )}
+                            >
+                                ₪ {formatNumber(displayValue)}
+                            </motion.span>
+                        </AnimatePresence>
                     </div>
 
                     {hasCounted && (
