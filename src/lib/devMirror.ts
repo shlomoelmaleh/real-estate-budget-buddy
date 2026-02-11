@@ -99,6 +99,9 @@ export function calculateLeadScore(
   actionSla: string;
   breakdown: {
     budget: number;
+    health: number;
+    readiness: number;
+    age: number;
     liquidity: number;
   };
   predictedTimeline: string;
@@ -782,9 +785,7 @@ function generateEmailHtml(
   const dir = language === "he" ? "rtl" : "ltr";
   const isRTL = language === "he";
   const alignStart = isRTL ? "right" : "left";
-  const alignEnd = isRTL ? "left" : "right";
-
-  const alignEnd = isRTL ? "left" : "right";
+   const alignEnd = isRTL ? "left" : "right";
 
   // Compute limiting factors - analyze ALL potential constraints and list them all
   let limitingFactor = t.limitingInsufficient; // Default string value
@@ -1367,6 +1368,7 @@ function generateEmailHtml(
         <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #e2e8f0;">Limiting Factor: ${limitingFactor}</div>
         <div style="font-size: 13px; color: #94a3b8; line-height: 1.4;">${limitingFactorDescription}</div>
       </div>
+      ` : ''}
 
       <div class="section hero-section">
         <div class="section-title">💎 ${t.heroTitle}</div>
