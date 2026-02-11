@@ -25,7 +25,6 @@ export function Step5({
     const fullName = watch ? watch('fullName') : '';
     const firstName = fullName?.split(' ')[0] || '';
     const [showDossier, setShowDossier] = useState(false);
-    const [isVisible, setIsVisible] = useState(true);
 
     // Dynamic Diagnosis Hook
     const getDiagnosisHook = () => {
@@ -75,11 +74,7 @@ export function Step5({
         frame();
     };
 
-    // Ease-out cubic function for smooth deceleration
-    const easeOutCubic = (x: number): number => {
-        return 1 - Math.pow(1 - x, 3);
-    };
-
+    // Strict 10-Step Heartbeat Logic
     useEffect(() => {
         // VALIDATION GUARD: Ensure results are valid
         if (!results || isLoading || results.maxPropertyValue <= 0) return;
@@ -91,11 +86,13 @@ export function Step5({
         let confettiTimeoutId: NodeJS.Timeout;
         let dossierTimeoutId: NodeJS.Timeout;
 
-        // Heartbeat Engine Configuration
+        // Configuration
         const target = results.maxPropertyValue;
-        const totalBeats = 10;
-        const beatInterval = 250; // ms
-        let currentBeat = 0;
+        const steps = 10;
+        const intervalTime = 250; // ms
+        const increment = Math.ceil(target / steps); // Calculate jump size
+
+        let currentStep = 0;
 
         // Tracker to prevent redundant state updates
         let lastMilestone = 0;
@@ -110,15 +107,18 @@ export function Step5({
         }
 
         const beat = () => {
-            currentBeat++;
+            currentStep++;
 
-            // Linear increment with a "snap" feel
-            const progress = currentBeat / totalBeats;
-            const currentValue = Math.floor(progress * target);
+            // Calculate current value (Instantly snap to next increment)
+            // Ensure we don't exceed target on intermediate steps, but strictly hit target on last step
+            let currentValue = currentStep * increment;
+            if (currentStep >= steps) {
+                currentValue = target;
+            }
 
             setDisplayValue(currentValue);
 
-            // optimized Milestone Tracking (Heartbeat sync)
+            // Milestone Synchronization (Check immediately at the beat)
             let newMilestone = lastMilestone;
             if (currentValue >= MILESTONES.premium) newMilestone = 3;
             else if (currentValue >= MILESTONES.significant) newMilestone = 2;
@@ -129,21 +129,21 @@ export function Step5({
                 setCurrentMilestone(newMilestone);
             }
 
-            if (currentBeat >= totalBeats) {
+            // Completion
+            if (currentStep >= steps) {
                 clearInterval(intervalId);
-                setDisplayValue(target); // Ensure exact final value
                 setHasCounted(true);
 
-                // Trigger celebration immediately after last beat (2.5s mark)
+                // Trigger celebration exactly at 10th beat (2.5s)
                 confettiTimeoutId = setTimeout(() => celebrate(), 0);
 
-                // Reveal Dossier 500ms after completion
+                // Reveal Dossier 500ms after the sequence ends
                 dossierTimeoutId = setTimeout(() => setShowDossier(true), 500);
             }
         };
 
-        // Start the Heartbeat
-        intervalId = setInterval(beat, beatInterval);
+        // Start the Staccato Heartbeat
+        intervalId = setInterval(beat, intervalTime);
 
         // Robust Cleanup
         return () => {
@@ -208,8 +208,7 @@ export function Step5({
 
                     <div className="py-2 overflow-hidden px-2">
                         <span className={cn(
-                            "font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight break-all transition-all duration-100 ease-in-out",
-                            isVisible ? "opacity-100 scale-110" : "opacity-0 scale-90",
+                            "font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight break-all",
                             // Responsive scaling: smaller on mobile for large numbers
                             formatNumber(displayValue).length > 8
                                 ? "text-3xl sm:text-5xl md:text-6xl" // Long numbers (e.g. ₪ 10,000,000)
