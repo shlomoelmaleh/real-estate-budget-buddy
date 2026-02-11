@@ -42,6 +42,7 @@ export function BudgetCalculator() {
     formState: { errors },
     getValues,
     watch,
+    setValue,
   } = useForm<CalculatorFormValues>({
     resolver: zodResolver(calculatorSchema),
     mode: 'onChange',
@@ -129,7 +130,7 @@ export function BudgetCalculator() {
       case 3:
         return <Step3 control={control} errors={errors} t={t} />;
       case 4:
-        return <Step4 control={control} errors={errors} t={t} watch={watch} />;
+        return <Step4 control={control} errors={errors} t={t} watch={watch} setValue={setValue} />;
       case 5:
         return (
           <Step5

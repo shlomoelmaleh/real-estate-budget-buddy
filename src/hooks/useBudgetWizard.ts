@@ -165,7 +165,7 @@ export function useBudgetWizard({
             budgetCap: data.budgetCap ? parseFormattedNumber(data.budgetCap) : null,
             isFirstProperty: data.isFirstProperty,
             isIsraeliTaxResident: data.isIsraeliTaxResident,
-            expectedRent: data.expectedRent ? parseFormattedNumber(data.expectedRent) : null,
+            expectedRent: data.isRented && data.expectedRent ? parseFormattedNumber(data.expectedRent) : null,
             lawyerPct: parseFloat(lawyerPct) || 0,
             brokerPct: parseFloat(brokerPct) || 0,
             vatPct: parseFormattedNumber(vatPct),

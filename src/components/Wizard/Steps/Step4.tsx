@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
-export function Step4({ control, errors, t, watch }: StepProps) {
+export function Step4({ control, errors, t, watch, setValue }: StepProps) {
     const isRented = watch ? watch('isRented') : false;
 
     return (
@@ -27,7 +27,12 @@ export function Step4({ control, errors, t, watch }: StepProps) {
                             </div>
                             <Switch
                                 checked={field.value}
-                                onCheckedChange={field.onChange}
+                                onCheckedChange={(val) => {
+                                    field.onChange(val);
+                                    if (!val && setValue) {
+                                        setValue('expectedRent', '');
+                                    }
+                                }}
                             />
                         </div>
                     )}
