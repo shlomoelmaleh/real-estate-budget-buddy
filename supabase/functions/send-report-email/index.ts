@@ -1379,16 +1379,22 @@ function generateEmailHtml(
         <div style="font-size: 13px; opacity: 0.8; line-height: 1.4;">${limitingFactorDescription}</div>
         
         <!-- Predicted Timeline -->
-        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.15);">
-          <span style="font-size: 13px; opacity: 0.7;">⏱ ${lang === 'he' ? 'לו״ז צפוי:' : lang === 'fr' ? 'Délai prévu :' : 'Predicted Timeline:'}</span>
-          <span style="font-size: 14px; font-weight: 700; color: ${priorityColor}; margin-${isRTL ? 'right' : 'left'}: 8px;">${
+        <table style="width: 100%; margin-top: 14px; padding-top: 12px; border-top: 1px solid #475569; border-collapse: collapse;">
+          <tr>
+            <td style="font-size: 13px; color: #94a3b8; padding: 4px 0; vertical-align: middle;">
+              &#9201; ${lang === 'he' ? 'לו״ז צפוי:' : lang === 'fr' ? 'Délai prévu :' : 'Predicted Timeline:'}
+            </td>
+          </tr>
+          <tr>
+            <td style="font-size: 16px; font-weight: 700; color: ${priorityColor}; padding: 4px 0;">${
             score >= 85
-              ? (lang === 'he' ? '1-2 שבועות (מוכנים לתנועה)' : lang === 'fr' ? '1-2 semaines (Prêt à l\'achat)' : '1-2 weeks (Ready to move)')
+              ? (lang === 'he' ? '1-2 שבועות (מוכנים לתנועה)' : lang === 'fr' ? "1-2 semaines (Prêt à l'achat)" : '1-2 weeks (Ready to move)')
               : score >= 50
                 ? (lang === 'he' ? '1-2 חודשים (שלב חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Phase de recherche active)' : '1-2 months (Active search phase)')
                 : (lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Phase de planification)' : '3-6 months (Planning phase)')
-          }</span>
-        </div>
+          }</td>
+          </tr>
+        </table>
       </div>
 
       <!-- CLIENT INFO SECTION (Advisor Only) -->
