@@ -18,4 +18,9 @@ export interface StepRevealProps extends StepProps {
     onSendReport: () => void;
     isSending: boolean;
     onBack?: () => void;
+    calcData?: {
+        inputs: Record<string, unknown>;
+        results: Record<string, unknown>;
+    } | null;
+    language?: 'he' | 'en' | 'fr';
 }
