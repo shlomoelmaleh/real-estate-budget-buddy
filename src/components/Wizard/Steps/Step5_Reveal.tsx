@@ -290,7 +290,7 @@ export function Step5({
                             className={cn(
                                 "w-full min-h-[4rem] py-4 h-auto text-sm sm:text-base md:text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center px-4 whitespace-normal",
                                 "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]",
-                                hasCounted && "animate-pulse shadow-primary/30"
+                                // hasCounted && "animate-pulse shadow-primary/30" // Removed blinking animation
                             )}
                         >
                             {isSending ? (

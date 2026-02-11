@@ -34,7 +34,7 @@ export function ProgressBar({ currentStep, totalSteps = 4 }: ProgressBarProps) {
             </div>
 
             {/* Layer 1 & 2: Background Track & Active Progress Line */}
-            <div className="absolute top-[52px] md:top-4 left-10 right-10 h-[1.5px] md:h-[2px] bg-slate-200 z-0">
+            <div className="absolute top-[52px] md:top-8 left-10 right-10 h-[1.5px] md:h-[2px] bg-slate-200 z-0">
                 <div
                     className={cn(
                         "h-full bg-primary transition-all duration-700 ease-in-out absolute",

@@ -210,6 +210,8 @@ export function BudgetCalculator() {
     }
   };
 
+  const isRTL = language === 'he';
+
   const handleBack = () => {
     setAnimClass("animate-in slide-in-from-left fade-in duration-500");
     setStep(s => Math.max(0, s - 1)); // Allowing back to 0 (Welcome)
@@ -493,62 +495,62 @@ export function BudgetCalculator() {
                     {getStepContent()}
 
                     {/* Navigation Buttons */}
-                    {step < 5 && (
-                      <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-6">
-                        {step > 1 && (
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6"> {/* Swapped specific order & removed reverse */}
+                      {(() => {
+                        const currentValues = watch();
+                        let isStepValid = false;
+
+                        if (step === 1) {
+                          isStepValid = !!currentValues.fullName && !!currentValues.age && !errors.fullName && !errors.age && !errors.targetPropertyPrice;
+                        } else if (step === 2) {
+                          isStepValid = !!currentValues.equity && !!currentValues.netIncome && !errors.equity && !errors.netIncome;
+                        } else if (step === 3) {
+                          isStepValid =
+                            currentValues.isFirstProperty !== undefined &&
+                            currentValues.isIsraeliCitizen !== undefined &&
+                            currentValues.isIsraeliTaxResident !== undefined;
+                        } else if (step === 4) {
+                          isStepValid = !errors.budgetCap && !errors.expectedRent;
+                        }
+
+                        return step < 4 ? (
                           <Button
-                            variant="outline"
-                            onClick={handleBack}
-                            className="w-full sm:flex-1 py-6 text-base"
+                            onClick={handleNext}
+                            className={cn(
+                              "w-full sm:flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
+                              "shadow-lg shadow-primary/20",
+                              isStepValid && "shadow-[0_0_15px_rgba(var(--primary),0.6)] animate-pulse ring-1 ring-primary/50"
+                            )}
                           >
-                            <ChevronLeft className="w-4 h-4 mr-2" />
-                            {t.backBtn}
+                            {/* Next Button Content */}
+                            {isRTL ? <ChevronLeft className="w-4 h-4 ml-2" /> : null}
+                            {t.nextBtn}
+                            {!isRTL ? <ChevronRight className="w-4 h-4 ml-2" /> : null}
                           </Button>
-                        )}
+                        ) : (
+                          <Button
+                            onClick={handleCalculate}
+                            className={cn(
+                              "w-full sm:flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
+                              isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
+                            )}
+                          >
+                            {t.revealBtn}
+                          </Button>
+                        );
+                      })()}
 
-                        {(() => {
-                          const currentValues = watch();
-                          let isStepValid = false;
-
-                          if (step === 1) {
-                            isStepValid = !!currentValues.fullName && !!currentValues.age && !errors.fullName && !errors.age && !errors.targetPropertyPrice;
-                          } else if (step === 2) {
-                            isStepValid = !!currentValues.equity && !!currentValues.netIncome && !errors.equity && !errors.netIncome;
-                          } else if (step === 3) {
-                            isStepValid =
-                              currentValues.isFirstProperty !== undefined &&
-                              currentValues.isIsraeliCitizen !== undefined &&
-                              currentValues.isIsraeliTaxResident !== undefined;
-                          } else if (step === 4) {
-                            isStepValid = !errors.budgetCap && !errors.expectedRent;
-                          }
-
-                          return step < 4 ? (
-                            <Button
-                              onClick={handleNext}
-                              className={cn(
-                                "w-full sm:flex-1 py-6 text-base font-bold bg-primary hover:bg-primary-dark text-white transition-all hover:scale-[1.02]",
-                                "shadow-lg shadow-primary/20",
-                                isStepValid && "shadow-[0_0_15px_rgba(var(--primary),0.6)] animate-pulse ring-1 ring-primary/50"
-                              )}
-                            >
-                              {t.nextBtn}
-                              <ChevronRight className="w-4 h-4 ml-2" />
-                            </Button>
-                          ) : (
-                            <Button
-                              onClick={handleCalculate}
-                              className={cn(
-                                "w-full sm:flex-1 py-6 text-base font-bold bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
-                                isStepValid && "shadow-[0_0_15px_rgba(245,158,11,0.6)] animate-pulse"
-                              )}
-                            >
-                              {t.revealBtn}
-                            </Button>
-                          );
-                        })()}
-                      </div>
-                    )}
+                      {step > 1 && (
+                        <Button
+                          variant="outline"
+                          onClick={handleBack}
+                          className="w-full sm:flex-1 py-6 text-base"
+                        >
+                          {isRTL ? <ChevronRight className="w-4 h-4 mr-2" /> : <ChevronLeft className="w-4 h-4 mr-2" />}
+                          {t.backBtn}
+                        </Button>
+                      )}
+                    </div>
                   </StepCard>
                 </motion.div>
               </AnimatePresence>
