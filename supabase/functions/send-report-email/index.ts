@@ -481,9 +481,8 @@ function generateEmailHtml(
   // Calculate correct DTI using adjusted income (income + recognized rent)
   const dtiEstimatedCorrected = adjustedIncomeForDTI > 0 ? monthlyPayment / adjustedIncomeForDTI : null;
 
-  // Define the dynamic label based on input
+  // Define whether user provided manual rent
   const hasManualRent = inputs.expectedRent && parseFloat(inputs.expectedRent.replace(/,/g, "")) > 0;
-  const rentLabel = hasManualRent ? t.labelUserRent : t.labelEstimatedRent;
 
   // Financial Dashboard calculations
   const monthlyRent = results.rentIncome || 0;
@@ -646,6 +645,8 @@ function generateEmailHtml(
       estimatedBudgetLabel: "התקציב המשוער שלך",
       differenceLabel: "הפרש",
       bridgeSentence: "פערים בתקציב ניתנים לעיתים לגישור באמצעות תכנון פיננסי יצירתי. הצוות שלנו יבדוק זאת לעומק.",
+      labelEstimatedRent: "הכנסה משכירות משוערת (3% שנתי)",
+      labelUserRent: "הכנסה משכירות צפויה (לפי קלט משתמש)",
     },
     en: {
       subject: "Your Strategic Financial Dossier",
@@ -765,6 +766,8 @@ function generateEmailHtml(
       estimatedBudgetLabel: "Your Estimated Budget",
       differenceLabel: "Difference",
       bridgeSentence: "Budget gaps can often be bridged with creative financial planning. Our team will review this.",
+      labelEstimatedRent: "Estimated rental income (3% annual)",
+      labelUserRent: "Expected monthly rent (User Input)",
     },
     fr: {
       subject: "Votre Dossier Stratégique Financier",
@@ -885,10 +888,13 @@ function generateEmailHtml(
       estimatedBudgetLabel: "Votre budget estimé",
       differenceLabel: "Différence",
       bridgeSentence: "Un écart peut souvent être comblé par une ingénierie financière adaptée. Notre équipe va analyser cela.",
+      labelEstimatedRent: "Revenu locatif estimé (3% annuel)",
+      labelUserRent: "Loyer mensuel attendu (Saisi par l'utilisateur)",
     },
   };
 
   const t = texts[language];
+  const rentLabel = hasManualRent ? t.labelUserRent : t.labelEstimatedRent;
 
   const advisorName = partnerContact?.name || t.advisorName;
   const advisorPhone = partnerContact?.phone || t.advisorPhone;
