@@ -153,11 +153,11 @@ export function BudgetCalculator() {
 
   const getStepHeader = () => {
     switch (step) {
-      case 1: return { title: t.step1Title, desc: t.step1Desc };
-      case 2: return { title: t.step2Title, desc: t.step2Desc };
-      case 3: return { title: t.step3Title, desc: t.step3Desc };
-      case 4: return { title: t.step4Title, desc: t.step4Desc };
-      default: return { title: "", desc: "" };
+      case 1: return { title: t.roadmap1Title, desc: t.roadmap1Desc, emotional: t.wizardWelcome };
+      case 2: return { title: t.roadmap2Title, desc: t.roadmap2Desc, emotional: t.wizardFoundation };
+      case 3: return { title: t.roadmap3Title, desc: t.roadmap3Desc, emotional: t.wizardBlueprint };
+      case 4: return { title: t.roadmap4Title, desc: t.roadmap4Desc, emotional: t.wizardPeace };
+      default: return { title: "", desc: "", emotional: "" };
     }
   };
 
@@ -195,7 +195,8 @@ export function BudgetCalculator() {
                   <StepCard
                     className="mt-0 pt-2 shadow-2xl border border-white/20 rounded-2xl" // Refined rounded card
                     title={header.title}
-                    emotionalMessage={header.desc}
+                    description={header.desc}
+                    emotionalMessage={header.emotional}
                   >
                     {getStepContent()}
 

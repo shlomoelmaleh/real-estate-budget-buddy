@@ -21,7 +21,7 @@ export function StepCard({ children, className, title, description, emotionalMes
             )}
         >
             {/* Header Section */}
-            {(title || description) && (
+            {(title || description || emotionalMessage) && (
                 <div className="space-y-1 text-center">
                     {description && (
                         <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
@@ -33,15 +33,13 @@ export function StepCard({ children, className, title, description, emotionalMes
                             {title}
                         </h2>
                     )}
-                </div>
-            )}
-
-            {/* Emotional Message */}
-            {emotionalMessage && (
-                <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 text-center">
-                    <p className="text-sm text-primary/80 font-medium italic">
-                        "{emotionalMessage}"
-                    </p>
+                    {emotionalMessage && (
+                        <div className="inline-block mt-2 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10">
+                            <p className="text-xs sm:text-sm text-primary/80 font-medium italic">
+                                "{emotionalMessage}"
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
 
