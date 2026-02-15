@@ -82,6 +82,7 @@ export function BudgetCalculator() {
     language,
     trigger,
     getValues,
+    setValue,
     t,
   });
 

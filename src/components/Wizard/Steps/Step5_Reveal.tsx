@@ -26,7 +26,7 @@ export function Step5({
     calcData,
     language = 'he',
 }: StepRevealProps) {
-    const { config } = usePartner();
+    const { config, partner } = usePartner();
 
     const [displayValue, setDisplayValue] = useState(0);
     const [hasCounted, setHasCounted] = useState(false);
@@ -451,7 +451,9 @@ export function Step5({
                     {/* Expert Commitment - Trust Signal */}
                     <p className="text-xs text-center text-slate-400 mt-2 leading-relaxed max-w-sm mx-auto">
                         <CheckCircle2 className="w-3 h-3 inline-block mr-1 opacity-70" />
-                        {t.expertCommitment}
+                        {language === 'he'
+                            ? `התיק ייבדק בידי מומחה מבית ${partner?.name || 'אשל פיננסים'} כדי לוודא תאימות לכללי בנק ישראל 2025.`
+                            : `✓ Review by ${partner?.name || 'Eshel Finances'} experts | Validated against 2025 Israeli Bank Regulations`}
                     </p>
 
                     {/* DEV MODE: Validation Hook */}

@@ -72,11 +72,12 @@ export function Step0({ onNext }: { onNext: () => void }) {
                 )}>
                     {/* Headline */}
                     <div className={cn("space-y-4 overflow-visible")}>
-                        <h1 className="text-2xl sm:text-3xl md:text-5xl font-display font-bold text-slate-800 leading-[1.1] tracking-tight overflow-visible text-balance">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground mb-6">
                             {t.welcomeTitle}
                         </h1>
-                        <p className={cn("text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed")}>
-                            {t.welcomeSub}
+
+                        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+                            {partner?.slogan || t.welcomeSub}
                         </p>
                     </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UseFormGetValues, UseFormTrigger } from 'react-hook-form';
+import { UseFormGetValues, UseFormTrigger, UseFormSetValue } from 'react-hook-form';
 import { CalculatorFormValues } from '@/components/budget/types';
 import { CalculatorResults, parseFormattedNumber, AmortizationRow } from '@/lib/calculator';
 import { usePartner } from '@/contexts/PartnerContext';
@@ -11,6 +11,7 @@ export interface UseBudgetWizardProps {
     language: string;
     trigger: UseFormTrigger<CalculatorFormValues>;
     getValues: UseFormGetValues<CalculatorFormValues>;
+    setValue: UseFormSetValue<CalculatorFormValues>;
     t: any;
 }
 
@@ -19,6 +20,7 @@ export function useBudgetWizard({
     language,
     trigger,
     getValues,
+    setValue,
     t,
 }: UseBudgetWizardProps) {
     const { config } = usePartner(); // Using partner config from context
@@ -63,6 +65,23 @@ export function useBudgetWizard({
 
         return () => clearTimeout(timer);
     }, [step, sessionId, partner, language]);
+
+    // --- PARTNER CONFIG SYNC ---
+    useEffect(() => {
+        if (config) {
+            console.log("[PartnerConfig] Syncing form defaults from config", config);
+            setValue('interest', config.default_interest_rate.toString());
+            setValue('lawyerPct', config.lawyer_fee_percent.toString());
+            setValue('brokerPct', config.broker_fee_percent.toString());
+            setValue('vatPct', config.vat_percent.toString());
+            setValue('advisorFee', config.advisor_fee_fixed.toString());
+            setValue('otherFee', config.other_fee_fixed.toString());
+            setValue('ratio', (config.max_dti_ratio * 100).toString());
+            setValue('maxAge', config.max_age.toString());
+            setValue('rentalYield', config.rental_yield_default.toString());
+            setValue('rentRecognition', (config.rent_recognition_investment * 100).toString());
+        }
+    }, [config, setValue]);
 
     // --- HELPER FUNCTIONS ---
     const calculateLTV = (isFirstProperty: boolean, isIsraeliCitizen: boolean): number => {
@@ -140,39 +159,27 @@ export function useBudgetWizard({
 
         const data = getValues();
 
-        // Logic constants from partner config
-        const maxAge = config.max_age.toString();
-        const interest = config.default_interest_rate.toString();
-        const ratio = (config.max_dti_ratio * 100).toString();
-        const rentalYield = config.rental_yield_default.toString();
-        const rentRecognition = (config.rent_recognition_investment * 100).toString();
-        const lawyerPct = config.lawyer_fee_percent.toString();
-        const brokerPct = config.broker_fee_percent.toString();
-        const vatPct = config.vat_percent.toString();
-        const advisorFee = config.advisor_fee_fixed.toString();
-        const otherFee = config.other_fee_fixed.toString();
-
-        const calculatedLTV = calculateLTV(data.isFirstProperty, data.isIsraeliCitizen);
+        // Use form values (synced from partner config but potentially overridden by user)
         const inputs = {
             equity: parseFormattedNumber(data.equity),
-            ltv: calculatedLTV,
+            ltv: calculateLTV(data.isFirstProperty, data.isIsraeliCitizen),
             netIncome: parseFormattedNumber(data.netIncome),
-            ratio: parseFormattedNumber(ratio),
+            ratio: parseFormattedNumber(data.ratio || (config.max_dti_ratio * 100).toString()),
             age: parseFormattedNumber(data.age),
-            maxAge: parseFormattedNumber(maxAge),
-            interest: parseFloat(interest) || 0,
+            maxAge: parseFormattedNumber(data.maxAge || config.max_age.toString()),
+            interest: parseFloat(data.interest || config.default_interest_rate.toString()) || 0,
             isRented: data.isRented,
-            rentalYield: parseFloat(rentalYield) || 0,
-            rentRecognition: parseFormattedNumber(rentRecognition),
+            rentalYield: parseFloat(data.rentalYield || config.rental_yield_default.toString()) || 0,
+            rentRecognition: parseFormattedNumber(data.rentRecognition || (config.rent_recognition_investment * 100).toString()),
             budgetCap: data.budgetCap ? parseFormattedNumber(data.budgetCap) : null,
             isFirstProperty: data.isFirstProperty,
             isIsraeliTaxResident: data.isIsraeliTaxResident,
             expectedRent: data.isRented && data.expectedRent ? parseFormattedNumber(data.expectedRent) : null,
-            lawyerPct: parseFloat(lawyerPct) || 0,
-            brokerPct: parseFloat(brokerPct) || 0,
-            vatPct: parseFormattedNumber(vatPct),
-            advisorFee: parseFormattedNumber(advisorFee),
-            otherFee: parseFormattedNumber(otherFee),
+            lawyerPct: parseFloat(data.lawyerPct || config.lawyer_fee_percent.toString()) || 0,
+            brokerPct: parseFloat(data.brokerPct || config.broker_fee_percent.toString()) || 0,
+            vatPct: parseFormattedNumber(data.vatPct || config.vat_percent.toString()),
+            advisorFee: parseFormattedNumber(data.advisorFee || config.advisor_fee_fixed.toString()),
+            otherFee: parseFormattedNumber(data.otherFee || config.other_fee_fixed.toString()),
         };
 
         try {
@@ -262,17 +269,17 @@ export function useBudgetWizard({
 
                 const simulationInputs = {
                     ...data,
-                    ltv: calculatedLTV.toString(),
-                    maxAge,
-                    interest,
-                    rentalYield,
-                    rentRecognition,
-                    lawyerPct,
-                    brokerPct,
-                    vatPct,
-                    advisorFee,
-                    otherFee,
-                    ratio,
+                    ltv: inputs.ltv.toString(),
+                    maxAge: inputs.maxAge.toString(),
+                    interest: inputs.interest.toString(),
+                    rentalYield: inputs.rentalYield.toString(),
+                    rentRecognition: inputs.rentRecognition.toString(),
+                    lawyerPct: inputs.lawyerPct.toString(),
+                    brokerPct: inputs.brokerPct.toString(),
+                    vatPct: inputs.vatPct.toString(),
+                    advisorFee: inputs.advisorFee.toString(),
+                    otherFee: inputs.otherFee.toString(),
+                    ratio: inputs.ratio.toString(),
                     targetPropertyPrice: data.targetPropertyPrice || '',
                 };
 
@@ -325,13 +332,15 @@ export function useBudgetWizard({
                     recipientName: data.fullName || 'Client',
                     recipientPhone: data.phone,
                     language: language,
-                    inputs: calcData.inputs,
-                    results: calcData.results,
-                    amortizationSummary: calcData.amortizationSummary,
-                    yearlyBalanceData: calcData.yearlyBalanceData,
-                    paymentBreakdownData: calcData.paymentBreakdownData,
-                    csvData: calcData.csvData,
+                    inputs: calcData?.inputs,
+                    results: calcData?.results,
+                    amortizationSummary: calcData?.amortizationSummary,
+                    yearlyBalanceData: calcData?.yearlyBalanceData,
+                    paymentBreakdownData: calcData?.paymentBreakdownData,
+                    csvData: calcData?.csvData,
                     partnerId,
+                    partnerEmail: partner?.email || null,
+                    partnerName: partner?.name || null,
                 },
             });
 

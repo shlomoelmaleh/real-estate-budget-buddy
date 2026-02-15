@@ -138,6 +138,8 @@ const EmailRequestSchema = z.object({
   csvData: z.string().optional(),
   partnerId: z.string().uuid().nullable().optional(),
   partner_id: z.string().uuid().nullable().optional(),
+  partnerEmail: z.string().email().nullable().optional(),
+  partnerName: z.string().max(100).nullable().optional(),
   buildSha: z.string().max(40).nullable().optional(),
 });
 
@@ -397,6 +399,8 @@ interface ReportEmailRequest {
   csvData?: string;
   partnerId?: string | null;
   partner_id?: string | null;
+  partnerEmail?: string | null;
+  partnerName?: string | null;
   buildSha?: string | null;
 }
 
@@ -1986,9 +1990,15 @@ const handler = async (req: Request): Promise<Response> => {
     if (insertError) console.error(`[${requestId}] Database insert failed:`, insertError.message);
 
     // Load Partner Information
-    let partnerContact: PartnerContactOverride | undefined = undefined;
-    let recipientTo = ADVISOR_EMAIL; // Default to Admin
-    let bccTo: string | undefined = undefined;
+    let partnerContact: PartnerContactOverride | undefined = data.partnerEmail ? {
+      name: data.partnerName || null,
+      email: data.partnerEmail,
+      phone: null,
+      whatsapp: null
+    } : undefined;
+
+    let recipientTo = data.partnerEmail || ADVISOR_EMAIL; // Body override or default to Admin
+    let bccTo: string | undefined = data.partnerEmail ? ADVISOR_EMAIL : undefined;
 
     if (effectivePartnerId) {
       const { data: partnerData, error: partnerError } = await supabaseAdmin

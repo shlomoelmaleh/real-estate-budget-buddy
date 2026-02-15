@@ -14,6 +14,17 @@ export const calculatorSchema = z.object({
   expectedRent: z.string().default(''),
   budgetCap: z.string().default(''),
   targetPropertyPrice: z.string().default(''),
+  // Partner-driven parameters (can be overridden by user in "What If" scenarios)
+  interest: z.string().optional(),
+  lawyerPct: z.string().optional(),
+  brokerPct: z.string().optional(),
+  vatPct: z.string().optional(),
+  advisorFee: z.string().optional(),
+  otherFee: z.string().optional(),
+  ratio: z.string().optional(),
+  maxAge: z.string().optional(),
+  rentalYield: z.string().optional(),
+  rentRecognition: z.string().optional(),
 });
 
 export type CalculatorFormValues = z.infer<typeof calculatorSchema>;
