@@ -78,7 +78,7 @@ export const DEFAULT_PARTNER_CONFIG: PartnerConfig = {
 };
 
 export function validatePartnerConfig(config: unknown): PartnerConfig {
-    return PartnerConfigSchema.parse(config);
+    return PartnerConfigSchema.parse(config) as PartnerConfig;
 }
 
 export function isValidPartnerConfig(config: unknown): config is PartnerConfig {
