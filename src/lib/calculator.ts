@@ -28,6 +28,7 @@ export interface CalculatorInputs {
   budgetCap: number | null;
   isFirstProperty: boolean;
   isIsraeliTaxResident: boolean;
+  expectedRent: number | null;
   lawyerPct: number;
   brokerPct: number;
   vatPct: number;

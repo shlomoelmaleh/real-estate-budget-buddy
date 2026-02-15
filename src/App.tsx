@@ -12,6 +12,8 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import AdminPartners from "./pages/admin/AdminPartners";
 import { AdminRoute } from "./components/auth/AdminRoute";
+import { PartnerRoute } from "./components/auth/PartnerRoute";
+import { ConfigurationPanel } from "./components/PartnerConfig/ConfigurationPanel";
 import { BudgetErrorBoundary } from "@/components/BudgetErrorBoundary";
 
 const queryClient = new QueryClient();
@@ -45,6 +47,14 @@ const App = () => (
                   <AdminRoute>
                     <AdminPartners />
                   </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <PartnerRoute>
+                    <ConfigurationPanel />
+                  </PartnerRoute>
                 }
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
