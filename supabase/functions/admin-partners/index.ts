@@ -35,6 +35,25 @@ const partnerSchema = z.object({
   slogan_font_size: sloganFontSizeSchema,
   slogan_font_style: sloganFontStyleSchema,
   is_active: z.boolean(),
+  // Config params
+  max_dti_ratio: z.number().min(0.25).max(0.50).optional(),
+  max_age: z.number().int().min(70).max(95).optional(),
+  max_loan_term_years: z.number().int().min(10).max(35).optional(),
+  rent_recognition_first_property: z.number().min(0).max(1).optional(),
+  rent_recognition_investment: z.number().min(0).max(1).optional(),
+  default_interest_rate: z.number().min(1).max(15).optional(),
+  lawyer_fee_percent: z.number().min(0).max(10).optional(),
+  broker_fee_percent: z.number().min(0).max(10).optional(),
+  vat_percent: z.number().min(0).max(25).optional(),
+  advisor_fee_fixed: z.number().int().min(0).max(100000).optional(),
+  other_fee_fixed: z.number().int().min(0).max(100000).optional(),
+  rental_yield_default: z.number().min(0).max(20).optional(),
+  rent_warning_high_multiplier: z.number().min(1).max(3).optional(),
+  rent_warning_low_multiplier: z.number().min(0.3).max(0.9).optional(),
+  enable_rent_validation: z.boolean().optional(),
+  enable_what_if_calculator: z.boolean().optional(),
+  show_amortization_table: z.boolean().optional(),
+  max_amortization_months: z.number().int().min(12).max(360).optional(),
 });
 
 const bodySchema = z.discriminatedUnion("action", [
@@ -99,9 +118,7 @@ Deno.serve(async (req) => {
 
     const request = parsed.data;
     if (request.action === "CREATE") {
-      const { data, error } = await adminClient
-        .from("partners")
-        .insert({
+      const insertPayload: Record<string, unknown> = {
           name: request.partner.name,
           slug: request.partner.slug,
           email: request.partner.email ?? null,
@@ -113,7 +130,25 @@ Deno.serve(async (req) => {
           slogan_font_size: request.partner.slogan_font_size ?? 'sm',
           slogan_font_style: request.partner.slogan_font_style ?? 'normal',
           is_active: request.partner.is_active,
-        })
+        };
+        // Add config fields if provided
+        const configFields = [
+          'max_dti_ratio', 'max_age', 'max_loan_term_years',
+          'rent_recognition_first_property', 'rent_recognition_investment',
+          'default_interest_rate', 'lawyer_fee_percent', 'broker_fee_percent',
+          'vat_percent', 'advisor_fee_fixed', 'other_fee_fixed', 'rental_yield_default',
+          'rent_warning_high_multiplier', 'rent_warning_low_multiplier',
+          'enable_rent_validation', 'enable_what_if_calculator',
+          'show_amortization_table', 'max_amortization_months',
+        ];
+        for (const field of configFields) {
+          const val = (request.partner as any)[field];
+          if (val !== undefined) insertPayload[field] = val;
+        }
+
+      const { data, error } = await adminClient
+        .from("partners")
+        .insert(insertPayload)
         .select("id")
         .single();
       if (error) return json(400, { error: error.message });

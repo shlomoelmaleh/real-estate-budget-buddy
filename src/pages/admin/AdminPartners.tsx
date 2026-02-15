@@ -68,6 +68,25 @@ export default function AdminPartners() {
     slogan_font_size: "sm" as SloganFontSize,
     slogan_font_style: "normal" as SloganFontStyle,
     is_active: true,
+    // Config params
+    max_dti_ratio: 0.33,
+    max_age: 80,
+    max_loan_term_years: 30,
+    rent_recognition_first_property: 0.0,
+    rent_recognition_investment: 0.8,
+    default_interest_rate: 5.0,
+    lawyer_fee_percent: 1.0,
+    broker_fee_percent: 2.0,
+    vat_percent: 17.0,
+    advisor_fee_fixed: 9000,
+    other_fee_fixed: 3000,
+    rental_yield_default: 3.0,
+    rent_warning_high_multiplier: 1.5,
+    rent_warning_low_multiplier: 0.7,
+    enable_rent_validation: true,
+    enable_what_if_calculator: true,
+    show_amortization_table: true,
+    max_amortization_months: 60,
   });
 
   const [pendingToggle, setPendingToggle] = useState<{ id: string; next: boolean } | null>(null);
@@ -76,7 +95,7 @@ export default function AdminPartners() {
     setIsLoadingPartners(true);
     const { data, error } = await supabase
       .from("partners")
-      .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,slogan_font_size,slogan_font_style,is_active,created_at")
+      .select("*")
       .order("created_at", { ascending: false });
     if (error) toast.error("Failed to load partners");
     setPartners((data || []) as any);
@@ -114,10 +133,10 @@ export default function AdminPartners() {
 
   const resetForm = () => {
     setEditing(null);
-    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", slogan_font_size: "sm", slogan_font_style: "normal", is_active: true });
+    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", slogan_font_size: "sm", slogan_font_style: "normal", is_active: true, max_dti_ratio: 0.33, max_age: 80, max_loan_term_years: 30, rent_recognition_first_property: 0.0, rent_recognition_investment: 0.8, default_interest_rate: 5.0, lawyer_fee_percent: 1.0, broker_fee_percent: 2.0, vat_percent: 17.0, advisor_fee_fixed: 9000, other_fee_fixed: 3000, rental_yield_default: 3.0, rent_warning_high_multiplier: 1.5, rent_warning_low_multiplier: 0.7, enable_rent_validation: true, enable_what_if_calculator: true, show_amortization_table: true, max_amortization_months: 60 });
   };
 
-  const startEdit = (p: Partner) => {
+  const startEdit = (p: any) => {
     setEditing(p);
     setForm({
       name: p.name || "",
@@ -131,6 +150,24 @@ export default function AdminPartners() {
       slogan_font_size: (p.slogan_font_size || "sm") as SloganFontSize,
       slogan_font_style: (p.slogan_font_style || "normal") as SloganFontStyle,
       is_active: !!p.is_active,
+      max_dti_ratio: p.max_dti_ratio ?? 0.33,
+      max_age: p.max_age ?? 80,
+      max_loan_term_years: p.max_loan_term_years ?? 30,
+      rent_recognition_first_property: p.rent_recognition_first_property ?? 0.0,
+      rent_recognition_investment: p.rent_recognition_investment ?? 0.8,
+      default_interest_rate: p.default_interest_rate ?? 5.0,
+      lawyer_fee_percent: p.lawyer_fee_percent ?? 1.0,
+      broker_fee_percent: p.broker_fee_percent ?? 2.0,
+      vat_percent: p.vat_percent ?? 17.0,
+      advisor_fee_fixed: p.advisor_fee_fixed ?? 9000,
+      other_fee_fixed: p.other_fee_fixed ?? 3000,
+      rental_yield_default: p.rental_yield_default ?? 3.0,
+      rent_warning_high_multiplier: p.rent_warning_high_multiplier ?? 1.5,
+      rent_warning_low_multiplier: p.rent_warning_low_multiplier ?? 0.7,
+      enable_rent_validation: p.enable_rent_validation ?? true,
+      enable_what_if_calculator: p.enable_what_if_calculator ?? true,
+      show_amortization_table: p.show_amortization_table ?? true,
+      max_amortization_months: p.max_amortization_months ?? 60,
     });
   };
 
@@ -178,6 +215,24 @@ export default function AdminPartners() {
           slogan_font_size: form.slogan_font_size || "sm",
           slogan_font_style: form.slogan_font_style || "normal",
           is_active: !!form.is_active,
+          max_dti_ratio: form.max_dti_ratio,
+          max_age: form.max_age,
+          max_loan_term_years: form.max_loan_term_years,
+          rent_recognition_first_property: form.rent_recognition_first_property,
+          rent_recognition_investment: form.rent_recognition_investment,
+          default_interest_rate: form.default_interest_rate,
+          lawyer_fee_percent: form.lawyer_fee_percent,
+          broker_fee_percent: form.broker_fee_percent,
+          vat_percent: form.vat_percent,
+          advisor_fee_fixed: form.advisor_fee_fixed,
+          other_fee_fixed: form.other_fee_fixed,
+          rental_yield_default: form.rental_yield_default,
+          rent_warning_high_multiplier: form.rent_warning_high_multiplier,
+          rent_warning_low_multiplier: form.rent_warning_low_multiplier,
+          enable_rent_validation: form.enable_rent_validation,
+          enable_what_if_calculator: form.enable_what_if_calculator,
+          show_amortization_table: form.show_amortization_table,
+          max_amortization_months: form.max_amortization_months,
         },
       });
       toast.success("Saved");
@@ -380,6 +435,96 @@ export default function AdminPartners() {
                       </Select>
                     </div>
                   </div>
+
+                  {/* ===== Configuration Parameters ===== */}
+                  <details className="border border-border/60 rounded-lg p-3 space-y-3">
+                    <summary className="cursor-pointer font-semibold text-sm">⚙️ Configuration Parameters</summary>
+                    <p className="text-xs text-muted-foreground">Risk & regulatory limits, fees, and feature flags.</p>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Max DTI Ratio</label>
+                      <Input type="number" step="0.01" min="0.25" max="0.50" value={form.max_dti_ratio} onChange={(e) => setForm((f) => ({ ...f, max_dti_ratio: parseFloat(e.target.value) || 0 }))} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Max Borrower Age</label>
+                      <Input type="number" min="70" max="95" value={form.max_age} onChange={(e) => setForm((f) => ({ ...f, max_age: parseInt(e.target.value) || 0 }))} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Max Loan Term (years)</label>
+                      <Input type="number" min="10" max="35" value={form.max_loan_term_years} onChange={(e) => setForm((f) => ({ ...f, max_loan_term_years: parseInt(e.target.value) || 0 }))} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Default Interest Rate (%)</label>
+                      <Input type="number" step="0.1" min="1" max="15" value={form.default_interest_rate} onChange={(e) => setForm((f) => ({ ...f, default_interest_rate: parseFloat(e.target.value) || 0 }))} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Lawyer Fee (%)</label>
+                        <Input type="number" step="0.1" value={form.lawyer_fee_percent} onChange={(e) => setForm((f) => ({ ...f, lawyer_fee_percent: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Broker Fee (%)</label>
+                        <Input type="number" step="0.1" value={form.broker_fee_percent} onChange={(e) => setForm((f) => ({ ...f, broker_fee_percent: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">VAT (%)</label>
+                        <Input type="number" step="0.1" value={form.vat_percent} onChange={(e) => setForm((f) => ({ ...f, vat_percent: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Rental Yield (%)</label>
+                        <Input type="number" step="0.1" value={form.rental_yield_default} onChange={(e) => setForm((f) => ({ ...f, rental_yield_default: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Advisor Fee (₪)</label>
+                        <Input type="number" value={form.advisor_fee_fixed} onChange={(e) => setForm((f) => ({ ...f, advisor_fee_fixed: parseInt(e.target.value) || 0 }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Other Fee (₪)</label>
+                        <Input type="number" value={form.other_fee_fixed} onChange={(e) => setForm((f) => ({ ...f, other_fee_fixed: parseInt(e.target.value) || 0 }))} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Rent Recog. (1st)</label>
+                        <Input type="number" step="0.1" min="0" max="1" value={form.rent_recognition_first_property} onChange={(e) => setForm((f) => ({ ...f, rent_recognition_first_property: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Rent Recog. (Inv.)</label>
+                        <Input type="number" step="0.1" min="0" max="1" value={form.rent_recognition_investment} onChange={(e) => setForm((f) => ({ ...f, rent_recognition_investment: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Rent Warn High (×)</label>
+                        <Input type="number" step="0.1" value={form.rent_warning_high_multiplier} onChange={(e) => setForm((f) => ({ ...f, rent_warning_high_multiplier: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium">Rent Warn Low (×)</label>
+                        <Input type="number" step="0.1" value={form.rent_warning_low_multiplier} onChange={(e) => setForm((f) => ({ ...f, rent_warning_low_multiplier: parseFloat(e.target.value) || 0 }))} />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Max Amortization Months</label>
+                      <Input type="number" min="12" max="360" value={form.max_amortization_months} onChange={(e) => setForm((f) => ({ ...f, max_amortization_months: parseInt(e.target.value) || 0 }))} />
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium">Enable Rent Validation</label>
+                        <Switch checked={form.enable_rent_validation} onCheckedChange={(v) => setForm((f) => ({ ...f, enable_rent_validation: v }))} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium">Enable What-If Calculator</label>
+                        <Switch checked={form.enable_what_if_calculator} onCheckedChange={(v) => setForm((f) => ({ ...f, enable_what_if_calculator: v }))} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium">Show Amortization Table</label>
+                        <Switch checked={form.show_amortization_table} onCheckedChange={(v) => setForm((f) => ({ ...f, show_amortization_table: v }))} />
+                      </div>
+                    </div>
+                  </details>
 
                   <div className="flex gap-2 pt-2">
                     <Button onClick={savePartner} className="flex-1">Save</Button>
