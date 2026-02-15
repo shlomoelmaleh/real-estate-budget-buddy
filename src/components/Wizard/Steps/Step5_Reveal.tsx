@@ -343,7 +343,10 @@ export function Step5({
                     "transition-all duration-1000 ease-out transform delay-300",
                     showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}>
-                    <AmortizationTable rows={results.amortizationTable} />
+                    <AmortizationTable
+                        rows={results.amortizationTable}
+                        maxDisplayMonths={config.max_amortization_months}
+                    />
                 </div>
             )}
 

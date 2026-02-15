@@ -7,9 +7,10 @@ import { cn } from '@/lib/utils';
 
 interface AmortizationTableProps {
   rows: AmortizationRow[];
+  maxDisplayMonths?: number;
 }
 
-export function AmortizationTable({ rows }: AmortizationTableProps) {
+export function AmortizationTable({ rows, maxDisplayMonths }: AmortizationTableProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { t } = useLanguage();
 
@@ -19,11 +20,11 @@ export function AmortizationTable({ rows }: AmortizationTableProps) {
     const headers = [t.th_month, t.th_open, t.th_pay, t.th_int, t.th_princ, t.th_close];
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => 
+      ...rows.map(row =>
         [row.month, row.opening, row.payment, row.interest, row.principal, row.closing].join(',')
       )
     ].join('\n');
-    
+
     const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -49,7 +50,7 @@ export function AmortizationTable({ rows }: AmortizationTableProps) {
           {isExpanded ? t.toggleHide : t.toggleShow}
           {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </Button>
-        
+
         <Button
           variant="secondary"
           onClick={downloadCSV}
@@ -82,7 +83,7 @@ export function AmortizationTable({ rows }: AmortizationTableProps) {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {rows.slice(0, maxDisplayMonths).map((row) => (
                   <tr
                     key={row.month}
                     className="hover:bg-muted/30 transition-colors"

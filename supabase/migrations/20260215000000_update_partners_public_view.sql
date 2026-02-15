@@ -1,10 +1,8 @@
--- Migration: Update partners_public view for Partner Configuration
--- Date: 2026-02-15
--- Description: Adds configuration columns to the public view so clients can load partner-specific rules.
+-- Update partners_public view to include all config columns
+-- This is necessary for the calculator to work with partner-specific parameters
+-- without requiring a full authenticated session for the end-user.
 
-DROP VIEW IF EXISTS public.partners_public;
-
-CREATE VIEW public.partners_public AS
+CREATE OR REPLACE VIEW public.partners_public AS
   SELECT
     id,
     name,
@@ -19,7 +17,7 @@ CREATE VIEW public.partners_public AS
     slogan_font_style,
     is_active,
     created_at,
-    -- Configuration fields exposed to public
+    -- Config Columns
     max_dti_ratio,
     max_age,
     max_loan_term_years,
@@ -41,7 +39,7 @@ CREATE VIEW public.partners_public AS
   FROM public.partners
   WHERE is_active = true;
 
--- Ensure API roles can read the view
+-- Ensure permissions are still correct
 GRANT SELECT ON public.partners_public TO anon;
 GRANT SELECT ON public.partners_public TO authenticated;
 GRANT SELECT ON public.partners_public TO service_role;

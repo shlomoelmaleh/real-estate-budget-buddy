@@ -41,7 +41,7 @@ const DEFAULT_PARTNER_CONFIG: PartnerConfig = {
   default_interest_rate: 5.0,
   lawyer_fee_percent: 1.0,
   broker_fee_percent: 2.0,
-  vat_percent: 17.0,
+  vat_percent: 18.0,
   advisor_fee_fixed: 9000,
   other_fee_fixed: 3000,
   rental_yield_default: 3.0,
@@ -50,7 +50,7 @@ const DEFAULT_PARTNER_CONFIG: PartnerConfig = {
   enable_rent_validation: true,
   enable_what_if_calculator: true,
   show_amortization_table: true,
-  max_amortization_months: 60,
+  max_amortization_months: 360,
 };
 
 async function loadPartnerConfig(
@@ -581,7 +581,7 @@ const handler = async (req: Request): Promise<Response> => {
       : [];
 
     // Truncate according to config
-    const amortization = fullAmortization.slice(0, config.max_amortization_months);
+    const amortization = fullAmortization;
 
     // Return results
     return new Response(

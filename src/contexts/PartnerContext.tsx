@@ -37,7 +37,7 @@ async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
   // Use partners_public view - base partners table has admin-only RLS
   const { data, error } = await supabase
     .from("partners_public")
-    .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,slogan_font_size,slogan_font_style,is_active,created_at")
+    .select("*")
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data) return null;
@@ -132,6 +132,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newBinding));
       setBinding(newBinding);
       setPartner(p);
+      setConfig(mapToPartnerConfig(p));
       applyPartnerBrandColor(normalizeHexColor(p.brand_color));
       setIsLoading(false);
     };

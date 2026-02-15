@@ -1919,7 +1919,7 @@ const handler = async (req: Request): Promise<Response> => {
     const data = parseResult.data as ReportEmailRequest;
     data.inputs.advisorFee = data.inputs.advisorFee || rawAdvisorFee || "0";
 
-    // בדיקות Rate Limit (נשאר כפי שהיה)
+    // בדיקות Rate Limit
     const clientIP =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 
@@ -1930,16 +1930,7 @@ const handler = async (req: Request): Promise<Response> => {
         ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
         : "Rate limit exceeded. Maximum 10 emails per hour.";
 
-      // Extract clientBuildSha for version metadata (even in rate limit response)
       const clientBuildSha = req.headers.get("x-build-sha") || data.buildSha || null;
-      const versionMismatch = !!(
-        clientBuildSha &&
-        FUNCTION_VERSION &&
-        FUNCTION_VERSION !== "unknown" &&
-        !FUNCTION_VERSION.startsWith("build-") &&
-        clientBuildSha !== FUNCTION_VERSION
-      );
-
       return new Response(
         JSON.stringify({
           error: errorMsg,
@@ -1948,17 +1939,14 @@ const handler = async (req: Request): Promise<Response> => {
             functionVersion: FUNCTION_VERSION,
             deployedAt: DEPLOYED_AT,
             clientBuildSha: clientBuildSha,
-            mismatch: versionMismatch,
+            mismatch: false,
           },
         }),
         { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "3600", ...corsHeaders } },
       );
     }
 
-    // Extract clientBuildSha from header or payload
     const clientBuildSha = req.headers.get("x-build-sha") || data.buildSha || null;
-
-    // Calculate version mismatch
     const versionMismatch = !!(
       clientBuildSha &&
       FUNCTION_VERSION &&
@@ -1968,21 +1956,14 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const requestId = crypto.randomUUID().substring(0, 8);
+    console.log(`[${requestId}] Email request received. Version: ${FUNCTION_VERSION}`);
 
-    // Version verification log (non-PII)
-    console.log(`[send-report-email] version: ${FUNCTION_VERSION} | deployed: ${DEPLOYED_AT} | clientBuildSha: ${clientBuildSha || 'none'}`);
-    console.log(`[${requestId}] Email request received`);
-
-    // Normalize partner ID
     const effectivePartnerId = data.partnerId || data.partner_id || null;
-    console.log(`[${requestId}] Received partnerId:`, effectivePartnerId, 'Type:', typeof effectivePartnerId);
-    console.log(`[${requestId}] Raw data.partnerId:`, data.partnerId, 'Raw data.partner_id:', data.partner_id);
 
-    // Calculate Lead Score & Analysis for Database
+    // Calculate Lead Score
     const leadAnalysis = calculateLeadScore(data.inputs, data.results, data.language);
     const limitingFactorDesc = getLimitingFactorDescription(data.results.limitingFactor);
 
-    // Prepare full results object with analysis
     const enrichedResults = {
       ...data.results,
       lead_score: leadAnalysis.score,
@@ -1991,7 +1972,7 @@ const handler = async (req: Request): Promise<Response> => {
       limiting_factor_description: limitingFactorDesc
     };
 
-    // שמירה לדאטה בייס (נשאר כפי שהיה)
+    // Save simulation to database
     const { error: insertError } = await supabaseAdmin.from("simulations").insert({
       client_name: data.recipientName,
       email: data.recipientEmail,
@@ -2004,62 +1985,51 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (insertError) console.error(`[${requestId}] Database insert failed:`, insertError.message);
 
-    // שליפת פרטי שותף (אם קיים ID)
-    let partnerEmail: string | null = null;
-    let partnerContact: PartnerContactOverride | undefined;
+    // Load Partner Information
+    let partnerContact: PartnerContactOverride | undefined = undefined;
+    let recipientTo = ADVISOR_EMAIL; // Default to Admin
+    let bccTo: string | undefined = undefined;
 
     if (effectivePartnerId) {
-      console.log(`[${requestId}] Querying partners table for ID: ${effectivePartnerId}`);
       const { data: partnerData, error: partnerError } = await supabaseAdmin
         .from("partners")
-        .select("name, phone, whatsapp, email, is_active")
+        .select("name, email, phone, whatsapp")
         .eq("id", effectivePartnerId)
-        .maybeSingle();
+        .single();
 
-      if (partnerError) {
-        console.error(`[${requestId}] Partner DB Query Error:`, partnerError.message, partnerError.details, partnerError.hint);
-      } else if (partnerData) {
-        console.log(`[${requestId}] Partner found - Name: "${partnerData.name}", Email: "${partnerData.email}", Active: ${partnerData.is_active}`);
-        partnerEmail = partnerData.is_active !== false ? (partnerData.email ?? null) : null;
+      if (!partnerError && partnerData) {
         partnerContact = {
-          name: partnerData.name ?? null,
-          phone: partnerData.phone ?? null,
-          whatsapp: partnerData.whatsapp ?? null,
-          email: partnerData.email ?? null,
+          name: partnerData.name,
+          email: partnerData.email,
+          phone: partnerData.phone,
+          whatsapp: partnerData.whatsapp,
         };
-        console.log(`[${requestId}] partnerContact constructed:`, JSON.stringify(partnerContact));
+        if (partnerData.email) {
+          recipientTo = partnerData.email;
+          bccTo = ADVISOR_EMAIL; // Admin gets BCC
+          console.log(`[${requestId}] Routing email to Partner: ${recipientTo}, BCC to Admin`);
+        }
       } else {
-        console.log(`[${requestId}] No partner found in DB with ID: ${effectivePartnerId}`);
+        console.error(`[${requestId}] Error fetching partner:`, partnerError);
       }
-    } else {
-      console.log(`[${requestId}] No partnerId provided, skipping partner lookup`);
     }
 
-    // יצירת תוכן האימייל (גרסאות נפרדות ללקוח ולאדמין)
+    const emailHtmlClient = generateEmailHtml(data, false, partnerContact);
+    const emailHtmlAdvisor = generateEmailHtml(data, true, partnerContact);
+
     const t = (({
       he: { subjectWithName: "תיק האסטרטגיה הפיננסית של", fromPartner: "מאת" },
       en: { subjectWithName: "Strategic Dossier for", fromPartner: "from" },
       fr: { subjectWithName: "Dossier Stratégique pour", fromPartner: "de la part de" }
     }) as Record<string, Record<string, string>>)[data.language] || { subjectWithName: "Report for", fromPartner: "from" };
 
-    console.log(`[${requestId}] Before subject construction - partnerContact:`, JSON.stringify(partnerContact));
-    console.log(`[${requestId}] partnerContact?.name exists:`, !!partnerContact?.name, 'Value:', partnerContact?.name);
-
     const clientSubject = `${t.subjectWithName} ${data.recipientName}`;
     let adminSubject = clientSubject;
     if (partnerContact?.name) {
       adminSubject = `${clientSubject} ${t.fromPartner} ${partnerContact.name}`;
-      console.log(`[${requestId}] Partner name found, admin subject modified to: "${adminSubject}"`);
-    } else {
-      console.log(`[${requestId}] No partner name available, admin subject unchanged: "${adminSubject}"`);
     }
 
-    const clientHtml = generateEmailHtml(data, false, partnerContact);
-    const adminHtml = generateEmailHtml(data, true, partnerContact);
-
-    console.log(`[${requestId}] Final Subjects -> Client: "${clientSubject}", Admin: "${adminSubject}"`);
-
-    // הכנת קובץ CSV
+    // Prepare CSV attachment
     const csvFilenames: Record<string, string> = {
       he: "loach-silkukin.csv",
       en: "amortization-table.csv",
@@ -2074,36 +2044,17 @@ const handler = async (req: Request): Promise<Response> => {
       }]
       : [];
 
-    const senderFrom = "Property Budget Pro <noreply@eshel-f.com>";
-
-    // Resend API has a strict rate limit (commonly 2 requests/second).
-    // We send 2-3 separate emails (client/admin/partner). To avoid the partner
-    // send failing with 429, we:
-    // 1) throttle between sends
-    // 2) retry on 429 with backoff
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    type ResendSendResult = {
-      ok: boolean;
-      status: number;
-      json: any | null;
-      text: string;
-    };
-
     const sendResendEmail = async (
-      payload: Record<string, unknown>,
+      payload: Record<string, any>,
       opts?: { label?: string; maxAttempts?: number; throttleMs?: number },
-    ): Promise<ResendSendResult> => {
+    ): Promise<{ ok: boolean; text: string }> => {
       const label = opts?.label ?? "email";
       const maxAttempts = opts?.maxAttempts ?? 3;
-      const throttleMs = opts?.throttleMs ?? 650;
-
-      // throttle before each attempt (including first)
-      await sleep(throttleMs);
+      await sleep(opts?.throttleMs ?? 650);
 
       let attempt = 1;
-      let lastText = "";
-
       while (attempt <= maxAttempts) {
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -2111,139 +2062,62 @@ const handler = async (req: Request): Promise<Response> => {
           body: JSON.stringify(payload),
         });
 
-        // Always consume body to avoid resource leaks in Deno.
-        const contentType = res.headers.get("content-type") || "";
-        if (contentType.includes("application/json")) {
-          try {
-            const j = await res.json();
-            lastText = JSON.stringify(j);
-          } catch {
-            lastText = await res.text();
-          }
-        } else {
-          lastText = await res.text();
-        }
+        const text = await res.text();
+        if (res.ok) return { ok: true, text };
 
-        if (res.ok) {
-          let parsedJson: any | null = null;
-          try {
-            parsedJson = JSON.parse(lastText);
-          } catch {
-            // ignore
-          }
-          return { ok: true, status: res.status, json: parsedJson, text: lastText };
-        }
-
-        // Retry only on 429 (rate-limit)
         if (res.status === 429 && attempt < maxAttempts) {
-          const backoffMs = 800 * attempt; // 800ms, 1600ms
-          console.warn(`[${requestId}] ${label} send hit Resend 429; retrying in ${backoffMs}ms (attempt ${attempt}/${maxAttempts})`);
-          await sleep(backoffMs);
-          attempt += 1;
+          const backoff = 800 * attempt;
+          console.warn(`[${requestId}] ${label} 429; retrying in ${backoff}ms`);
+          await sleep(backoff);
+          attempt++;
           continue;
         }
-
-        return { ok: false, status: res.status, json: null, text: lastText };
+        return { ok: false, text };
       }
-
-      return { ok: false, status: 429, json: null, text: lastText || "rate_limited" };
+      return { ok: false, text: "Max attempts reached" };
     };
 
-    // =========================================================================
-    // שליחת אימיילים - ללא לוגיקה נסתרת וללא תנאים מיותרים
-    // =========================================================================
+    // 1. Send to Client
+    const clientSend = await sendResendEmail({
+      from: "Property Budget Pro <noreply@eshel-f.com>",
+      to: [data.recipientEmail],
+      subject: clientSubject,
+      html: emailHtmlClient,
+      attachments,
+    }, { label: "client", throttleMs: 0 });
 
-    // 1. שליחה ללקוח
-    console.log(`[${requestId}] Sending to Client: ${data.recipientEmail} | Subject: ${clientSubject}`);
-    const clientSend = await sendResendEmail(
-      {
-        from: senderFrom,
-        to: [data.recipientEmail],
-        subject: clientSubject,
-        html: clientHtml,
-        attachments,
-      },
-      { label: "client", throttleMs: 0 },
-    );
-    if (!clientSend.ok) throw new Error(`Failed to send client email: ${clientSend.text}`);
+    if (!clientSend.ok) throw new Error(`Client send failed: ${clientSend.text}`);
 
+    // 2. Send to Partner/Admin
+    const leadSubject = (data.language === "he" ? "ליד חדש - סימולטור נדל״ן" : "New Lead - Real Estate Simulator") +
+      (partnerContact?.name ? ` [Partner: ${partnerContact.name}]` : "");
 
-    // 2. שליחה לאדמין (עותק עם פרטי קשר ונושא מורחב)
-    console.log(`[${requestId}] Sending to Admin: ${ADVISOR_EMAIL} | Subject: ${adminSubject}`);
-    const adminSend = await sendResendEmail(
-      {
-        from: senderFrom,
-        to: [ADVISOR_EMAIL],
-        subject: adminSubject,
-        html: adminHtml,
-        attachments,
-      },
-      { label: "admin" },
-    );
-
-
-    // 3. שליחה לשותף (רק אם יש שותף ואימייל שונה מהלקוח)
-    // CRITICAL: Skip partner email if it matches client email to prevent
-    // client receiving the admin/partner copy with traffic light
-    let partnerSent = false;
-    const clientEmailLower = data.recipientEmail.toLowerCase().trim();
-    const partnerEmailLower = partnerEmail?.toLowerCase().trim() || '';
-
-    if (partnerEmail && partnerEmailLower !== clientEmailLower) {
-      // Partner gets the same subject as client (not admin's extended subject)
-      console.log(`[${requestId}] Sending to Partner: ${partnerEmail} | Subject: ${clientSubject}`);
-      const partnerSend = await sendResendEmail(
-        {
-          from: senderFrom,
-          to: [partnerEmail],
-          subject: clientSubject,
-          html: adminHtml,
-          attachments,
-        },
-        { label: "partner", maxAttempts: 4 },
-      );
-
-      if (partnerSend.ok) partnerSent = true;
-      else console.warn(`[${requestId}] Partner email failed:`, partnerSend.text);
-    } else if (partnerEmail && partnerEmailLower === clientEmailLower) {
-      console.log(`[${requestId}] Skipping partner email - matches client email: ${partnerEmail}`);
-      partnerSent = true; // Mark as "sent" since client already gets the client copy
-    }
+    const adminSend = await sendResendEmail({
+      from: "Property Budget Pro <office@eshel-f.com>",
+      to: [recipientTo],
+      bcc: bccTo ? [bccTo] : undefined,
+      subject: leadSubject,
+      html: emailHtmlAdvisor,
+      attachments,
+    }, { label: "advisor" });
 
     return new Response(
       JSON.stringify({
-        version: {
-          functionVersion: FUNCTION_VERSION,
-          deployedAt: DEPLOYED_AT,
-          clientBuildSha: clientBuildSha,
-          mismatch: versionMismatch,
-        },
         requestId,
         deliveredToClient: true,
-        deliveredToAdmin: adminSend.ok,
-        deliveredToPartner: partnerSent,
-        resendClient: clientSend.json ?? clientSend.text,
-        resendAdmin: adminSend.json ?? adminSend.text,
+        deliveredToAdvisor: adminSend.ok,
+        version: { functionVersion: FUNCTION_VERSION, clientBuildSha, mismatch: versionMismatch }
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
 
   } catch (error: any) {
-    const errorId = crypto.randomUUID().substring(0, 8);
-    console.error(`[${errorId}] Error in send-report-email function:`, error.message);
+    console.error(`[send-report-email] Error:`, error.message);
     return new Response(
-      JSON.stringify({
-        error: "An error occurred.",
-        errorId,
-        version: {
-          functionVersion: FUNCTION_VERSION,
-          deployedAt: DEPLOYED_AT,
-          clientBuildSha: null,
-          mismatch: false,
-        },
-      }),
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   }
 };
+
 serve(handler);
