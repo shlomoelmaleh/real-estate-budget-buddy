@@ -20,6 +20,18 @@ export function Step0({ onNext }: { onNext: () => void }) {
                 <div className="scale-90 md:scale-100">
                     <LanguageSwitcher />
                 </div>
+                {!isOwner && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-500 hover:text-primary transition-colors px-4"
+                        asChild
+                    >
+                        <Link to="/login">
+                            {language === 'he' ? 'כניסת שותפים' : 'Partner Login'}
+                        </Link>
+                    </Button>
+                )}
                 {isOwner && (
                     <Button
                         variant="ghost"
@@ -27,7 +39,7 @@ export function Step0({ onNext }: { onNext: () => void }) {
                         className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200"
                         asChild
                     >
-                        <Link to="/partner/config">
+                        <Link to="/admin/settings">
                             <Settings className="w-5 h-5 text-slate-600" />
                         </Link>
                     </Button>

@@ -15,6 +15,7 @@ import { AdminRoute } from "./components/auth/AdminRoute";
 import { PartnerRoute } from "./components/auth/PartnerRoute";
 import { ConfigurationPanel } from "./components/PartnerConfig/ConfigurationPanel";
 import { BudgetErrorBoundary } from "@/components/BudgetErrorBoundary";
+import { AuthRedirect } from "./components/auth/AuthRedirect";
 
 const queryClient = new QueryClient();
 
@@ -32,9 +33,8 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <AuthRedirect />
             <Routes>
-
-
               <Route path="/" element={
                 <BudgetErrorBoundary>
                   <Index />
@@ -51,6 +51,14 @@ const App = () => (
               />
               <Route
                 path="/partner/config"
+                element={
+                  <PartnerRoute>
+                    <ConfigurationPanel />
+                  </PartnerRoute>
+                }
+              />
+              <Route
+                path="/admin/settings"
                 element={
                   <PartnerRoute>
                     <ConfigurationPanel />

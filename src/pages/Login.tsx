@@ -23,7 +23,7 @@ export default function Login() {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
-        options: { emailRedirectTo: window.location.origin + "/" },
+        options: { emailRedirectTo: window.location.origin },
       });
       if (error) throw error;
       toast.success("Magic link sent! Check your email.");
