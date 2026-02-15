@@ -2,31 +2,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-// ============================================================================
-// DEPLOYMENT VERSION DETECTION (auto-detected, no manual increment needed)
-// ============================================================================
-const FUNCTION_VERSION = (() => {
-  // Priority order for Git SHA detection from various CI/CD environments
-  const envVars = [
-    "GIT_SHA",
-    "GITHUB_SHA",
-    "COMMIT_SHA",
-    "VERCEL_GIT_COMMIT_SHA",
-    "NETLIFY_COMMIT_REF",
-    "CF_PAGES_COMMIT_SHA",
-    "DENO_DEPLOYMENT_ID",
-  ];
-
-  for (const envVar of envVars) {
-    const value = Deno.env.get(envVar);
-    if (value && value.trim()) {
-      return value.trim().slice(0, 7); // First 7 chars of SHA
-    }
-  }
-
-  // Fallback: timestamp-based version (deterministic per deployment)
-  return `build-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`;
-})();
+// DEPLOYMENT VERSION
+const FUNCTION_VERSION = "1.1.0";
 
 // Captured at module load time (deployment time), NOT per-request
 const DEPLOYED_AT = new Date().toISOString();
@@ -1954,7 +1931,6 @@ const handler = async (req: Request): Promise<Response> => {
     const versionMismatch = !!(
       clientBuildSha &&
       FUNCTION_VERSION &&
-      FUNCTION_VERSION !== "unknown" &&
       !FUNCTION_VERSION.startsWith("build-") &&
       clientBuildSha !== FUNCTION_VERSION
     );
