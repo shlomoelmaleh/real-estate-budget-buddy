@@ -142,6 +142,7 @@ const CalculatorInputSchema = z.object({
   advisorFee: z.number().nonnegative().max(1e6),
   otherFee: z.number().nonnegative().max(1e6),
   partnerId: z.string().uuid().nullable().optional(),
+  config: z.any().optional(),
 });
 
 type CalculatorInputs = z.infer<typeof CalculatorInputSchema>;
@@ -549,9 +550,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     const inputs = parseResult.data;
     const partnerId = inputs.partnerId;
+    const inputConfig = inputs.config;
 
-    // Load partner configuration
-    const config = await loadPartnerConfig(supabaseAdmin, partnerId || null);
+    // Load partner configuration (use from input if available for optimization)
+    const config = inputConfig || await loadPartnerConfig(supabaseAdmin, partnerId || null);
 
     // Perform calculation
     const results = calculate(inputs, config);

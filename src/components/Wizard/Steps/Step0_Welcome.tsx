@@ -1,4 +1,4 @@
-import { Play, Map, TrendingUp, ShieldCheck, Target, Clock, Lock, ChevronRight } from 'lucide-react';
+import { Play, Map, TrendingUp, ShieldCheck, Target, Clock, Lock, ChevronRight, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,17 +8,29 @@ import logoEshel from '@/assets/logo-eshel.png';
 
 export function Step0({ onNext }: { onNext: () => void }) {
     const { t, language } = useLanguage();
-    const { partner } = usePartner();
+    const { partner, isOwner } = usePartner();
     const displayLogo = partner?.logo_url || logoEshel;
     const isHe = language === 'he';
 
     return (
         <div className="relative w-full">
             {/* Language Switcher - Absolutely Centered on Entire Screen */}
-            <div className="absolute top-0 left-0 right-0 flex justify-center z-30 pt-4">
+            <div className="absolute top-0 left-0 right-0 flex justify-center z-30 pt-4 gap-4">
                 <div className="scale-90 md:scale-100">
                     <LanguageSwitcher />
                 </div>
+                {isOwner && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200"
+                        asChild
+                    >
+                        <a href="/partner/config">
+                            <Settings className="w-5 h-5 text-slate-600" />
+                        </a>
+                    </Button>
+                )}
             </div>
 
             <div className={cn(

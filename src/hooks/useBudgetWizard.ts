@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { UseFormGetValues, UseFormTrigger } from 'react-hook-form';
 import { CalculatorFormValues } from '@/components/budget/types';
 import { CalculatorResults, parseFormattedNumber, AmortizationRow } from '@/lib/calculator';
+import { usePartner } from '@/contexts/PartnerContext';
 import { analyticsQueue } from '@/lib/analyticsQueue';
 import { toast } from 'sonner';
 
 export interface UseBudgetWizardProps {
-    partner: { id: string } | null;
+    partner: any | null;
     language: string;
     trigger: UseFormTrigger<CalculatorFormValues>;
     getValues: UseFormGetValues<CalculatorFormValues>;
@@ -20,6 +21,7 @@ export function useBudgetWizard({
     getValues,
     t,
 }: UseBudgetWizardProps) {
+    const { config } = usePartner(); // Using partner config from context
     // --- STATE MANAGEMENT ---
     const [step, setStep] = useState(0);
     const [sessionId] = useState(() => {
@@ -138,17 +140,17 @@ export function useBudgetWizard({
 
         const data = getValues();
 
-        // Logic constants
-        const maxAge = '80';
-        const interest = '5.0';
-        const ratio = '33';
-        const rentalYield = '3.0';
-        const rentRecognition = '80';
-        const lawyerPct = '1.0';
-        const brokerPct = '2.0';
-        const vatPct = '18';
-        const advisorFee = '9,000';
-        const otherFee = '3,000';
+        // Logic constants from partner config
+        const maxAge = config.max_age.toString();
+        const interest = config.default_interest_rate.toString();
+        const ratio = (config.max_dti_ratio * 100).toString();
+        const rentalYield = config.rental_yield_default.toString();
+        const rentRecognition = (config.rent_recognition_investment * 100).toString();
+        const lawyerPct = config.lawyer_fee_percent.toString();
+        const brokerPct = config.broker_fee_percent.toString();
+        const vatPct = config.vat_percent.toString();
+        const advisorFee = config.advisor_fee_fixed.toString();
+        const otherFee = config.other_fee_fixed.toString();
 
         const calculatedLTV = calculateLTV(data.isFirstProperty, data.isIsraeliCitizen);
         const inputs = {
@@ -183,7 +185,11 @@ export function useBudgetWizard({
                         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
                         apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
                     },
-                    body: JSON.stringify(inputs),
+                    body: JSON.stringify({
+                        ...inputs,
+                        partnerId: partner?.id || null,
+                        config: config || null,
+                    }),
                 }
             );
 

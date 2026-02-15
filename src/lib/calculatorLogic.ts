@@ -167,8 +167,18 @@ export function calculateMaxBudget(inputs: CalculatorInputs, config: PartnerConf
     const A = mRate === 0 ? 1 / n : mRate / (1 - Math.pow(1 + mRate, -n));
 
     const taxProfile = determineTaxProfile(isFirstProperty, isIsraeliTaxResident);
+    const results = solveMaximumBudget(inputs, taxProfile, A, n, config);
 
-    return solveMaximumBudget(inputs, taxProfile, A, n, config);
+    if (results && config.show_amortization_table) {
+        results.amortizationTable = generateAmortizationTable(
+            results.loanAmount,
+            interest,
+            years,
+            config.max_amortization_months
+        );
+    }
+
+    return results;
 }
 
 export function generateAmortizationTable(

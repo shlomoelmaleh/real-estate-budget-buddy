@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import { supabase } from "@/integrations/supabase/client";
 import type { Partner } from "@/lib/partnerTypes";
 import { applyPartnerBrandColor, normalizeHexColor } from "@/lib/color";
+import { PartnerConfig, DEFAULT_PARTNER_CONFIG } from "@/types/partnerConfig";
 
 type PartnerBinding = {
   partnerId: string;
@@ -11,8 +12,10 @@ type PartnerBinding = {
 
 type PartnerContextValue = {
   partner: Partner | null;
+  config: PartnerConfig;
   binding: PartnerBinding | null;
   isLoading: boolean;
+  isOwner: boolean;
   clearBinding: () => void;
 };
 
@@ -42,25 +45,51 @@ async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
 }
 
 async function fetchPartnerById(id: string): Promise<Partner | null> {
-  // Use partners_public view - base partners table has admin-only RLS
   const { data, error } = await supabase
     .from("partners_public")
-    .select("id,name,slug,logo_url,brand_color,phone,whatsapp,email,slogan,slogan_font_size,slogan_font_style,is_active,created_at")
+    .select("*")
     .eq("id", id)
     .maybeSingle();
   if (error || !data) return null;
   return data as unknown as Partner;
 }
 
+function mapToPartnerConfig(data: any): PartnerConfig {
+  return {
+    max_dti_ratio: data.max_dti_ratio ?? DEFAULT_PARTNER_CONFIG.max_dti_ratio,
+    max_age: data.max_age ?? DEFAULT_PARTNER_CONFIG.max_age,
+    max_loan_term_years: data.max_loan_term_years ?? DEFAULT_PARTNER_CONFIG.max_loan_term_years,
+    rent_recognition_first_property: data.rent_recognition_first_property ?? DEFAULT_PARTNER_CONFIG.rent_recognition_first_property,
+    rent_recognition_investment: data.rent_recognition_investment ?? DEFAULT_PARTNER_CONFIG.rent_recognition_investment,
+    default_interest_rate: data.default_interest_rate ?? DEFAULT_PARTNER_CONFIG.default_interest_rate,
+    lawyer_fee_percent: data.lawyer_fee_percent ?? DEFAULT_PARTNER_CONFIG.lawyer_fee_percent,
+    broker_fee_percent: data.broker_fee_percent ?? DEFAULT_PARTNER_CONFIG.broker_fee_percent,
+    vat_percent: data.vat_percent ?? DEFAULT_PARTNER_CONFIG.vat_percent,
+    advisor_fee_fixed: data.advisor_fee_fixed ?? DEFAULT_PARTNER_CONFIG.advisor_fee_fixed,
+    other_fee_fixed: data.other_fee_fixed ?? DEFAULT_PARTNER_CONFIG.other_fee_fixed,
+    rental_yield_default: data.rental_yield_default ?? DEFAULT_PARTNER_CONFIG.rental_yield_default,
+    rent_warning_high_multiplier: data.rent_warning_high_multiplier ?? DEFAULT_PARTNER_CONFIG.rent_warning_high_multiplier,
+    rent_warning_low_multiplier: data.rent_warning_low_multiplier ?? DEFAULT_PARTNER_CONFIG.rent_warning_low_multiplier,
+    enable_rent_validation: data.enable_rent_validation ?? DEFAULT_PARTNER_CONFIG.enable_rent_validation,
+    enable_what_if_calculator: data.enable_what_if_calculator ?? DEFAULT_PARTNER_CONFIG.enable_what_if_calculator,
+    show_amortization_table: data.show_amortization_table ?? DEFAULT_PARTNER_CONFIG.show_amortization_table,
+    max_amortization_months: data.max_amortization_months ?? DEFAULT_PARTNER_CONFIG.max_amortization_months,
+  };
+}
+
 export function PartnerProvider({ children }: { children: React.ReactNode }) {
   const [partner, setPartner] = useState<Partner | null>(null);
+  const [config, setConfig] = useState<PartnerConfig>(DEFAULT_PARTNER_CONFIG);
   const [binding, setBinding] = useState<PartnerBinding | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
 
   const clearBinding = () => {
     localStorage.removeItem(STORAGE_KEY);
     setBinding(null);
     setPartner(null);
+    setConfig(DEFAULT_PARTNER_CONFIG);
+    setIsOwner(false);
     applyPartnerBrandColor(null);
   };
 
@@ -70,11 +99,22 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
 
     const run = async () => {
       const sp = new URLSearchParams(window.location.search);
-      const ref = sp.get("ref")?.trim() || "";
-      if (!ref) return;
+      const refParam = sp.get("ref")?.trim();
+      const idParam = sp.get("partnerId")?.trim();
+      const param = refParam || idParam;
+
+      if (!param) return;
 
       setIsLoading(true);
-      const p = await fetchPartnerBySlug(ref);
+
+      let p: Partner | null = null;
+      // If it looks like a UUID, try fetching by ID, otherwise by slug
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(param)) {
+        p = await fetchPartnerById(param);
+      } else {
+        p = await fetchPartnerBySlug(param);
+      }
+
       if (cancelled) return;
 
       if (!p || !p.is_active) {
@@ -122,6 +162,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       setPartner(p);
+      setConfig(mapToPartnerConfig(p));
       applyPartnerBrandColor(normalizeHexColor(p.brand_color));
       setIsLoading(false);
     })();
@@ -131,9 +172,54 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Check if current user is owner
+  useEffect(() => {
+    let cancelled = false;
+    const checkOwner = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        if (!cancelled) setIsOwner(false);
+        return;
+      }
+
+      // If already have a partner loaded, check if it's the same owner
+      const { data, error } = await supabase
+        .from("partners")
+        .select("id")
+        .eq("owner_user_id", user.id)
+        .maybeSingle();
+
+      if (!cancelled) {
+        if (!error && data) {
+          setIsOwner(true);
+          // If we haven't loaded a partner yet (Scenario B), load it now
+          if (!partner) {
+            const { data: fullPartner } = await supabase
+              .from("partners")
+              .select("*")
+              .eq("id", data.id)
+              .single();
+            if (fullPartner) {
+              setPartner(fullPartner as unknown as Partner);
+              setConfig(mapToPartnerConfig(fullPartner));
+              applyPartnerBrandColor(normalizeHexColor(fullPartner.brand_color));
+            }
+          }
+        } else {
+          setIsOwner(false);
+        }
+      }
+    };
+
+    checkOwner();
+    return () => {
+      cancelled = true;
+    };
+  }, [partner]);
+
   const value = useMemo<PartnerContextValue>(
-    () => ({ partner, binding, isLoading, clearBinding }),
-    [partner, binding, isLoading],
+    () => ({ partner, config, binding, isLoading, isOwner, clearBinding }),
+    [partner, config, binding, isLoading, isOwner],
   );
 
   return <PartnerContext.Provider value={value}>{children}</PartnerContext.Provider>;

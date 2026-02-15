@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 import { formatNumber } from '@/lib/calculator';
 import { DevEmailPreview } from '@/components/DevTools/DevEmailPreview';
 import type { ReportEmailRequest } from '@/lib/devMirror';
+import { usePartner } from '@/contexts/PartnerContext';
+import { AmortizationTable } from '@/components/AmortizationTable';
 
 export function Step5({
     control,
@@ -24,6 +26,7 @@ export function Step5({
     calcData,
     language = 'he',
 }: StepRevealProps) {
+    const { config } = usePartner();
 
     const [displayValue, setDisplayValue] = useState(0);
     const [hasCounted, setHasCounted] = useState(false);
@@ -333,6 +336,26 @@ export function Step5({
                     </p>
                 </div>
             </div>
+
+            {/* Optional Amortization Table */}
+            {config.show_amortization_table && results.amortizationTable && (
+                <div className={cn(
+                    "transition-all duration-1000 ease-out transform delay-300",
+                    showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                )}>
+                    <AmortizationTable rows={results.amortizationTable} />
+                </div>
+            )}
+
+            {/* Optional "What If" Power Note */}
+            {config.enable_what_if_calculator && showDossier && (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-center animate-in fade-in slide-in-from-bottom duration-700 delay-500">
+                    <p className="text-amber-800 text-sm font-medium">
+                        💡 {language === 'he' ? 'הידעת? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלך בכ-₪100,000!' :
+                            'Did you know? Increasing your monthly payment by just ₪500 could grow your budget by approximately ₪100,000!'}
+                    </p>
+                </div>
+            )}
 
             {/* Dossier Teaser - Animated Entry */}
             <div className={cn(
