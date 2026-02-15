@@ -9,6 +9,115 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// ============= PARTNER CONFIGURATION =============
+
+interface PartnerConfig {
+  max_dti_ratio: number;
+  max_age: number;
+  max_loan_term_years: number;
+  rent_recognition_first_property: number;
+  rent_recognition_investment: number;
+  default_interest_rate: number;
+  lawyer_fee_percent: number;
+  broker_fee_percent: number;
+  vat_percent: number;
+  advisor_fee_fixed: number;
+  other_fee_fixed: number;
+  rental_yield_default: number;
+  rent_warning_high_multiplier: number;
+  rent_warning_low_multiplier: number;
+  enable_rent_validation: boolean;
+  enable_what_if_calculator: boolean;
+  show_amortization_table: boolean;
+  max_amortization_months: number;
+}
+
+const DEFAULT_PARTNER_CONFIG: PartnerConfig = {
+  max_dti_ratio: 0.33,
+  max_age: 80,
+  max_loan_term_years: 30,
+  rent_recognition_first_property: 0.0,
+  rent_recognition_investment: 0.8,
+  default_interest_rate: 5.0,
+  lawyer_fee_percent: 1.0,
+  broker_fee_percent: 2.0,
+  vat_percent: 17.0,
+  advisor_fee_fixed: 9000,
+  other_fee_fixed: 3000,
+  rental_yield_default: 3.0,
+  rent_warning_high_multiplier: 1.5,
+  rent_warning_low_multiplier: 0.7,
+  enable_rent_validation: true,
+  enable_what_if_calculator: true,
+  show_amortization_table: true,
+  max_amortization_months: 60,
+};
+
+async function loadPartnerConfig(
+  supabaseClient: any,
+  partnerId: string | null
+): Promise<PartnerConfig> {
+  if (!partnerId) {
+    return DEFAULT_PARTNER_CONFIG;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('partners')
+      .select(`
+        max_dti_ratio,
+        max_age,
+        max_loan_term_years,
+        rent_recognition_first_property,
+        rent_recognition_investment,
+        default_interest_rate,
+        lawyer_fee_percent,
+        broker_fee_percent,
+        vat_percent,
+        advisor_fee_fixed,
+        other_fee_fixed,
+        rental_yield_default,
+        rent_warning_high_multiplier,
+        rent_warning_low_multiplier,
+        enable_rent_validation,
+        enable_what_if_calculator,
+        show_amortization_table,
+        max_amortization_months
+      `)
+      .eq('id', partnerId)
+      .single();
+
+    if (error || !data) {
+      console.error('Failed to load partner config:', error);
+      return DEFAULT_PARTNER_CONFIG;
+    }
+
+    return {
+      max_dti_ratio: data.max_dti_ratio ?? DEFAULT_PARTNER_CONFIG.max_dti_ratio,
+      max_age: data.max_age ?? DEFAULT_PARTNER_CONFIG.max_age,
+      max_loan_term_years: data.max_loan_term_years ?? DEFAULT_PARTNER_CONFIG.max_loan_term_years,
+      rent_recognition_first_property: data.rent_recognition_first_property ?? DEFAULT_PARTNER_CONFIG.rent_recognition_first_property,
+      rent_recognition_investment: data.rent_recognition_investment ?? DEFAULT_PARTNER_CONFIG.rent_recognition_investment,
+      default_interest_rate: data.default_interest_rate ?? DEFAULT_PARTNER_CONFIG.default_interest_rate,
+      lawyer_fee_percent: data.lawyer_fee_percent ?? DEFAULT_PARTNER_CONFIG.lawyer_fee_percent,
+      broker_fee_percent: data.broker_fee_percent ?? DEFAULT_PARTNER_CONFIG.broker_fee_percent,
+      vat_percent: data.vat_percent ?? DEFAULT_PARTNER_CONFIG.vat_percent,
+      advisor_fee_fixed: data.advisor_fee_fixed ?? DEFAULT_PARTNER_CONFIG.advisor_fee_fixed,
+      other_fee_fixed: data.other_fee_fixed ?? DEFAULT_PARTNER_CONFIG.other_fee_fixed,
+      rental_yield_default: data.rental_yield_default ?? DEFAULT_PARTNER_CONFIG.rental_yield_default,
+      rent_warning_high_multiplier: data.rent_warning_high_multiplier ?? DEFAULT_PARTNER_CONFIG.rent_warning_high_multiplier,
+      rent_warning_low_multiplier: data.rent_warning_low_multiplier ?? DEFAULT_PARTNER_CONFIG.rent_warning_low_multiplier,
+      enable_rent_validation: data.enable_rent_validation ?? DEFAULT_PARTNER_CONFIG.enable_rent_validation,
+      enable_what_if_calculator: data.enable_what_if_calculator ?? DEFAULT_PARTNER_CONFIG.enable_what_if_calculator,
+      show_amortization_table: data.show_amortization_table ?? DEFAULT_PARTNER_CONFIG.show_amortization_table,
+      max_amortization_months: data.max_amortization_months ?? DEFAULT_PARTNER_CONFIG.max_amortization_months,
+    };
+  } catch (error) {
+    console.error('Exception loading partner config:', error);
+    return DEFAULT_PARTNER_CONFIG;
+  }
+}
+
 // ============= INPUT VALIDATION SCHEMA =============
 
 const CalculatorInputSchema = z.object({
@@ -32,6 +141,7 @@ const CalculatorInputSchema = z.object({
   vatPct: z.number().min(0).max(50),
   advisorFee: z.number().nonnegative().max(1e6),
   otherFee: z.number().nonnegative().max(1e6),
+  partnerId: z.string().uuid().nullable().optional(),
 });
 
 type CalculatorInputs = z.infer<typeof CalculatorInputSchema>;
@@ -136,7 +246,8 @@ function solveMaximumBudget(
   inputs: CalculatorInputs,
   taxProfile: TaxProfile,
   amortizationFactor: number,
-  maxLoanTermMonths: number
+  maxLoanTermMonths: number,
+  config: PartnerConfig
 ): CalculatorResults | null {
   const {
     equity,
@@ -179,8 +290,10 @@ function solveMaximumBudget(
       : (isRented ? (price * (rentalYield / 100)) / 12 : 0);
 
     // 2. Bank Regulatory Income (The "Bank" View)
-    // Rule: First property = 0% recognition. Investment property = 80% recognition.
-    const rentRecognitionRate = isFirstProperty ? 0 : 0.8;
+    // Rule: First property = config.rent_recognition_first_property. Investment property = config.rent_recognition_investment.
+    const rentRecognitionRate = isFirstProperty
+      ? config.rent_recognition_first_property
+      : config.rent_recognition_investment;
     const bankRecognizedIncome = netIncome + (actualRent * rentRecognitionRate);
     const bankMaxPayment = bankRecognizedIncome * (ratio / 100);
 
@@ -228,10 +341,12 @@ function solveMaximumBudget(
 
       // Determine rent warning flags
       let rentWarning: 'high' | 'low' | null = null;
-      if (actualRent > estimatedMarketRent * 1.5) {
-        rentWarning = 'high'; // 50% above market
-      } else if (actualRent > 0 && actualRent < estimatedMarketRent * 0.7) {
-        rentWarning = 'low'; // 30% below market
+      if (config.enable_rent_validation) {
+        if (actualRent > estimatedMarketRent * config.rent_warning_high_multiplier) {
+          rentWarning = 'high';
+        } else if (actualRent > 0 && actualRent < estimatedMarketRent * config.rent_warning_low_multiplier) {
+          rentWarning = 'low';
+        }
       }
 
       bestResult = {
@@ -266,7 +381,7 @@ function solveMaximumBudget(
 /**
  * Main calculation function
  */
-function calculate(inputs: CalculatorInputs): CalculatorResults | null {
+function calculate(inputs: CalculatorInputs, config: PartnerConfig): CalculatorResults | null {
   const {
     age,
     maxAge,
@@ -275,7 +390,8 @@ function calculate(inputs: CalculatorInputs): CalculatorResults | null {
     isIsraeliTaxResident,
   } = inputs;
 
-  const years = Math.min(30, maxAge - age);
+  const effectiveMaxAge = Math.min(config.max_age, maxAge || config.max_age);
+  const years = Math.min(config.max_loan_term_years, effectiveMaxAge - age);
   if (years <= 0) return null;
 
   const n = years * 12;
@@ -287,7 +403,7 @@ function calculate(inputs: CalculatorInputs): CalculatorResults | null {
   const taxProfile = determineTaxProfile(isFirstProperty, isIsraeliTaxResident);
 
   // Solve
-  return solveMaximumBudget(inputs, taxProfile, A, n);
+  return solveMaximumBudget(inputs, taxProfile, A, n, config);
 }
 
 /**
@@ -432,9 +548,44 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const inputs = parseResult.data;
+    const partnerId = inputs.partnerId;
+
+    // Initialize Supabase admin client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    // Rate limit check
+    const rateLimitCheck = await checkRateLimitAtomic(
+      supabaseClient,
+      `ip:${clientIP}`,
+      "calculate-budget",
+      30,
+      1
+    );
+
+    if (!rateLimitCheck.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: "Too many requests. Please wait a moment before trying again.",
+          retryAfter: 60
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": "60",
+            ...corsHeaders
+          },
+        }
+      );
+    }
+
+    // Load partner configuration
+    const config = await loadPartnerConfig(supabaseClient, partnerId || null);
 
     // Perform calculation
-    const results = calculate(inputs);
+    const results = calculate(inputs, config);
 
     if (!results) {
       return new Response(
@@ -450,17 +601,25 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate amortization table
-    const amortization = generateAmortizationTable(
-      results.loanAmount,
-      inputs.interest,
-      results.loanTermYears
-    );
+    const fullAmortization = config.show_amortization_table
+      ? generateAmortizationTable(
+        results.loanAmount,
+        inputs.interest,
+        results.loanTermYears
+      )
+      : [];
+
+    // Truncate according to config
+    const amortization = fullAmortization.slice(0, config.max_amortization_months);
 
     // Return results
     return new Response(
       JSON.stringify({
         results,
-        amortization
+        amortization,
+        config: {
+          enable_what_if_calculator: config.enable_what_if_calculator,
+        }
       }),
       {
         status: 200,
