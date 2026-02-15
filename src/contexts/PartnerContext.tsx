@@ -173,48 +173,63 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Check if current user is owner
+  // Check if current user is owner & Load their partner data automatically
   useEffect(() => {
     let cancelled = false;
-    const checkOwner = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+
+    const checkAndLoadOwnerPartner = async (userId: string | undefined) => {
+      if (!userId) {
         if (!cancelled) setIsOwner(false);
         return;
       }
 
-      // If already have a partner loaded, check if it's the same owner
-      const { data, error } = await supabase
+      const { data: pData, error: pError } = await supabase
         .from("partners")
-        .select("id")
-        .eq("owner_user_id", user.id)
+        .select("*")
+        .eq("owner_user_id", userId)
         .maybeSingle();
 
-      if (!cancelled) {
-        if (!error && data) {
-          setIsOwner(true);
-          // If we haven't loaded a partner yet (Scenario B), load it now
-          if (!partner) {
-            const { data: fullPartner } = await supabase
-              .from("partners")
-              .select("*")
-              .eq("id", data.id)
-              .single();
-            if (fullPartner) {
-              setPartner(fullPartner as unknown as Partner);
-              setConfig(mapToPartnerConfig(fullPartner));
-              applyPartnerBrandColor(normalizeHexColor(fullPartner.brand_color));
-            }
-          }
-        } else {
-          setIsOwner(false);
+      if (cancelled) return;
+
+      if (!pError && pData) {
+        setIsOwner(true);
+        // Force load this partner as active if no partner is loaded or it's a different one
+        if (!partner || partner.id !== pData.id) {
+          console.log("[PartnerContext] Owner detected, auto-loading partner config:", pData.name);
+          setPartner(pData as unknown as Partner);
+          setConfig(mapToPartnerConfig(pData));
+          applyPartnerBrandColor(normalizeHexColor(pData.brand_color));
         }
+      } else {
+        setIsOwner(false);
       }
     };
 
-    checkOwner();
+    // Initial check
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!cancelled && user) {
+        checkAndLoadOwnerPartner(user.id);
+      } else if (!cancelled && !user) {
+        setIsOwner(false);
+      }
+    });
+
+    // Listen for auth changes to load partner immediately on login
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!cancelled) {
+        if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+          checkAndLoadOwnerPartner(session?.user?.id);
+        } else if (event === "SIGNED_OUT") {
+          setIsOwner(false);
+          // Only clear if it was an owner-loaded partner? 
+          // For now, let's keep it simple: if signed out, you aren't an owner.
+        }
+      }
+    });
+
     return () => {
       cancelled = true;
+      subscription.unsubscribe();
     };
   }, [partner]);
 
