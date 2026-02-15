@@ -91,6 +91,7 @@ export function ConfigurationPanel() {
             budgetCap: null,
             isFirstProperty: true,
             isIsraeliTaxResident: true,
+            expectedRent: null,
             lawyerPct: config.lawyer_fee_percent,
             brokerPct: config.broker_fee_percent,
             vatPct: config.vat_percent,
