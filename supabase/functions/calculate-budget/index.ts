@@ -550,39 +550,8 @@ const handler = async (req: Request): Promise<Response> => {
     const inputs = parseResult.data;
     const partnerId = inputs.partnerId;
 
-    // Initialize Supabase admin client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
-
-    // Rate limit check
-    const rateLimitCheck = await checkRateLimitAtomic(
-      supabaseClient,
-      `ip:${clientIP}`,
-      "calculate-budget",
-      30,
-      1
-    );
-
-    if (!rateLimitCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: "Too many requests. Please wait a moment before trying again.",
-          retryAfter: 60
-        }),
-        {
-          status: 429,
-          headers: {
-            "Content-Type": "application/json",
-            "Retry-After": "60",
-            ...corsHeaders
-          },
-        }
-      );
-    }
-
     // Load partner configuration
-    const config = await loadPartnerConfig(supabaseClient, partnerId || null);
+    const config = await loadPartnerConfig(supabaseAdmin, partnerId || null);
 
     // Perform calculation
     const results = calculate(inputs, config);
