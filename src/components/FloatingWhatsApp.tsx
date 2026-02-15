@@ -1,11 +1,15 @@
 import { WhatsAppIcon } from "./icons/WhatsAppIcon";
-import { usePartner } from "@/contexts/PartnerContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useOptionalPartner } from "@/contexts/PartnerContext";
+import { useOptionalLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/translations";
 import { cn } from "@/lib/utils";
 
 export function FloatingWhatsApp() {
-    const { partner } = usePartner();
-    const { t, language } = useLanguage();
+    const partnerCtx = useOptionalPartner();
+    const langCtx = useOptionalLanguage();
+    const partner = partnerCtx?.partner ?? null;
+    const language = langCtx?.language ?? 'he';
+    const t = langCtx?.t ?? translations['he'];
 
     // Logic: Hebrew -> Left side | English/French -> Right side
     const isLeftSide = language === 'he';

@@ -231,3 +231,8 @@ export function usePartner() {
   if (!ctx) throw new Error("usePartner must be used within PartnerProvider");
   return ctx;
 }
+
+// Non-throwing variant for global widgets that must never blank-screen the app.
+export function useOptionalPartner() {
+  return useContext(PartnerContext) ?? null;
+}
