@@ -339,48 +339,96 @@ export type Database = {
     Views: {
       partners_public: {
         Row: {
+          advisor_fee_fixed: number | null
           brand_color: string | null
-          created_at: string | null
+          broker_fee_percent: number | null
+          default_interest_rate: number | null
           email: string | null
+          enable_rent_validation: boolean | null
+          enable_what_if_calculator: boolean | null
           id: string | null
-          is_active: boolean | null
+          lawyer_fee_percent: number | null
           logo_url: string | null
+          max_age: number | null
+          max_amortization_months: number | null
+          max_dti_ratio: number | null
+          max_loan_term_years: number | null
           name: string | null
+          other_fee_fixed: number | null
           phone: string | null
+          rent_recognition_first_property: number | null
+          rent_recognition_investment: number | null
+          rent_warning_high_multiplier: number | null
+          rent_warning_low_multiplier: number | null
+          rental_yield_default: number | null
+          show_amortization_table: boolean | null
           slogan: string | null
           slogan_font_size: string | null
           slogan_font_style: string | null
           slug: string | null
+          vat_percent: number | null
           whatsapp: string | null
         }
         Insert: {
+          advisor_fee_fixed?: number | null
           brand_color?: string | null
-          created_at?: string | null
+          broker_fee_percent?: number | null
+          default_interest_rate?: number | null
           email?: string | null
+          enable_rent_validation?: boolean | null
+          enable_what_if_calculator?: boolean | null
           id?: string | null
-          is_active?: boolean | null
+          lawyer_fee_percent?: number | null
           logo_url?: string | null
+          max_age?: number | null
+          max_amortization_months?: number | null
+          max_dti_ratio?: number | null
+          max_loan_term_years?: number | null
           name?: string | null
+          other_fee_fixed?: number | null
           phone?: string | null
+          rent_recognition_first_property?: number | null
+          rent_recognition_investment?: number | null
+          rent_warning_high_multiplier?: number | null
+          rent_warning_low_multiplier?: number | null
+          rental_yield_default?: number | null
+          show_amortization_table?: boolean | null
           slogan?: string | null
           slogan_font_size?: string | null
           slogan_font_style?: string | null
           slug?: string | null
+          vat_percent?: number | null
           whatsapp?: string | null
         }
         Update: {
+          advisor_fee_fixed?: number | null
           brand_color?: string | null
-          created_at?: string | null
+          broker_fee_percent?: number | null
+          default_interest_rate?: number | null
           email?: string | null
+          enable_rent_validation?: boolean | null
+          enable_what_if_calculator?: boolean | null
           id?: string | null
-          is_active?: boolean | null
+          lawyer_fee_percent?: number | null
           logo_url?: string | null
+          max_age?: number | null
+          max_amortization_months?: number | null
+          max_dti_ratio?: number | null
+          max_loan_term_years?: number | null
           name?: string | null
+          other_fee_fixed?: number | null
           phone?: string | null
+          rent_recognition_first_property?: number | null
+          rent_recognition_investment?: number | null
+          rent_warning_high_multiplier?: number | null
+          rent_warning_low_multiplier?: number | null
+          rental_yield_default?: number | null
+          show_amortization_table?: boolean | null
           slogan?: string | null
           slogan_font_size?: string | null
           slogan_font_style?: string | null
           slug?: string | null
+          vat_percent?: number | null
           whatsapp?: string | null
         }
         Relationships: []
