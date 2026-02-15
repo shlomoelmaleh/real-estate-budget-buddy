@@ -50,7 +50,7 @@ const App = () => (
                 }
               />
               <Route
-                path="/admin/settings"
+                path="/partner/config"
                 element={
                   <PartnerRoute>
                     <ConfigurationPanel />

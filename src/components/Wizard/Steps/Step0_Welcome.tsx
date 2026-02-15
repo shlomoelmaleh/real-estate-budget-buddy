@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Play, Map, TrendingUp, ShieldCheck, Target, Clock, Lock, ChevronRight, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,9 +27,9 @@ export function Step0({ onNext }: { onNext: () => void }) {
                         className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200"
                         asChild
                     >
-                        <a href="/partner/config">
+                        <Link to="/partner/config">
                             <Settings className="w-5 h-5 text-slate-600" />
-                        </a>
+                        </Link>
                     </Button>
                 )}
             </div>

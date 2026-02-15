@@ -9,24 +9,24 @@ import { toast } from "sonner";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState(ADMIN_EMAIL);
+  const [email, setEmail] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const normalized = useMemo(() => email.trim().toLowerCase(), [email]);
 
   const sendLink = async () => {
-    if (normalized !== ADMIN_EMAIL) {
-      toast.error("Unauthorized email");
+    if (!normalized || !normalized.includes("@")) {
+      toast.error("Please enter a valid email");
       return;
     }
     setIsSending(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
-        options: { emailRedirectTo: window.location.origin + "/admin/partners" },
+        options: { emailRedirectTo: window.location.origin + "/" },
       });
       if (error) throw error;
-      toast.success("Magic link sent");
+      toast.success("Magic link sent! Check your email.");
     } catch (e: any) {
       toast.error(e?.message || "Failed to send link");
     } finally {
@@ -40,19 +40,24 @@ export default function Login() {
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md p-6 space-y-4">
         <header className="space-y-1">
-          <h1 className="text-2xl font-bold">Admin Login</h1>
-          <p className="text-sm text-muted-foreground">Magic link (OTP) for the admin account.</p>
+          <h1 className="text-2xl font-bold">Sign In</h1>
+          <p className="text-sm text-muted-foreground">Receive a magic link (OTP) to your email.</p>
         </header>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Email</label>
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+          <label className="text-sm font-medium">Email Address</label>
+          <Input
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+          />
         </div>
-        <div className="flex gap-2">
-          <Button onClick={sendLink} disabled={isSending} className="flex-1">
+        <div className="flex flex-col gap-2 pt-2">
+          <Button onClick={sendLink} disabled={isSending} className="w-full">
             {isSending ? "Sending…" : "Send magic link"}
           </Button>
-          <Button variant="outline" onClick={goHome}>
-            Back
+          <Button variant="ghost" onClick={goHome} className="w-full">
+            Back to Home
           </Button>
         </div>
       </Card>
