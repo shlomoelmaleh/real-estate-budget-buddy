@@ -9,13 +9,13 @@ export function AdminFloatingButton() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Hide if not owner OR if on the home page (where a main button already exists)
-    if (!isOwner || location.pathname === '/' || location.pathname.startsWith('/admin')) {
-        return null; // Also hide on admin pages since we're already there
+    // Hide if not owner OR if on the exact home page (where a main button already exists)
+    if (!isOwner || location.pathname === '/') {
+        return null;
     }
 
     return (
-        <div className="fixed top-4 right-4 z-50 animate-in fade-in zoom-in duration-300">
+        <div className="fixed top-4 right-4 z-[100] animate-in fade-in zoom-in duration-300">
             <Button
                 variant="outline"
                 size="sm"
