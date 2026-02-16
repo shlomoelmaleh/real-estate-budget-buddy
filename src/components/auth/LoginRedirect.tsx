@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_EMAIL } from "@/lib/admin";
 
 /**
  * LoginRedirect (The Watchdog)
- * Listens to authentication state changes and forces partners to /admin/settings.
+ * Routes users after sign-in:
+ *   - Super Admin  → /admin/partners
+ *   - Partner Owner → /admin/settings
+ *   - Everyone else → stays where they are
+ *
+ * Never redirects if already on the correct admin page.
  */
 export function LoginRedirect() {
     const navigate = useNavigate();
@@ -12,12 +18,21 @@ export function LoginRedirect() {
     const [isChecking, setIsChecking] = useState(false);
 
     useEffect(() => {
-        const checkPartnerAndRedirect = async (userId: string) => {
-            // Avoid loops if already on settings
-            if (location.pathname === "/partner/config") {
+        const handleRedirect = async (userId: string, email: string | undefined) => {
+            const path = location.pathname;
+
+            // 1. Super Admin — send to /admin/partners (unless already there)
+            if (email?.toLowerCase() === ADMIN_EMAIL) {
+                if (path.startsWith("/admin")) return; // don't redirect if already on any admin page
+                console.log("[LoginRedirect] Admin detected → /admin/partners");
+                navigate("/admin/partners", { replace: true });
                 return;
             }
 
+            // 2. Already on the partner settings page — nothing to do
+            if (path === "/admin/settings") return;
+
+            // 3. Check if the user owns a partner record
             setIsChecking(true);
             try {
                 const { data: partner, error } = await supabase
@@ -27,38 +42,33 @@ export function LoginRedirect() {
                     .maybeSingle();
 
                 if (!error && partner) {
-                    console.log("[LoginRedirect] Partner detected, forcing redirect to /partner/config");
-                    navigate("/partner/config", { replace: true });
+                    console.log("[LoginRedirect] Partner owner → /admin/settings");
+                    navigate("/admin/settings", { replace: true });
                 }
             } catch (err) {
-                console.error("[LoginRedirect] Error check:", err);
+                console.error("[LoginRedirect] Error:", err);
             } finally {
                 setIsChecking(false);
             }
         };
 
-        // 1. Check initial session
+        // Initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
-                checkPartnerAndRedirect(session.user.id);
+                handleRedirect(session.user.id, session.user.email);
             }
         });
 
-        // 2. Listen for SIGNED_IN events
+        // Auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session?.user) {
-                checkPartnerAndRedirect(session.user.id);
+                handleRedirect(session.user.id, session.user.email);
             }
         });
 
-        return () => {
-            subscription.unsubscribe();
-        };
+        return () => { subscription.unsubscribe(); };
     }, [navigate, location.pathname]);
 
-    if (isChecking) {
-        return null; // Keep it invisible or show a very subtle spinner if preferred
-    }
-
+    if (isChecking) return null;
     return null;
 }

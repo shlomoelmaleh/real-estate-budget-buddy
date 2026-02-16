@@ -347,6 +347,7 @@ export type Database = {
           enable_rent_validation: boolean | null
           enable_what_if_calculator: boolean | null
           id: string | null
+          is_active: boolean | null
           lawyer_fee_percent: number | null
           logo_url: string | null
           max_age: number | null
@@ -355,6 +356,7 @@ export type Database = {
           max_loan_term_years: number | null
           name: string | null
           other_fee_fixed: number | null
+          owner_user_id: string | null
           phone: string | null
           rent_recognition_first_property: number | null
           rent_recognition_investment: number | null
@@ -378,6 +380,7 @@ export type Database = {
           enable_rent_validation?: boolean | null
           enable_what_if_calculator?: boolean | null
           id?: string | null
+          is_active?: boolean | null
           lawyer_fee_percent?: number | null
           logo_url?: string | null
           max_age?: number | null
@@ -386,6 +389,7 @@ export type Database = {
           max_loan_term_years?: number | null
           name?: string | null
           other_fee_fixed?: number | null
+          owner_user_id?: string | null
           phone?: string | null
           rent_recognition_first_property?: number | null
           rent_recognition_investment?: number | null
@@ -409,6 +413,7 @@ export type Database = {
           enable_rent_validation?: boolean | null
           enable_what_if_calculator?: boolean | null
           id?: string | null
+          is_active?: boolean | null
           lawyer_fee_percent?: number | null
           logo_url?: string | null
           max_age?: number | null
@@ -417,6 +422,7 @@ export type Database = {
           max_loan_term_years?: number | null
           name?: string | null
           other_fee_fixed?: number | null
+          owner_user_id?: string | null
           phone?: string | null
           rent_recognition_first_property?: number | null
           rent_recognition_investment?: number | null
