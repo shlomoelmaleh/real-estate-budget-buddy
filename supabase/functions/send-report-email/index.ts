@@ -1884,8 +1884,7 @@ const handler = async (req: Request): Promise<Response> => {
       const headerBuildSha = req.headers.get("x-build-sha") || null;
       return new Response(
         JSON.stringify({
-          error: "Invalid request data",
-          details: parseResult.error.issues.map((i) => i.message).join(", "),
+          error: "Invalid request data. Please check your input and try again.",
           version: {
             functionVersion: FUNCTION_VERSION,
             deployedAt: DEPLOYED_AT,
@@ -2100,7 +2099,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error(`[send-report-email] Error:`, error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An error occurred while sending the report. Please try again." }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   }
