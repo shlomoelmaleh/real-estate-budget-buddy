@@ -428,20 +428,77 @@ export function ConfigurationPanel() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
+                                    <div className="space-y-4">
                                         <Label htmlFor="logo_url">Logo URL</Label>
-                                        <Input
-                                            id="logo_url"
-                                            type="url"
-                                            value={config.logo_url || ''}
-                                            onChange={(e) => updateConfig('logo_url', e.target.value || null)}
-                                            placeholder="https://example.com/logo.png"
-                                        />
-                                        {config.logo_url && (
-                                            <div className="mt-2 p-2 border rounded-md">
-                                                <img src={config.logo_url} alt="Logo Preview" className="h-12 w-auto object-contain" />
+                                        <div className="flex gap-4 items-start">
+                                            <div className="flex-1 space-y-2">
+                                                <div className="flex gap-2">
+                                                    <Input
+                                                        type="file"
+                                                        accept="image/png,image/jpeg,image/webp"
+                                                        className="cursor-pointer"
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files?.[0];
+                                                            if (!file || !partnerId) return;
+
+                                                            if (file.size > 2 * 1024 * 1024) {
+                                                                toast.error("File size must be less than 2MB");
+                                                                return;
+                                                            }
+
+                                                            try {
+                                                                toast.info("Uploading logo...", { id: "upload-logo" });
+
+                                                                const fileExt = file.name.split('.').pop();
+                                                                const fileName = `${partnerId}/${Date.now()}.${fileExt}`;
+
+                                                                const { error: uploadError } = await supabase.storage
+                                                                    .from('partner-logos')
+                                                                    .upload(fileName, file, {
+                                                                        upsert: true
+                                                                    });
+
+                                                                if (uploadError) {
+                                                                    console.error("Upload Error:", uploadError);
+                                                                    throw uploadError;
+                                                                }
+
+                                                                const { data: { publicUrl } } = supabase.storage
+                                                                    .from('partner-logos')
+                                                                    .getPublicUrl(fileName);
+
+                                                                updateConfig('logo_url', publicUrl);
+                                                                toast.success("Logo uploaded successfully", { id: "upload-logo" });
+
+                                                            } catch (error: any) {
+                                                                console.error("Logo Upload Failed:", error);
+                                                                toast.error("Upload failed. Please check Storage Permissions.", { id: "upload-logo" });
+                                                            } finally {
+                                                                // Clear input
+                                                                e.target.value = '';
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                                <Input
+                                                    id="logo_url"
+                                                    type="url"
+                                                    value={config.logo_url || ''}
+                                                    readOnly
+                                                    className="bg-muted text-muted-foreground text-xs"
+                                                    placeholder="https://..."
+                                                />
                                             </div>
-                                        )}
+                                            {config.logo_url && (
+                                                <div className="p-2 border rounded-md bg-white shadow-sm">
+                                                    <img
+                                                        src={config.logo_url}
+                                                        alt="Logo Preview"
+                                                        className="h-20 w-auto object-contain"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
