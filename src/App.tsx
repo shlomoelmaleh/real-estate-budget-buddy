@@ -16,6 +16,7 @@ import { PartnerRoute } from "./components/auth/PartnerRoute";
 import { ConfigurationPanel } from "./components/PartnerConfig/ConfigurationPanel";
 import { BudgetErrorBoundary } from "@/components/BudgetErrorBoundary";
 import { LoginRedirect } from "./components/auth/LoginRedirect";
+import { AdminFloatingButton } from "./components/AdminFloatingButton";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <LoginRedirect />
+            <AdminFloatingButton />
             <Routes>
               <Route path="/" element={
                 <BudgetErrorBoundary>

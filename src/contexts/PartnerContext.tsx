@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Partner } from "@/lib/partnerTypes";
 import { applyPartnerBrandColor, normalizeHexColor } from "@/lib/color";
@@ -218,11 +219,12 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!cancelled) {
         if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+          console.log("[PartnerContext] Auth event:", event, "User:", session?.user?.id);
           checkAndLoadOwnerPartner(session?.user?.id);
         } else if (event === "SIGNED_OUT") {
+          console.log("[PartnerContext] User signed out");
           setIsOwner(false);
-          // Only clear if it was an owner-loaded partner? 
-          // For now, let's keep it simple: if signed out, you aren't an owner.
+          hasWelcomedRef.current = false; // Reset welcome flag on logout
         }
       }
     });
@@ -232,6 +234,20 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, [partner]);
+
+  // Welcome Toast Logic (Once per session)
+  const hasWelcomedRef = React.useRef(false);
+
+  useEffect(() => {
+    if (isOwner && partner && !hasWelcomedRef.current) {
+      console.log("[PartnerContext] Triggering welcome toast for:", partner.name);
+      toast.success(`Welcome back, ${partner.name}!`, {
+        description: "Click the settings icon to manage your dashboard.",
+        duration: 5000,
+      });
+      hasWelcomedRef.current = true;
+    }
+  }, [isOwner, partner]);
 
   const value = useMemo<PartnerContextValue>(
     () => ({ partner, config, binding, isLoading, isOwner, clearBinding }),
