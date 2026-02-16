@@ -19,12 +19,25 @@ export default function Login() {
       toast.error("Please enter a valid email");
       return;
     }
+
     setIsSending(true);
     try {
+      // Preserve partner ref parameter if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const refParam = urlParams.get('ref');
+
+      let redirectUrl = window.location.origin;
+      if (refParam) {
+        redirectUrl += `?ref=${refParam}`;
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
-        options: { emailRedirectTo: window.location.origin },
+        options: {
+          emailRedirectTo: redirectUrl
+        },
       });
+
       if (error) throw error;
       toast.success("Magic link sent! Check your email.");
     } catch (e: any) {

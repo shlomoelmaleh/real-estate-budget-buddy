@@ -14,7 +14,7 @@ export function LoginRedirect() {
     useEffect(() => {
         const checkPartnerAndRedirect = async (userId: string) => {
             // Avoid loops if already on settings
-            if (location.pathname === "/admin/settings" || location.pathname === "/partner/config") {
+            if (location.pathname === "/partner/config") {
                 return;
             }
 
@@ -27,8 +27,8 @@ export function LoginRedirect() {
                     .maybeSingle();
 
                 if (!error && partner) {
-                    console.log("[LoginRedirect] Partner detected, forcing redirect to /admin/settings");
-                    navigate("/admin/settings", { replace: true });
+                    console.log("[LoginRedirect] Partner detected, forcing redirect to /partner/config");
+                    navigate("/partner/config", { replace: true });
                 }
             } catch (err) {
                 console.error("[LoginRedirect] Error check:", err);

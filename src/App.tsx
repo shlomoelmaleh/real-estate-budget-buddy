@@ -57,14 +57,6 @@ const App = () => (
                   </PartnerRoute>
                 }
               />
-              <Route
-                path="/admin/settings"
-                element={
-                  <PartnerRoute>
-                    <ConfigurationPanel />
-                  </PartnerRoute>
-                }
-              />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

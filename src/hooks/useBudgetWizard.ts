@@ -23,7 +23,7 @@ export function useBudgetWizard({
     setValue,
     t,
 }: UseBudgetWizardProps) {
-    const { config } = usePartner(); // Using partner config from context
+    const { config, partner: contextPartner, binding } = usePartner(); // Using partner config from context
     // --- STATE MANAGEMENT ---
     const [step, setStep] = useState(0);
     const [sessionId] = useState(() => {
@@ -194,7 +194,7 @@ export function useBudgetWizard({
                     },
                     body: JSON.stringify({
                         ...inputs,
-                        partnerId: partner?.id || null,
+                        partnerId: partner?.id ?? binding?.partnerId ?? null,
                         config: config || null,
                     }),
                 }
@@ -338,7 +338,7 @@ export function useBudgetWizard({
                     yearlyBalanceData: calcData?.yearlyBalanceData,
                     paymentBreakdownData: calcData?.paymentBreakdownData,
                     csvData: calcData?.csvData,
-                    partnerId,
+                    partnerId: partner?.id ?? binding?.partnerId ?? null,
                     partnerEmail: partner?.email || null,
                     partnerName: partner?.name || null,
                 },
