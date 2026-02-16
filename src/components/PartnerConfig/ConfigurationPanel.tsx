@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { calculateMaxBudget } from '@/lib/calculatorLogic';
 import { CalculatorInputs, CalculatorResults, formatNumber } from '@/lib/calculator';
 import { PartnerConfig, DEFAULT_PARTNER_CONFIG, validatePartnerConfig } from '@/types/partnerConfig';
+import { ADMIN_EMAIL } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -11,16 +13,25 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Info, Save, RotateCcw, TrendingUp, ShieldCheck, Settings2 } from 'lucide-react';
+import { Info, Save, RotateCcw, TrendingUp, ShieldCheck, Settings2, ArrowLeft } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function ConfigurationPanel() {
+    const navigate = useNavigate();
     const [config, setConfig] = useState<PartnerConfig | null>(null);
     const [originalConfig, setOriginalConfig] = useState<PartnerConfig | null>(null);
     const [partnerId, setPartnerId] = useState<string | null>(null);
     const [previewStats, setPreviewStats] = useState<CalculatorResults | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    // Check if current user is the super admin
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user?.email?.toLowerCase() === ADMIN_EMAIL) setIsAdmin(true);
+        });
+    }, []);
 
     // Load Data
     useEffect(() => {
@@ -149,9 +160,16 @@ export function ConfigurationPanel() {
     return (
         <div className="max-w-6xl mx-auto p-4 space-y-8 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold">Partner Configuration</h1>
-                    <p className="text-muted-foreground">Customize your budget simulation parameters and features.</p>
+                <div className="flex items-center gap-3">
+                    {isAdmin && (
+                        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/partners')}>
+                            <ArrowLeft className="w-5 h-5" />
+                        </Button>
+                    )}
+                    <div>
+                        <h1 className="text-3xl font-bold">Partner Configuration</h1>
+                        <p className="text-muted-foreground">Customize your budget simulation parameters and features.</p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
                     {isDirty && (

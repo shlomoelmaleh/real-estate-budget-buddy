@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { ADMIN_EMAIL } from "@/lib/admin";
 
 export function PartnerRoute({ children }: { children: React.ReactNode }) {
     const navigate = useNavigate();
@@ -9,14 +10,17 @@ export function PartnerRoute({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         let mounted = true;
 
-        async function checkPartner() {
+        async function checkAccess() {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (!session) {
-                if (mounted) {
-                    setOk(false);
-                    navigate("/login", { replace: true });
-                }
+                if (mounted) { setOk(false); navigate("/login", { replace: true }); }
+                return;
+            }
+
+            // Super admin can access any partner route
+            if (session.user.email?.toLowerCase() === ADMIN_EMAIL) {
+                if (mounted) setOk(true);
                 return;
             }
 
@@ -28,29 +32,20 @@ export function PartnerRoute({ children }: { children: React.ReactNode }) {
                 .maybeSingle();
 
             if (error || !data) {
-                if (mounted) {
-                    setOk(false);
-                    navigate("/", { replace: true });
-                }
+                if (mounted) { setOk(false); navigate("/", { replace: true }); }
                 return;
             }
 
             if (mounted) setOk(true);
         }
 
-        checkPartner();
+        checkAccess();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (!session && mounted) {
-                setOk(false);
-                navigate("/login", { replace: true });
-            }
+            if (!session && mounted) { setOk(false); navigate("/login", { replace: true }); }
         });
 
-        return () => {
-            mounted = false;
-            subscription.unsubscribe();
-        };
+        return () => { mounted = false; subscription.unsubscribe(); };
     }, [navigate]);
 
     if (ok !== true) return null;
