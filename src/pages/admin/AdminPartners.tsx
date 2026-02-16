@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -20,6 +21,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { normalizeHexColor } from "@/lib/color";
 
 type LogFilter = "ALL" | "ERRORS" | "STATUS";
@@ -54,6 +57,7 @@ export default function AdminPartners() {
   const [isLoadingPartners, setIsLoadingPartners] = useState(true);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
   const [filter, setFilter] = useState<LogFilter>("ALL");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const [editing, setEditing] = useState<Partner | null>(null);
   const [form, setForm] = useState({
@@ -133,7 +137,17 @@ export default function AdminPartners() {
 
   const resetForm = () => {
     setEditing(null);
+    setShowCreateDialog(false);
     setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", slogan_font_size: "sm", slogan_font_style: "normal", is_active: true, max_dti_ratio: 0.33, max_age: 80, max_loan_term_years: 30, rent_recognition_first_property: 0.0, rent_recognition_investment: 0.8, default_interest_rate: 5.0, lawyer_fee_percent: 1.0, broker_fee_percent: 2.0, vat_percent: 17.0, advisor_fee_fixed: 9000, other_fee_fixed: 3000, rental_yield_default: 3.0, rent_warning_high_multiplier: 1.5, rent_warning_low_multiplier: 0.7, enable_rent_validation: true, enable_what_if_calculator: true, show_amortization_table: true, max_amortization_months: 60 });
+  };
+
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
   };
 
   const startEdit = (p: any) => {
@@ -285,15 +299,27 @@ export default function AdminPartners() {
             <h1 className="text-2xl font-bold">Partners</h1>
             <p className="text-sm text-muted-foreground">White-label management & audit trail</p>
           </div>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              toast.success("Signed out");
-            }}
-          >
-            Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => {
+                resetForm();
+                setShowCreateDialog(true);
+              }}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create Partner
+            </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                toast.success("Signed out");
+              }}
+            >
+              Sign out
+            </Button>
+          </div>
         </header>
 
         <Tabs defaultValue="partners">
@@ -391,9 +417,9 @@ export default function AdminPartners() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium">Slogan</label>
-                    <Input 
-                      value={form.slogan} 
-                      onChange={(e) => setForm((f) => ({ ...f, slogan: e.target.value }))} 
+                    <Input
+                      value={form.slogan}
+                      onChange={(e) => setForm((f) => ({ ...f, slogan: e.target.value }))}
                       placeholder="Your trusted mortgage partner"
                     />
                     <p className="text-xs text-muted-foreground">Optional text displayed under the logo in the header</p>
@@ -401,8 +427,8 @@ export default function AdminPartners() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Slogan Font Size</label>
-                      <Select 
-                        value={form.slogan_font_size} 
+                      <Select
+                        value={form.slogan_font_size}
                         onValueChange={(v) => setForm((f) => ({ ...f, slogan_font_size: v as SloganFontSize }))}
                       >
                         <SelectTrigger>
@@ -419,8 +445,8 @@ export default function AdminPartners() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Slogan Font Style</label>
-                      <Select 
-                        value={form.slogan_font_style} 
+                      <Select
+                        value={form.slogan_font_style}
                         onValueChange={(v) => setForm((f) => ({ ...f, slogan_font_style: v as SloganFontStyle }))}
                       >
                         <SelectTrigger>
@@ -618,6 +644,71 @@ export default function AdminPartners() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Create Partner Dialog */}
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Partner</DialogTitle>
+              <DialogDescription>
+                Add a new partner with their basic information. You can configure advanced settings after creation.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="create-name">Name *</Label>
+                <Input
+                  id="create-name"
+                  value={form.name}
+                  onChange={(e) => {
+                    const newName = e.target.value;
+                    setForm((f) => ({
+                      ...f,
+                      name: newName,
+                      slug: generateSlug(newName),
+                    }));
+                  }}
+                  placeholder="Acme Mortgage"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-slug">Slug *</Label>
+                <Input
+                  id="create-slug"
+                  value={form.slug}
+                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                  placeholder="acme-mortgage"
+                />
+                <p className="text-xs text-muted-foreground">Auto-generated from name. Lowercase, dash-separated.</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-email">Owner Email *</Label>
+                <Input
+                  id="create-email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  placeholder="partner@example.com"
+                />
+                <p className="text-xs text-muted-foreground">This email will be used for Magic Link authentication.</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  await savePartner();
+                  setShowCreateDialog(false);
+                }}
+                disabled={!form.name || !form.slug || !form.email}
+              >
+                Create Partner
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </main>
   );
