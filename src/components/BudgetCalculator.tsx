@@ -35,6 +35,7 @@ import { useBudgetWizard } from '@/hooks/useBudgetWizard';
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
   const { partner } = usePartner();
+  const navigate = useNavigate();
   const confirmationRef = useRef<HTMLDivElement>(null);
 
   // Form management
