@@ -25,49 +25,48 @@ export function Step4({ control, errors, t, watch, setValue }: StepProps) {
                                     {field.value ? t.isRentedYes : t.isRentedNo}
                                 </p>
                             </div>
-                        </div>
                             {/* Force LTR for Switch to fix RTL physics */}
                             <span dir="ltr" className="flex items-center">
-                    <Switch
-                        checked={field.value}
-                        onCheckedChange={(val) => {
-                            field.onChange(val);
-                            if (!val && setValue) {
-                                setValue('expectedRent', '');
-                            };
-                        }}
-                    />
-                </span>
-            </div>
+                                <Switch
+                                    checked={field.value}
+                                    onCheckedChange={(val) => {
+                                        field.onChange(val);
+                                        if (!val && setValue) {
+                                            setValue('expectedRent', '');
+                                        }
+                                    }}
+                                />
+                            </span>
+                        </div>
                     )}
                 />
 
-            {/* Conditional Rent Input */}
-            <div className={cn(
-                "grid transition-all duration-300 ease-in-out",
-                isRented ? "grid-rows-[1fr] mt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
-            )}>
-                <div className="overflow-hidden">
-                    <Controller
-                        name="expectedRent"
-                        control={control}
-                        render={({ field }) => (
-                            <FormInput
-                                label={`${t.expectedRent} (₪)`}
-                                currencySymbol={t.currencySymbol}
-                                icon={<Building2 className="w-4 h-4" />}
-                                {...field}
-                                formatNumber={true}
-                                hasError={!!errors.expectedRent}
-                                className="bg-white"
-                            />
-                        )}
-                    />
+                {/* Conditional Rent Input */}
+                <div className={cn(
+                    "grid transition-all duration-300 ease-in-out",
+                    isRented ? "grid-rows-[1fr] mt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
+                )}>
+                    <div className="overflow-hidden">
+                        <Controller
+                            name="expectedRent"
+                            control={control}
+                            render={({ field }) => (
+                                <FormInput
+                                    label={`${t.expectedRent} (₪)`}
+                                    currencySymbol={t.currencySymbol}
+                                    icon={<Building2 className="w-4 h-4" />}
+                                    {...field}
+                                    formatNumber={true}
+                                    hasError={!!errors.expectedRent}
+                                    className="bg-white"
+                                />
+                            )}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
 
-            {/* Budget Cap */ }
+            {/* Budget Cap */}
             <Controller
                 name="budgetCap"
                 control={control}
@@ -87,6 +86,6 @@ export function Step4({ control, errors, t, watch, setValue }: StepProps) {
             <p className="text-[10px] text-muted-foreground mt-4 italic">
                 {t.convertNotice}
             </p>
-        </div >
+        </div>
     );
 }

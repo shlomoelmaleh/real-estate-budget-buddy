@@ -79,7 +79,8 @@ serve(async (req) => {
       });
     }
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error("[admin-partners] Error:", error.message);
+    return new Response(JSON.stringify({ error: "Operation failed. Please try again." }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

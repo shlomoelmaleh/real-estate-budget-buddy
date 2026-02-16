@@ -535,11 +535,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Validation error:", parseResult.error.errors);
       return new Response(
         JSON.stringify({
-          error: "Invalid input data",
-          details: parseResult.error.errors.map(e => ({
-            field: e.path.join('.'),
-            message: e.message
-          }))
+          error: "Invalid input data. Please check your values and try again.",
         }),
         {
           status: 400,
