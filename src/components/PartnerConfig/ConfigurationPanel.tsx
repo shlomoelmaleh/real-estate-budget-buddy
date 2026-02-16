@@ -287,6 +287,25 @@ export function ConfigurationPanel() {
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                     )}
+                    {!isAdmin && (
+                        <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Back to App
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={async () => {
+                                    await supabase.auth.signOut();
+                                    navigate('/');
+                                }}
+                            >
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Logout
+                            </Button>
+                        </div>
+                    )}
                     <div>
                         <div className="flex items-center gap-2">
                             <h1 className="text-3xl font-bold">Partner Configuration</h1>

@@ -34,13 +34,14 @@ export function Step0({ onNext }: { onNext: () => void }) {
                 )}
                 {isOwner && (
                     <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-600 hover:text-primary transition-colors px-4 gap-2"
                         asChild
                     >
                         <Link to="/admin/settings">
-                            <Settings className="w-5 h-5 text-slate-600" />
+                            <Settings className="w-3.5 h-3.5" />
+                            {language === 'he' ? 'ניהול הגדרות שותף' : 'Manage Partner Settings'}
                         </Link>
                     </Button>
                 )}

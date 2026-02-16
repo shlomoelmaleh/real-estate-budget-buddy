@@ -42,8 +42,8 @@ export function LoginRedirect() {
                     .maybeSingle();
 
                 if (!error && partner) {
-                    console.log("[LoginRedirect] Partner owner → /admin/settings");
-                    navigate("/admin/settings", { replace: true });
+                    console.log("[LoginRedirect] Partner owner detected (Auto-redirect disabled)");
+                    // navigate("/admin/settings", { replace: true }); <--- DISABLED
                 }
             } catch (err) {
                 console.error("[LoginRedirect] Error:", err);
