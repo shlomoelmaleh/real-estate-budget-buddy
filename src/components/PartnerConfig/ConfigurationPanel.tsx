@@ -289,7 +289,11 @@ export function ConfigurationPanel() {
                     )}
                     {!isAdmin && (
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate('/')}
+                            >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 Back to App
                             </Button>

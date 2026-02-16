@@ -35,7 +35,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <LoginRedirect />
-            <AdminFloatingButton />
+            {/* AdminFloatingButton moved to BudgetCalculator to control visibility by step */}
             <Routes>
               <Route path="/" element={
                 <BudgetErrorBoundary>

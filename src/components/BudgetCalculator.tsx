@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
 import {
   Mail,
   CheckCircle2,
@@ -13,6 +14,7 @@ import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import logoEshel from '@/assets/logo-eshel.png';
+import { AdminFloatingButton } from '@/components/AdminFloatingButton';
 
 // Wizard Components
 import { StepCard } from './Wizard/StepCard';
@@ -356,6 +358,20 @@ export function BudgetCalculator() {
         results={results}
         language={language}
       />
+
+      {/* Admin Floating Button (Only visible on Steps 1-5, NOT Welcome Step 0) */}
+      {step > 0 && (
+        <AdminFloatingButton
+          onClick={() => {
+            // Persist current step so we can resume after returning from admin
+            sessionStorage.setItem('wizard_return_step', step.toString());
+            // Navigate to admin
+            // define navigate outside render or import usage
+            navigate('/admin/settings'); // OR use useNavigate hook if available in this context
+            // Since we are in a component inside Router, better to use hook.
+          }}
+        />
+      )}
     </div >
   );
 }

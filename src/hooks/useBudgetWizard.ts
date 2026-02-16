@@ -33,6 +33,16 @@ export function useBudgetWizard({
             return Math.random().toString(36).substring(2) + Date.now().toString(36);
         }
     });
+
+    // --- RESUME LOGIC (From Admin) ---
+    useEffect(() => {
+        const savedStep = sessionStorage.getItem('wizard_return_step');
+        if (savedStep) {
+            console.log('[BudgetWizard] Resuming from step:', savedStep);
+            setStep(Number(savedStep));
+            sessionStorage.removeItem('wizard_return_step'); // Clear so refresh still resets
+        }
+    }, []);
     const [isExiting0, setIsExiting0] = useState(false);
     const [results, setResults] = useState<CalculatorResults | null>(null);
     const [isLoading, setIsLoading] = useState(false);
