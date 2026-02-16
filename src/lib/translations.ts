@@ -143,6 +143,8 @@ export interface Translations {
   wizardPeace: string;
   revealSuccessHeader: string;
   startBtn: string;
+  partnerLogin: string;
+  managePartnerSettings: string;
   welcomeTitle: string;
   welcomeSub: string;
   welcomeBtn: string;
@@ -317,6 +319,8 @@ export const translations: Record<Language, Translations> = {
     wizardPeace: "לסיום, בוא נגדיר את היעדים שלך ושקט נפשי בתזרים.",
     revealSuccessHeader: "[Name], פוטנציאל הרכישה המקסימלי שלכם ברור!",
     startBtn: "בואו נתחיל",
+    partnerLogin: "כניסת שותפים",
+    managePartnerSettings: "ניהול הגדרות שותף",
     welcomeTitle: "המסע אל הבית שלכם מתחיל כאן",
     welcomeSub: "גלו את הפוטנציאל האמיתי שלכם וקבלו מפת דרכים אישית להגשמת החלום",
     welcomeBtn: "בואו נצא לדרך",
@@ -491,6 +495,8 @@ export const translations: Record<Language, Translations> = {
     wizardPeace: "Finally, let's set your targets and cash-flow comfort.",
     revealSuccessHeader: "[Name], your potential is clear!",
     startBtn: "Start My Journey",
+    partnerLogin: "Partner Login",
+    managePartnerSettings: "Manage Partner Settings",
     welcomeTitle: "The Journey to Your Home Starts Here",
     welcomeSub: "Discover your true potential and receive a personalized roadmap to your dream home",
     welcomeBtn: "Start My Journey",
@@ -665,6 +671,8 @@ export const translations: Record<Language, Translations> = {
     wizardPeace: "Enfin, définissons vos objectifs.",
     revealSuccessHeader: "[Name], votre potentiel d'acquisition est confirmé !",
     startBtn: "Commencer mon voyage",
+    partnerLogin: "Connexion Partenaire",
+    managePartnerSettings: "Gérer le Partenaire",
     welcomeTitle: "Le voyage vers votre foyer commence ici",
     welcomeSub: "Découvrez votre vrai potentiel et recevez votre feuille de route personnelle",
     welcomeBtn: "Démarrer l'expérience",

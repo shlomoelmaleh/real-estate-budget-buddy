@@ -16,7 +16,8 @@ export function Step0({ onNext }: { onNext: () => void }) {
     return (
         <div className="relative w-full">
             {/* Language Switcher - Absolutely Centered on Entire Screen */}
-            <div className="absolute top-0 left-0 right-0 flex justify-center z-30 pt-4 gap-4">
+            {/* Force LTR direction for the container, but use flex-row-reverse to keep Language on Right and Button on Left (Hebrew style) */}
+            <div className="absolute top-0 left-0 right-0 flex justify-center z-30 pt-4 gap-4" style={{ direction: 'rtl' }}>
                 <div className="scale-90 md:scale-100">
                     <LanguageSwitcher />
                 </div>
@@ -28,7 +29,7 @@ export function Step0({ onNext }: { onNext: () => void }) {
                         asChild
                     >
                         <Link to="/login">
-                            {language === 'he' ? 'כניסת שותפים' : 'Partner Login'}
+                            {t.partnerLogin}
                         </Link>
                     </Button>
                 )}
@@ -41,7 +42,7 @@ export function Step0({ onNext }: { onNext: () => void }) {
                     >
                         <Link to="/admin/settings">
                             <Settings className="w-3.5 h-3.5" />
-                            {language === 'he' ? 'ניהול הגדרות שותף' : 'Manage Partner Settings'}
+                            {t.managePartnerSettings}
                         </Link>
                     </Button>
                 )}
