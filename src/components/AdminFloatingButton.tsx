@@ -9,8 +9,8 @@ export function AdminFloatingButton() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Hide if not owner OR if on the exact home page (where a main button already exists)
-    if (!isOwner || location.pathname === '/') {
+    // Hide if not owner OR if on the Partner Configuration page (where we are already managing settings)
+    if (!isOwner || location.pathname === '/admin/settings') {
         return null;
     }
 
