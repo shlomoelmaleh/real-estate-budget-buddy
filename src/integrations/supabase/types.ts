@@ -338,6 +338,24 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       partners_public: {
@@ -457,8 +475,17 @@ export type Database = {
           remaining: number
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
+      app_role: "admin" | "user"
       partner_event_type:
         | "LEAD_SENT"
         | "LEAD_FAILED"
@@ -591,6 +618,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "user"],
       partner_event_type: [
         "LEAD_SENT",
         "LEAD_FAILED",

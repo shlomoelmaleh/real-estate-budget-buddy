@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ADMIN_EMAIL } from "@/lib/admin";
+import { checkIsAdmin } from "@/lib/admin";
 
 export function PartnerRoute({ children }: { children: React.ReactNode }) {
     const navigate = useNavigate();
@@ -19,7 +19,8 @@ export function PartnerRoute({ children }: { children: React.ReactNode }) {
             }
 
             // Super admin can access any partner route
-            if (session.user.email?.toLowerCase() === ADMIN_EMAIL) {
+            const isAdmin = await checkIsAdmin();
+            if (isAdmin) {
                 if (mounted) setOk(true);
                 return;
             }

@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ADMIN_EMAIL } from "@/lib/admin";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  const normalized = useMemo(() => email.trim().toLowerCase(), [email]);
+  const normalized = email.trim().toLowerCase();
 
   const sendLink = async () => {
     if (!normalized || !normalized.includes("@")) {
@@ -22,7 +21,6 @@ export default function Login() {
 
     setIsSending(true);
     try {
-      // Preserve partner ref parameter if present
       const urlParams = new URLSearchParams(window.location.search);
       const refParam = urlParams.get('ref');
 

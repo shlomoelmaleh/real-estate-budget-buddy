@@ -41,10 +41,16 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error("Unauthorized");
 
-    // Check if user is admin (you can add stricter checks here)
-    if (user.email !== Deno.env.get("ADMIN_EMAIL")) {
-      // For now, allowing all auth users or strictly checking env
-      // throw new Error("Forbidden");
+    // Check if user has admin role in the database
+    const { data: isAdmin, error: roleError } = await adminClient
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+
+    if (roleError || !isAdmin) {
+      throw new Error("Forbidden");
     }
 
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

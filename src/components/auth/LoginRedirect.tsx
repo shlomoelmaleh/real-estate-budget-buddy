@@ -1,29 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ADMIN_EMAIL } from "@/lib/admin";
+import { checkIsAdmin } from "@/lib/admin";
 
-/**
- * LoginRedirect (The Watchdog)
- * Routes users after sign-in:
- *   - Super Admin  → /admin/partners
- *   - Partner Owner → /admin/settings
- *   - Everyone else → stays where they are
- *
- * Never redirects if already on the correct admin page.
- */
 export function LoginRedirect() {
     const navigate = useNavigate();
     const location = useLocation();
     const [isChecking, setIsChecking] = useState(false);
 
     useEffect(() => {
-        const handleRedirect = async (userId: string, email: string | undefined) => {
+        const handleRedirect = async (userId: string) => {
             const path = location.pathname;
 
-            // 1. Super Admin — send to /admin/partners (unless already there)
-            if (email?.toLowerCase() === ADMIN_EMAIL) {
-                if (path.startsWith("/admin")) return; // don't redirect if already on any admin page
+            // 1. Check admin role via server-side RPC
+            const isAdmin = await checkIsAdmin();
+            if (isAdmin) {
+                if (path.startsWith("/admin")) return;
                 console.log("[LoginRedirect] Admin detected → /admin/partners");
                 navigate("/admin/partners", { replace: true });
                 return;
@@ -43,7 +35,6 @@ export function LoginRedirect() {
 
                 if (!error && partner) {
                     console.log("[LoginRedirect] Partner owner detected (Auto-redirect disabled)");
-                    // navigate("/admin/settings", { replace: true }); <--- DISABLED
                 }
             } catch (err) {
                 console.error("[LoginRedirect] Error:", err);
@@ -52,17 +43,15 @@ export function LoginRedirect() {
             }
         };
 
-        // Initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
-                handleRedirect(session.user.id, session.user.email);
+                handleRedirect(session.user.id);
             }
         });
 
-        // Auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session?.user) {
-                handleRedirect(session.user.id, session.user.email);
+                handleRedirect(session.user.id);
             }
         });
 

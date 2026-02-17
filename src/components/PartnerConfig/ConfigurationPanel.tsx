@@ -6,7 +6,7 @@ import { CalculatorInputs, CalculatorResults, formatNumber } from '@/lib/calcula
 import { PartnerConfig, DEFAULT_PARTNER_CONFIG, validatePartnerConfig } from '@/types/partnerConfig';
 import type { SloganFontSize, SloganFontStyle, SloganFontFamily } from '@/lib/partnerTypes';
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
-import { ADMIN_EMAIL } from '@/lib/admin';
+import { checkIsAdmin } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -83,8 +83,8 @@ export function ConfigurationPanel() {
 
     // Check if current user is the super admin
     useEffect(() => {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-            if (user?.email?.toLowerCase() === ADMIN_EMAIL) setIsAdmin(true);
+        checkIsAdmin().then((result) => {
+            if (result) setIsAdmin(true);
         });
     }, []);
 
