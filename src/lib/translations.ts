@@ -7,6 +7,7 @@ export interface Translations {
   titleBase: string;
   fullName: string;
   phone: string;
+  whatsappLabel: string;
   email: string;
   equity: string;
   ltv: string;
@@ -193,6 +194,13 @@ export interface Translations {
   slogan: string;
   sloganSize: string;
   sloganStyle: string;
+  sloganFont: string;
+  fontSystem: string;
+  fontAssistant: string;
+  fontHeebo: string;
+  fontFrank: string;
+  fontRubik: string;
+  fontInter: string;
   logo: string;
   uploadLogo: string;
   uploading: string;
@@ -280,6 +288,7 @@ export const translations: Record<Language, Translations> = {
     titleBase: "נתוני בסיס",
     fullName: "שם מלא",
     phone: "טלפון",
+    whatsappLabel: "וואטסאפ",
     email: "אימייל",
     equity: "הזרע שזרעתם לטובת הגשמת החלום",
     ltv: "מימון מקסימלי",
@@ -458,6 +467,13 @@ export const translations: Record<Language, Translations> = {
     slogan: "סלוגן",
     sloganSize: "גודל סלוגן",
     sloganStyle: "סגנון סלוגן",
+    sloganFont: "גופן סלוגן",
+    fontSystem: "ברירת מחדל של המערכת",
+    fontAssistant: "Assistant (מודרני)",
+    fontHeebo: "Heebo (נקי)",
+    fontFrank: "Frank Ruhl Libre (סריף)",
+    fontRubik: "Rubik (מעוגל)",
+    fontInter: "Inter (מקצועי)",
     logo: "לוגו",
     uploadLogo: "העלאת לוגו",
     uploading: "מעלה...",
@@ -540,6 +556,7 @@ export const translations: Record<Language, Translations> = {
     titleBase: "Basic Information",
     fullName: "Full Name",
     phone: "Phone",
+    whatsappLabel: "WhatsApp",
     email: "Email",
     equity: "Equity",
     ltv: "Max LTV",
@@ -718,6 +735,13 @@ export const translations: Record<Language, Translations> = {
     slogan: "Slogan",
     sloganSize: "Slogan Size",
     sloganStyle: "Slogan Style",
+    sloganFont: "Slogan Font",
+    fontSystem: "System Default",
+    fontAssistant: "Assistant (Modern)",
+    fontHeebo: "Heebo (Clean)",
+    fontFrank: "Frank Ruhl Libre (Serif)",
+    fontRubik: "Rubik (Rounded)",
+    fontInter: "Inter (Professional)",
     logo: "Logo",
     uploadLogo: "Upload Logo",
     uploading: "Uploading...",
@@ -800,6 +824,7 @@ export const translations: Record<Language, Translations> = {
     titleBase: "Informations de Base",
     fullName: "Nom Complet",
     phone: "Téléphone",
+    whatsappLabel: "WhatsApp",
     email: "Email",
     equity: "L'apport que vous avez semé pour votre rêve",
     ltv: "Financement Max",
@@ -978,6 +1003,13 @@ export const translations: Record<Language, Translations> = {
     slogan: "Slogan",
     sloganSize: "Taille du slogan",
     sloganStyle: "Style du slogan",
+    sloganFont: "Police du slogan",
+    fontSystem: "Défaut système",
+    fontAssistant: "Assistant (Moderne)",
+    fontHeebo: "Heebo (Épuré)",
+    fontFrank: "Frank Ruhl Libre (Serif)",
+    fontRubik: "Rubik (Arrondi)",
+    fontInter: "Inter (Professionnel)",
     logo: "Logo",
     uploadLogo: "Télécharger le logo",
     uploading: "Téléchargement...",

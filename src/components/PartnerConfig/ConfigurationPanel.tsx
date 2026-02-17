@@ -502,18 +502,28 @@ export function ConfigurationPanel() {
                                     {/* Slogan Font Settings */}
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-2">
-                                            <Label>Slogan Font</Label>
+                                            <Label>{t.sloganFont}</Label>
                                             <Select
                                                 value={config.slogan_font_family || 'system'}
                                                 onValueChange={(val) => updateConfig('slogan_font_family', val as SloganFontFamily)}
                                             >
                                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                                 <SelectContent>
-                                                    {Object.entries(FONT_FAMILY_OPTIONS).map(([value, { label }]) => (
-                                                        <SelectItem key={value} value={value}>
-                                                            {label}
-                                                        </SelectItem>
-                                                    ))}
+                                                    {Object.entries(FONT_FAMILY_OPTIONS).map(([value]) => {
+                                                        const label =
+                                                            value === 'system' ? t.fontSystem :
+                                                                value === 'assistant' ? t.fontAssistant :
+                                                                    value === 'heebo' ? t.fontHeebo :
+                                                                        value === 'frank-ruhl-libre' ? t.fontFrank :
+                                                                            value === 'rubik' ? t.fontRubik :
+                                                                                value === 'inter' ? t.fontInter : value;
+
+                                                        return (
+                                                            <SelectItem key={value} value={value}>
+                                                                {label}
+                                                            </SelectItem>
+                                                        );
+                                                    })}
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -553,7 +563,7 @@ export function ConfigurationPanel() {
                                     {/* Slogan Preview */}
                                     {config.slogan && (
                                         <div className="p-4 bg-muted/50 border rounded-lg">
-                                            <p className="text-xs text-muted-foreground mb-2">Preview:</p>
+                                            <p className="text-xs text-muted-foreground mb-2">{t.preview}:</p>
                                             <p
                                                 style={{
                                                     fontFamily: FONT_FAMILY_OPTIONS[config.slogan_font_family || 'system'].css,
@@ -581,7 +591,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>WhatsApp</Label>
+                                            <Label>{t.whatsappLabel}</Label>
                                             <Input
                                                 value={config.whatsapp || ''}
                                                 onChange={(e) => updateConfig('whatsapp', e.target.value || null)}
