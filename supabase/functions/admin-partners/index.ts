@@ -35,6 +35,9 @@ serve(async (req) => {
       global: { headers: { Authorization: req.headers.get("Authorization")! } },
     });
 
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
+
     const {
       data: { user },
       error: authError,
@@ -52,9 +55,6 @@ serve(async (req) => {
     if (roleError || !isAdmin) {
       throw new Error("Forbidden");
     }
-
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
     const rawBody = await req.json();
     const parsed = bodySchema.parse(rawBody);
