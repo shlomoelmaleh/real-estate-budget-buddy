@@ -205,6 +205,7 @@ export interface Translations {
   status: string;
   active: string;
   inactive: string;
+  companyNameLabel: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -402,6 +403,7 @@ export const translations: Record<Language, Translations> = {
     status: "סטטוס",
     active: "פעיל",
     inactive: "לא פעיל",
+    companyNameLabel: "שם החברה",
   },
   en: {
     dir: 'ltr',
@@ -597,6 +599,7 @@ export const translations: Record<Language, Translations> = {
     status: "Status",
     active: "Active",
     inactive: "Inactive",
+    companyNameLabel: "Company Name",
   },
   fr: {
     dir: 'ltr',
@@ -792,5 +795,6 @@ export const translations: Record<Language, Translations> = {
     status: "Statut",
     active: "Actif",
     inactive: "Inactif",
+    companyNameLabel: "Nom de la société",
   }
 };

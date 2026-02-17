@@ -354,7 +354,7 @@ export function ConfigurationPanel() {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate('/')}
+                                onClick={() => navigate(config.slug ? `/?ref=${config.slug}` : '/')}
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 Back to App
@@ -575,7 +575,7 @@ export function ConfigurationPanel() {
                                         {/* Name, Email, Status - read-only */}
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <div>
-                                                <p className="text-xs text-muted-foreground">{t.companyName}</p>
+                                                <p className="text-xs text-muted-foreground">{t.companyNameLabel}</p>
                                                 <p className="text-sm font-medium">{config.name}</p>
                                             </div>
                                             <div>

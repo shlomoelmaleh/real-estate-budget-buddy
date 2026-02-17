@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePartner } from '@/contexts/PartnerContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AdminFloatingButtonProps {
     onClick?: () => void;
@@ -10,6 +11,7 @@ interface AdminFloatingButtonProps {
 
 export function AdminFloatingButton({ onClick }: AdminFloatingButtonProps) {
     const { isOwner } = usePartner();
+    const { t } = useLanguage();
     const navigate = useNavigate();
 
     // Only check ownership. Visibility logic is now handled by the parent (BudgetCalculator).
@@ -34,7 +36,7 @@ export function AdminFloatingButton({ onClick }: AdminFloatingButtonProps) {
                 onClick={handleClick}
             >
                 <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline">Manage Partner</span>
+                <span className="hidden sm:inline">{t.managePartnerSettings}</span>
             </Button>
         </div>
     );
