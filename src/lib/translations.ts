@@ -183,6 +183,28 @@ export interface Translations {
   noteAge: string;
   whatIfText: string;
   expertCommitment: string;
+  whatIfText: string;
+  expertCommitment: string;
+  // Partner Config Tabs
+  tabBranding: string;
+  tabCredit: string;
+  tabFees: string;
+  tabCalculator: string;
+  // Branding Fields
+  brandColor: string;
+  slogan: string;
+  sloganSize: string;
+  sloganStyle: string;
+  logo: string;
+  preview: string;
+  // Read Only
+  readOnlyTitle: string;
+  partnerLink: string;
+  copyLink: string;
+  linkCopied: string;
+  status: string;
+  active: string;
+  inactive: string;
 }
 
 export const translations: Record<Language, Translations> = {

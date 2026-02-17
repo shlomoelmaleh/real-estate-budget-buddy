@@ -16,22 +16,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Info, Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft } from 'lucide-react';
+import { Info, Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft, Copy } from 'lucide-react'; // Added Copy
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useLanguage } from '@/contexts/LanguageContext'; // Added useLanguage
 
 // Extended config with all partner fields
 interface ExtendedConfig extends PartnerConfig {
-    // Branding & Contact
-    name: string;
-    slug: string;
-    email: string | null;
-    phone: string | null;
-    whatsapp: string | null;
+    // Branding & Contact - EDITABLE
     logo_url: string | null;
     brand_color: string | null;
     slogan: string | null;
     slogan_font_size: SloganFontSize | null;
     slogan_font_style: SloganFontStyle | null;
+    phone: string | null;
+    whatsapp: string | null;
+
+    // Read-only display fields (NOT in update payload)
+    name: string;
+    slug: string;
+    email: string | null;
     is_active: boolean;
 }
 
@@ -230,16 +233,18 @@ export function ConfigurationPanel() {
             // Build update object with ALL fields (branding + config)
             // Note: percentages are already stored as decimals in state
             const updateData = {
-                // Branding & Contact (slug and is_active are intentionally omitted)
-                name: config.name,
-                email: config.email || null,
-                phone: config.phone || null,
-                whatsapp: config.whatsapp || null,
+                // Branding & Contact - EDITABLE
                 logo_url: config.logo_url || null,
                 brand_color: config.brand_color || null,
                 slogan: config.slogan || null,
                 slogan_font_size: config.slogan_font_size || 'sm',
                 slogan_font_style: config.slogan_font_style || 'normal',
+                phone: config.phone || null,
+                whatsapp: config.whatsapp || null,
+
+                // Read-Only fields EXCLUDED: name, slug, email, is_active
+
+                // Config params
                 ...configOnly,
             };
 
