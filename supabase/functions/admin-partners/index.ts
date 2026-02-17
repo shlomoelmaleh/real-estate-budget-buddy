@@ -78,8 +78,11 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
-    console.error("[admin-partners] Error:", error.message);
+    console.error("[admin-partners] Error:", error instanceof Error ? error.message : "Unknown error");
     return new Response(JSON.stringify({ error: "Operation failed. Please try again." }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
