@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { calculateMaxBudget } from '@/lib/calculatorLogic';
@@ -74,6 +74,7 @@ export function ConfigurationPanel() {
     const [previewStats, setPreviewStats] = useState<CalculatorResults | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
 
     // Check if current user is the super admin
@@ -279,6 +280,48 @@ export function ConfigurationPanel() {
         }
     };
 
+    const handleLogoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !partnerId) return;
+
+        // Validation
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('File size must be less than 2MB');
+            return;
+        }
+
+        setIsUploadingLogo(true);
+        try {
+            const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
+            const path = `${partnerId}/logo-${Date.now()}.${ext}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('partner-logos')
+                .upload(path, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('partner-logos')
+                .getPublicUrl(path);
+
+            updateConfig('logo_url', data.publicUrl);
+            toast.success('Logo uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading logo:', error);
+            toast.error('Failed to upload logo');
+        } finally {
+            setIsUploadingLogo(false);
+        }
+    };
+
     const handleReset = () => {
         setConfig(originalConfig);
         toast.info('Changes reverted');
@@ -388,30 +431,32 @@ export function ConfigurationPanel() {
                                 </CardHeader>
                                 <CardContent className="space-y-6">
 
-                                    {/* Logo Upload (URL based for now) */}
+                                    {/* Logo Upload */}
                                     <div className="space-y-2">
                                         <Label>{t.logo}</Label>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex flex-col gap-4">
                                             {config.logo_url && (
-                                                <div className="p-2 border rounded-md bg-white shadow-sm">
+                                                <div className="p-4 border rounded-md bg-white shadow-sm w-fit">
                                                     <img
                                                         src={config.logo_url}
                                                         alt="Logo Preview"
-                                                        className="h-16 w-auto object-contain"
+                                                        className="h-20 w-auto object-contain"
                                                     />
                                                 </div>
                                             )}
-                                            <div className="flex-1 space-y-2">
+                                            <div className="flex items-center gap-3">
                                                 <Input
-                                                    type="url"
-                                                    value={config.logo_url || ''}
-                                                    onChange={(e) => updateConfig('logo_url', e.target.value || null)}
-                                                    placeholder="https://example.com/logo.png"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleLogoUpload}
+                                                    disabled={isUploadingLogo}
+                                                    className="max-w-xs cursor-pointer"
                                                 />
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    Enter direct image URL. Transparency supported.
-                                                </p>
+                                                {isUploadingLogo && <span className="text-sm text-muted-foreground animate-pulse">{t.uploading}</span>}
                                             </div>
+                                            <p className="text-[10px] text-muted-foreground italic">
+                                                Recommended: PNG or SVG with transparent background. Max 2MB.
+                                            </p>
                                         </div>
                                     </div>
 

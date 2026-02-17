@@ -194,6 +194,8 @@ export interface Translations {
   sloganSize: string;
   sloganStyle: string;
   logo: string;
+  uploadLogo: string;
+  uploading: string;
   preview: string;
   // Read Only
   readOnlyTitle: string;
@@ -390,6 +392,8 @@ export const translations: Record<Language, Translations> = {
     sloganSize: "גודל סלוגן",
     sloganStyle: "סגנון סלוגן",
     logo: "לוגו",
+    uploadLogo: "העלאת לוגו",
+    uploading: "מעלה...",
     preview: "תצוגה מקדימה",
     readOnlyTitle: "פרטים קבועים",
     partnerLink: "קישור שותף",
@@ -583,6 +587,8 @@ export const translations: Record<Language, Translations> = {
     sloganSize: "Slogan Size",
     sloganStyle: "Slogan Style",
     logo: "Logo",
+    uploadLogo: "Upload Logo",
+    uploading: "Uploading...",
     preview: "Preview",
     readOnlyTitle: "Read-Only Details",
     partnerLink: "Partner Link",
@@ -776,6 +782,8 @@ export const translations: Record<Language, Translations> = {
     sloganSize: "Taille du slogan",
     sloganStyle: "Style du slogan",
     logo: "Logo",
+    uploadLogo: "Télécharger le logo",
+    uploading: "Téléchargement...",
     preview: "Aperçu",
     readOnlyTitle: "Détails en lecture seule",
     partnerLink: "Lien partenaire",
