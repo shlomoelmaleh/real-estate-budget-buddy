@@ -3,6 +3,7 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import heroBg from '@/assets/hero-bg.jpg';
 import logoEshel from '@/assets/logo-eshel.png';
 import { usePartner } from '@/contexts/PartnerContext';
+import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import type { SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
 
 function getSloganFontSizeClass(size: SloganFontSize | null | undefined): string {
@@ -32,17 +33,17 @@ export function HeroHeader() {
   return (
     <header className="relative overflow-hidden min-h-[280px] md:min-h-[320px]">
       {/* Background Image */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroBg})` }}
       />
-      
+
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/75 via-background/65 to-background/85" />
-      
+
       <div className="relative z-10 text-center py-6 md:py-8 px-4 space-y-4 md:space-y-5">
         <LanguageSwitcher />
-        
+
         {/* Logo */}
         <div className="flex flex-col items-center justify-center pt-3 md:pt-4 gap-3">
           <img
@@ -56,14 +57,17 @@ export function HeroHeader() {
           />
           {/* Partner slogan - displayed if defined, otherwise invisible placeholder */}
           {partner?.logo_url ? (
-            <span 
+            <span
               className={`${getSloganFontSizeClass(partner?.slogan_font_size)} ${getSloganFontStyleClass(partner?.slogan_font_style)} ${partner?.slogan ? 'text-muted-foreground' : 'text-transparent select-none'}`}
+              style={{
+                fontFamily: partner?.slogan_font_family ? FONT_FAMILY_OPTIONS[partner.slogan_font_family].css : 'inherit'
+              }}
             >
               {partner?.slogan || '\u00A0'}
             </span>
           ) : null}
         </div>
-        
+
         {/* Title Section */}
         <div className="space-y-2">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold text-foreground tracking-tight drop-shadow-sm">
@@ -73,7 +77,7 @@ export function HeroHeader() {
             {t.subtitle}
           </p>
         </div>
-        
+
         {/* Decorative line */}
         <div className="flex items-center justify-center gap-3">
           <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-primary/40 to-primary/60" />

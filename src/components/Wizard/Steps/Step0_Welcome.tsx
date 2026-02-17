@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
+import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import logoEshel from '@/assets/logo-eshel.png';
 
@@ -78,7 +79,6 @@ export function Step0({ onNext }: { onNext: () => void }) {
                         {t.videoCaption}
                     </p>
                 </div>
-
                 {/* Action Column (60%) */}
                 <div className={cn(
                     "lg:basis-[60%] flex-shrink-0 flex flex-col justify-between space-y-8",
@@ -90,7 +90,12 @@ export function Step0({ onNext }: { onNext: () => void }) {
                             {t.welcomeTitle}
                         </h1>
 
-                        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+                        <p
+                            className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+                            style={{
+                                fontFamily: partner?.slogan_font_family ? FONT_FAMILY_OPTIONS[partner.slogan_font_family].css : 'inherit'
+                            }}
+                        >
                             {partner?.slogan || t.welcomeSub}
                         </p>
                     </div>

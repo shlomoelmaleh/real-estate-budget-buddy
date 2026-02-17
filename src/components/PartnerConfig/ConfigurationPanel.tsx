@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { calculateMaxBudget } from '@/lib/calculatorLogic';
 import { CalculatorInputs, CalculatorResults, formatNumber } from '@/lib/calculator';
 import { PartnerConfig, DEFAULT_PARTNER_CONFIG, validatePartnerConfig } from '@/types/partnerConfig';
-import type { SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
+import type { SloganFontSize, SloganFontStyle, SloganFontFamily } from '@/lib/partnerTypes';
+import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import { ADMIN_EMAIL } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -28,6 +29,7 @@ interface ExtendedConfig extends PartnerConfig {
     slogan: string | null;
     slogan_font_size: SloganFontSize | null;
     slogan_font_style: SloganFontStyle | null;
+    slogan_font_family: SloganFontFamily | null;
     phone: string | null;
     whatsapp: string | null;
 
@@ -65,6 +67,8 @@ const FONT_STYLE_LABELS: Record<SloganFontStyle, string> = {
     'bold-italic': 'Bold Italic',
 };
 
+// Font family options with CSS stacks removed, now imported from partnerTypes.ts
+
 export function ConfigurationPanel() {
     const { t } = useLanguage();
     const navigate = useNavigate();
@@ -95,7 +99,7 @@ export function ConfigurationPanel() {
                     .from('partners')
                     .select(`
                         id, name, slug, email, is_active,
-                        logo_url, brand_color, slogan, slogan_font_size, slogan_font_style,
+                        logo_url, brand_color, slogan, slogan_font_size, slogan_font_style, slogan_font_family,
                         phone, whatsapp,
                         max_dti_ratio, max_age, max_loan_term_years,
                         rent_recognition_first_property, rent_recognition_investment,
@@ -124,6 +128,7 @@ export function ConfigurationPanel() {
                     slogan: data.slogan,
                     slogan_font_size: data.slogan_font_size as SloganFontSize,
                     slogan_font_style: data.slogan_font_style as SloganFontStyle,
+                    slogan_font_family: data.slogan_font_family as SloganFontFamily,
                     phone: data.phone,
                     whatsapp: data.whatsapp,
 
@@ -254,6 +259,7 @@ export function ConfigurationPanel() {
                 slogan: config.slogan || null,
                 slogan_font_size: config.slogan_font_size || 'sm',
                 slogan_font_style: config.slogan_font_style || 'normal',
+                slogan_font_family: config.slogan_font_family || 'system',
                 phone: config.phone || null,
                 whatsapp: config.whatsapp || null,
 
@@ -493,8 +499,24 @@ export function ConfigurationPanel() {
                                         />
                                     </div>
 
-                                    {/* Slogan Font Size + Style */}
-                                    <div className="grid grid-cols-2 gap-4">
+                                    {/* Slogan Font Settings */}
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Slogan Font</Label>
+                                            <Select
+                                                value={config.slogan_font_family || 'system'}
+                                                onValueChange={(val) => updateConfig('slogan_font_family', val as SloganFontFamily)}
+                                            >
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {Object.entries(FONT_FAMILY_OPTIONS).map(([value, { label }]) => (
+                                                        <SelectItem key={value} value={value}>
+                                                            {label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                         <div className="space-y-2">
                                             <Label>{t.sloganSize}</Label>
                                             <Select
@@ -527,6 +549,26 @@ export function ConfigurationPanel() {
                                             </Select>
                                         </div>
                                     </div>
+
+                                    {/* Slogan Preview */}
+                                    {config.slogan && (
+                                        <div className="p-4 bg-muted/50 border rounded-lg">
+                                            <p className="text-xs text-muted-foreground mb-2">Preview:</p>
+                                            <p
+                                                style={{
+                                                    fontFamily: FONT_FAMILY_OPTIONS[config.slogan_font_family || 'system'].css,
+                                                    fontSize: config.slogan_font_size === 'xs' ? '12px' :
+                                                        config.slogan_font_size === 'sm' ? '14px' :
+                                                            config.slogan_font_size === 'base' ? '16px' :
+                                                                config.slogan_font_size === 'lg' ? '18px' : '20px',
+                                                    fontStyle: config.slogan_font_style === 'italic' || config.slogan_font_style === 'bold-italic' ? 'italic' : 'normal',
+                                                    fontWeight: config.slogan_font_style === 'bold' || config.slogan_font_style === 'bold-italic' ? '700' : '400',
+                                                }}
+                                            >
+                                                {config.slogan}
+                                            </p>
+                                        </div>
+                                    )}
 
                                     {/* Phone + WhatsApp - EDITABLE */}
                                     <div className="grid grid-cols-2 gap-4">
