@@ -180,6 +180,7 @@ export type Database = {
           rental_yield_default: number | null
           show_amortization_table: boolean | null
           slogan: string | null
+          slogan_font_family: string | null
           slogan_font_size: string | null
           slogan_font_style: string | null
           slug: string
@@ -216,6 +217,7 @@ export type Database = {
           rental_yield_default?: number | null
           show_amortization_table?: boolean | null
           slogan?: string | null
+          slogan_font_family?: string | null
           slogan_font_size?: string | null
           slogan_font_style?: string | null
           slug: string
@@ -252,6 +254,7 @@ export type Database = {
           rental_yield_default?: number | null
           show_amortization_table?: boolean | null
           slogan?: string | null
+          slogan_font_family?: string | null
           slogan_font_size?: string | null
           slogan_font_style?: string | null
           slug?: string
