@@ -183,8 +183,6 @@ export interface Translations {
   noteAge: string;
   whatIfText: string;
   expertCommitment: string;
-  whatIfText: string;
-  expertCommitment: string;
   // Partner Config Tabs
   tabBranding: string;
   tabCredit: string;
@@ -383,6 +381,23 @@ export const translations: Record<Language, Translations> = {
     noteAge: "תקופת ההלוואה מוגבלת בשל גיל, מה שמעלה את ההחזר החודשי. מומלץ לבחון מבנה הלוואה הממזער את ההשפעה.",
     whatIfText: "הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪100,000.",
     expertCommitment: "התיק ייבדק בידי מומחה כדי לוודא תאימות לכללי בנק ישראל 2025.",
+    tabBranding: "מיתוג",
+    tabCredit: "אשראי",
+    tabFees: "עמלות",
+    tabCalculator: "מחשבון",
+    brandColor: "צבע מותג",
+    slogan: "סלוגן",
+    sloganSize: "גודל סלוגן",
+    sloganStyle: "סגנון סלוגן",
+    logo: "לוגו",
+    preview: "תצוגה מקדימה",
+    readOnlyTitle: "פרטים קבועים",
+    partnerLink: "קישור שותף",
+    copyLink: "העתק קישור",
+    linkCopied: "הקישור הועתק!",
+    status: "סטטוס",
+    active: "פעיל",
+    inactive: "לא פעיל",
   },
   en: {
     dir: 'ltr',
@@ -559,6 +574,23 @@ export const translations: Record<Language, Translations> = {
     noteAge: "The loan term is limited by age, increasing the monthly payment. We should structure the loan to minimize this impact.",
     whatIfText: "Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪100,000.",
     expertCommitment: "✓ Validated against 2025 Israeli Bank Regulations | Expert review within 24h",
+    tabBranding: "Branding",
+    tabCredit: "Credit",
+    tabFees: "Fees",
+    tabCalculator: "Calculator",
+    brandColor: "Brand Color",
+    slogan: "Slogan",
+    sloganSize: "Slogan Size",
+    sloganStyle: "Slogan Style",
+    logo: "Logo",
+    preview: "Preview",
+    readOnlyTitle: "Read-Only Details",
+    partnerLink: "Partner Link",
+    copyLink: "Copy Link",
+    linkCopied: "Link copied!",
+    status: "Status",
+    active: "Active",
+    inactive: "Inactive",
   },
   fr: {
     dir: 'ltr',
@@ -735,5 +767,22 @@ export const translations: Record<Language, Translations> = {
     noteAge: "La durée du prêt est limitée par l'âge, ce qui augmente la mensualité. Il faut structurer le prêt pour minimiser cet impact.",
     whatIfText: "Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ 100 000 ₪.",
     expertCommitment: "Ce dossier sera revu par un expert pour assurer sa conformité aux règles bancaires 2025.",
+    tabBranding: "Image de marque",
+    tabCredit: "Crédit",
+    tabFees: "Frais",
+    tabCalculator: "Calculateur",
+    brandColor: "Couleur de marque",
+    slogan: "Slogan",
+    sloganSize: "Taille du slogan",
+    sloganStyle: "Style du slogan",
+    logo: "Logo",
+    preview: "Aperçu",
+    readOnlyTitle: "Détails en lecture seule",
+    partnerLink: "Lien partenaire",
+    copyLink: "Copier le lien",
+    linkCopied: "Lien copié !",
+    status: "Statut",
+    active: "Actif",
+    inactive: "Inactif",
   }
 };
