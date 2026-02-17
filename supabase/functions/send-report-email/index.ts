@@ -2066,6 +2066,7 @@ const handler = async (req: Request): Promise<Response> => {
     const clientSend = await sendResendEmail({
       from: "Property Budget Pro <noreply@eshel-f.com>",
       to: [data.recipientEmail],
+      reply_to: partnerContact?.email || ADVISOR_EMAIL,
       subject: clientSubject,
       html: emailHtmlClient,
       attachments,
@@ -2073,24 +2074,47 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!clientSend.ok) throw new Error(`Client send failed: ${clientSend.text}`);
 
-    // 2. Send to Partner/Admin
-    const leadSubject = (data.language === "he" ? "ליד חדש - סימולטור נדל״ן" : "New Lead - Real Estate Simulator") +
-      (partnerContact?.name ? ` [Partner: ${partnerContact.name}]` : "");
+    // Logic for Partner and Admin subjects
+    const newLeadLabel = (({
+      he: "ליד חדש",
+      en: "New Lead",
+      fr: "Nouveau prospect"
+    }) as Record<string, string>)[data.language] || "New Lead";
+
+    // 2. Send to Partner (Separate Send - If Partner Exists)
+    let partnerSendOk = true;
+    if (effectivePartnerId && partnerContact?.email) {
+      const partnerSubject = `${newLeadLabel}: ${data.recipientName}`;
+      const partnerSend = await sendResendEmail({
+        from: "Property Budget Pro <noreply@eshel-f.com>",
+        to: [partnerContact.email],
+        subject: partnerSubject,
+        html: emailHtmlAdvisor,
+        attachments,
+      }, { label: "partner" });
+      partnerSendOk = partnerSend.ok;
+      console.log(`[${requestId}] Partner email sent to ${partnerContact.email}. Status: ${partnerSendOk ? 'Success' : 'Failed'}`);
+    }
+
+    // 3. Send to Admin (Separate Send - Always)
+    const adminSubject = `${newLeadLabel} - Real Estate Simulator` +
+      (partnerContact?.name ? ` [Partner: ${partnerContact.name}]` : "") +
+      `: ${data.recipientName}`;
 
     const adminSend = await sendResendEmail({
-      from: "Property Budget Pro <office@eshel-f.com>",
-      to: [recipientTo],
-      bcc: bccTo ? [bccTo] : undefined,
-      subject: leadSubject,
+      from: "Property Budget Pro <noreply@eshel-f.com>",
+      to: [ADVISOR_EMAIL],
+      subject: adminSubject,
       html: emailHtmlAdvisor,
       attachments,
-    }, { label: "advisor" });
+    }, { label: "admin" });
 
     return new Response(
       JSON.stringify({
         requestId,
         deliveredToClient: true,
-        deliveredToAdvisor: adminSend.ok,
+        deliveredToPartner: partnerSendOk,
+        deliveredToAdmin: adminSend.ok,
         version: { functionVersion: FUNCTION_VERSION, clientBuildSha, mismatch: versionMismatch }
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
