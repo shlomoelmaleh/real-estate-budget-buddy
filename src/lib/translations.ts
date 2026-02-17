@@ -268,6 +268,8 @@ export interface Translations {
   impactInterest: string;
   impactSampleNotice: (age: number, income: number, equity: number) => string;
   impactUnavailable: string;
+  sentToRecipient: string;
+  contactRep: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -349,7 +351,9 @@ export const translations: Record<Language, Translations> = {
     advisorTitle: "יעוץ משכנתא | כלכלת המשפחה",
     companyName: "אשל פיננסים",
     confirmationTitle: "תודה רבה!",
-    confirmationMessage: "הדוח נשלח לכתובת האימייל שלך. נציג יצור איתך קשר בהקדם.",
+    confirmationMessage: "הדוח נשלח בהצלחה.",
+    sentToRecipient: "הדוח נשלח לכתובת האימייל שלך:",
+    contactRep: "נציג המקצועי שלנו יצור איתך קשר בהקדם:",
     requiredField: "שדה חובה",
     rateLimitError: "בקשות רבות מדי. אנא נסה שוב בעוד דקה.",
     isFirstProperty: "נכס ראשון בישראל?",
@@ -607,7 +611,9 @@ export const translations: Record<Language, Translations> = {
     advisorTitle: "Mortgage Consulting | Family Finance",
     companyName: "Eshel Finances",
     confirmationTitle: "Thank You!",
-    confirmationMessage: "The report has been sent to your email. A representative will contact you shortly.",
+    confirmationMessage: "Report sent successfully.",
+    sentToRecipient: "Sent to your email:",
+    contactRep: "Our expert will contact you shortly:",
     requiredField: "Required field",
     rateLimitError: "Too many requests. Please try again in a moment.",
     isFirstProperty: "First property in Israel?",
@@ -865,7 +871,9 @@ export const translations: Record<Language, Translations> = {
     advisorTitle: "Conseil Hypothécaire | Finances Familiales",
     companyName: "Eshel Finances",
     confirmationTitle: "Merci !",
-    confirmationMessage: "Le rapport a été envoyé à votre adresse email. Un conseiller vous contactera prochainement.",
+    confirmationMessage: "Rapport envoyé avec succès.",
+    sentToRecipient: "Envoyé à votre adresse e-mail :",
+    contactRep: "Notre expert vous contactera sous peu :",
     requiredField: "Champ obligatoire",
     rateLimitError: "Trop de requêtes. Veuillez réessayer dans un moment.",
     isFirstProperty: "Votre premier bien en Israël ?",

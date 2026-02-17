@@ -283,10 +283,25 @@ export function BudgetCalculator() {
                     <CheckCircle2 className="w-8 h-8 text-green-600" />
                   </div>
                   <h3 className="text-2xl font-bold text-green-800 mb-3">{t.confirmationTitle}</h3>
-                  <p className="text-green-700 text-lg">{t.confirmationMessage}</p>
-                  <p className="mt-4 text-sm text-green-600 font-medium bg-white/50 py-1 px-3 rounded-full inline-block">
-                    {getValues('email')}
-                  </p>
+                  <p className="text-green-700 text-lg mb-6">{t.confirmationMessage}</p>
+
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-xs text-green-600 font-medium mb-2 uppercase tracking-wider">{t.sentToRecipient}</p>
+                      <p className="px-4 py-2 bg-white/60 border border-green-100 rounded-full text-green-800 inline-block font-medium">
+                        {getValues('email')}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-green-200/50">
+                      <p className="text-xs text-green-600 font-medium mb-3 uppercase tracking-wider">{t.contactRep}</p>
+                      <div className="bg-white/80 p-4 rounded-2xl border border-green-200 shadow-sm inline-flex flex-col items-center gap-1">
+                        <p className="font-bold text-slate-800">{displayName}</p>
+                        <p className="text-sm text-slate-600">{displayEmail}</p>
+                        <p className="text-sm text-slate-600">{displayPhone}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">

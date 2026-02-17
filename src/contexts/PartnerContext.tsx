@@ -194,9 +194,10 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
 
       if (!pError && pData) {
         setIsOwner(true);
-        // Force load this partner as active if no partner is loaded or it's a different one
-        if (!partner || partner.id !== pData.id) {
-          console.log("[PartnerContext] Owner detected, auto-loading partner config:", pData.name);
+        // Only auto-load if no partner is currently active.
+        // This prevents hijacking when an admin views a specific partner link.
+        if (!partner) {
+          console.log("[PartnerContext] Owner detected, auto-loading owner partner:", pData.name);
           setPartner(pData as unknown as Partner);
           setConfig(mapToPartnerConfig(pData));
           applyPartnerBrandColor(normalizeHexColor(pData.brand_color));
