@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ActivityLogRow, Partner, SloganFontSize, SloganFontStyle } from "@/lib/partnerTypes";
-import { ADMIN_EMAIL } from "@/lib/admin";
+import { checkIsAdmin } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,9 @@ type LogFilter = "ALL" | "ERRORS" | "STATUS";
 
 async function requireAdminSession() {
   const { data } = await supabase.auth.getSession();
-  const email = data.session?.user?.email?.toLowerCase();
-  if (!data.session || email !== ADMIN_EMAIL) throw new Error("Unauthorized");
+  if (!data.session) throw new Error("Unauthorized");
+  const isAdmin = await checkIsAdmin();
+  if (!isAdmin) throw new Error("Unauthorized");
   return data.session;
 }
 
