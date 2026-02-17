@@ -2097,14 +2097,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // 3. Send to Admin (Separate Send - Always)
-    const adminSubject = `${newLeadLabel} - Real Estate Simulator` +
+    const adminLeadSubject = `${newLeadLabel} - Real Estate Simulator` +
       (partnerContact?.name ? ` [Partner: ${partnerContact.name}]` : "") +
       `: ${data.recipientName}`;
 
     const adminSend = await sendResendEmail({
       from: "Property Budget Pro <noreply@eshel-f.com>",
       to: [ADVISOR_EMAIL],
-      subject: adminSubject,
+      subject: adminLeadSubject,
       html: emailHtmlAdvisor,
       attachments,
     }, { label: "admin" });
