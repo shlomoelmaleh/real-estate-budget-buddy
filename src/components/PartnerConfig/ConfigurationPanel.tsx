@@ -66,6 +66,7 @@ const FONT_STYLE_LABELS: Record<SloganFontStyle, string> = {
 };
 
 export function ConfigurationPanel() {
+    const { t } = useLanguage();
     const navigate = useNavigate();
     const [config, setConfig] = useState<ExtendedConfig | null>(null);
     const [originalConfig, setOriginalConfig] = useState<ExtendedConfig | null>(null);
@@ -91,28 +92,41 @@ export function ConfigurationPanel() {
 
                 const { data, error } = await supabase
                     .from('partners')
-                    .select('*')
+                    .select(`
+                        id, name, slug, email, is_active,
+                        logo_url, brand_color, slogan, slogan_font_size, slogan_font_style,
+                        phone, whatsapp,
+                        max_dti_ratio, max_age, max_loan_term_years,
+                        rent_recognition_first_property, rent_recognition_investment,
+                        default_interest_rate, lawyer_fee_percent, broker_fee_percent,
+                        vat_percent, advisor_fee_fixed, other_fee_fixed, rental_yield_default,
+                        rent_warning_high_multiplier, rent_warning_low_multiplier,
+                        enable_rent_validation, enable_what_if_calculator,
+                        show_amortization_table, max_amortization_months
+                    `)
                     .eq('owner_user_id', user.id)
                     .single();
 
                 if (error) throw error;
 
                 // Map database row to ExtendedConfig (filling nulls with defaults)
-                // CRITICAL: Convert DB decimals to display percentages for all % fields
                 const mappedConfig: ExtendedConfig = {
-                    // Branding & Contact
+                    // Read-only fields
                     name: data.name || '',
                     slug: data.slug || '',
                     email: data.email,
-                    phone: data.phone,
-                    whatsapp: data.whatsapp,
+                    is_active: data.is_active ?? true,
+
+                    // Branding - Editable
                     logo_url: data.logo_url,
                     brand_color: data.brand_color,
                     slogan: data.slogan,
                     slogan_font_size: data.slogan_font_size as SloganFontSize,
                     slogan_font_style: data.slogan_font_style as SloganFontStyle,
-                    is_active: data.is_active ?? true,
-                    // Configuration (convert decimals to percentages for display)
+                    phone: data.phone,
+                    whatsapp: data.whatsapp,
+
+                    // Configuration
                     max_dti_ratio: data.max_dti_ratio ?? DEFAULT_PARTNER_CONFIG.max_dti_ratio,
                     max_age: data.max_age ?? DEFAULT_PARTNER_CONFIG.max_age,
                     max_loan_term_years: data.max_loan_term_years ?? DEFAULT_PARTNER_CONFIG.max_loan_term_years,
@@ -349,258 +363,198 @@ export function ConfigurationPanel() {
                         <TabsList className="grid w-full grid-cols-4 mb-4">
                             <TabsTrigger value="branding">
                                 <User className="w-4 h-4 mr-2" />
-                                מיתוג וקשר
+                                {t.tabBranding}
                             </TabsTrigger>
                             <TabsTrigger value="credit">
                                 <ShieldCheck className="w-4 h-4 mr-2" />
-                                אשראי
+                                {t.tabCredit}
                             </TabsTrigger>
                             <TabsTrigger value="fees">
                                 <DollarSign className="w-4 h-4 mr-2" />
-                                עמלות
+                                {t.tabFees}
                             </TabsTrigger>
                             <TabsTrigger value="calculator">
                                 <TrendingUp className="w-4 h-4 mr-2" />
-                                מחשבון
+                                {t.tabCalculator}
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* Tab 1: Branding & Contact */}
+                        {/* --- TAB 1: BRANDING (Editable + Read-Only) --- */}
                         <TabsContent value="branding">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>מיתוג ופרטי קשר</CardTitle>
-                                    <CardDescription>Branding & Contact Information</CardDescription>
+                                    <CardTitle>{t.tabBranding}</CardTitle>
+                                    <CardDescription>Your brand identity and contact details shown to clients</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name">Name *</Label>
-                                            <Input
-                                                id="name"
-                                                value={config.name}
-                                                onChange={(e) => updateConfig('name', e.target.value)}
-                                                placeholder="Acme Mortgage"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="slug" className="flex items-center gap-2">
-                                                Slug (Read-Only)
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <Info className="w-4 h-4 text-muted-foreground" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Critical for partner links. Cannot be changed.</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </Label>
-                                            <Input
-                                                id="slug"
-                                                value={config.slug}
-                                                disabled
-                                                className="bg-muted"
-                                            />
-                                        </div>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email">Email</Label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                value={config.email || ''}
-                                                onChange={(e) => updateConfig('email', e.target.value || null)}
-                                                placeholder="contact@example.com"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="phone">Phone</Label>
-                                            <Input
-                                                id="phone"
-                                                value={config.phone || ''}
-                                                onChange={(e) => updateConfig('phone', e.target.value || null)}
-                                                placeholder="+972-50-1234567"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="whatsapp">WhatsApp</Label>
-                                            <Input
-                                                id="whatsapp"
-                                                value={config.whatsapp || ''}
-                                                onChange={(e) => updateConfig('whatsapp', e.target.value || null)}
-                                                placeholder="+972501234567"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <Label htmlFor="logo_url">Logo URL</Label>
-                                        <div className="flex gap-4 items-start">
-                                            <div className="flex-1 space-y-2">
-                                                <div className="flex gap-2">
-                                                    <Input
-                                                        type="file"
-                                                        accept="image/png,image/jpeg,image/webp"
-                                                        className="cursor-pointer"
-                                                        onChange={async (e) => {
-                                                            const file = e.target.files?.[0];
-                                                            if (!file || !partnerId) return;
-
-                                                            if (file.size > 2 * 1024 * 1024) {
-                                                                toast.error("File size must be less than 2MB");
-                                                                return;
-                                                            }
-
-                                                            try {
-                                                                toast.info("Uploading logo...", { id: "upload-logo" });
-
-                                                                const fileExt = file.name.split('.').pop();
-                                                                const fileName = `${partnerId}/${Date.now()}.${fileExt}`;
-
-                                                                const { error: uploadError } = await supabase.storage
-                                                                    .from('partner-logos')
-                                                                    .upload(fileName, file, {
-                                                                        upsert: true
-                                                                    });
-
-                                                                if (uploadError) {
-                                                                    console.error("Upload Error:", uploadError);
-                                                                    throw uploadError;
-                                                                }
-
-                                                                const { data: { publicUrl } } = supabase.storage
-                                                                    .from('partner-logos')
-                                                                    .getPublicUrl(fileName);
-
-                                                                updateConfig('logo_url', publicUrl);
-                                                                toast.success("Logo uploaded successfully", { id: "upload-logo" });
-
-                                                            } catch (error: any) {
-                                                                console.error("Logo Upload Failed:", error);
-                                                                toast.error("Upload failed. Please check Storage Permissions.", { id: "upload-logo" });
-                                                            } finally {
-                                                                // Clear input
-                                                                e.target.value = '';
-                                                            }
-                                                        }}
-                                                    />
-                                                </div>
-                                                <Input
-                                                    id="logo_url"
-                                                    type="url"
-                                                    value={config.logo_url || ''}
-                                                    readOnly
-                                                    className="bg-muted text-muted-foreground text-xs"
-                                                    placeholder="https://..."
-                                                />
-                                            </div>
+                                    {/* Logo Upload (URL based for now) */}
+                                    <div className="space-y-2">
+                                        <Label>{t.logo}</Label>
+                                        <div className="flex items-center gap-4">
                                             {config.logo_url && (
                                                 <div className="p-2 border rounded-md bg-white shadow-sm">
                                                     <img
                                                         src={config.logo_url}
                                                         alt="Logo Preview"
-                                                        className="h-20 w-auto object-contain"
+                                                        className="h-16 w-auto object-contain"
                                                     />
                                                 </div>
                                             )}
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="brand_color">Brand Color</Label>
-                                            <div className="flex gap-2">
+                                            <div className="flex-1 space-y-2">
                                                 <Input
-                                                    id="brand_color"
-                                                    type="color"
-                                                    value={config.brand_color || '#1a73e8'}
-                                                    onChange={(e) => updateConfig('brand_color', e.target.value)}
-                                                    className="w-12 h-10 p-1 cursor-pointer"
+                                                    type="url"
+                                                    value={config.logo_url || ''}
+                                                    onChange={(e) => updateConfig('logo_url', e.target.value || null)}
+                                                    placeholder="https://example.com/logo.png"
                                                 />
-                                                <Input
-                                                    type="text"
-                                                    value={config.brand_color || ''}
-                                                    onChange={(e) => updateConfig('brand_color', e.target.value || null)}
-                                                    placeholder="#1a73e8"
-                                                    className="flex-1 font-mono"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center justify-between p-3 border rounded-md bg-muted/30">
-                                            <div className="space-y-0.5">
-                                                <Label className="text-base">Account Status</Label>
-                                                <p className="text-sm text-muted-foreground italic">Only Admin can change status</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant={config.is_active ? "secondary" : "outline"}>
-                                                    {config.is_active ? "Active" : "Inactive"}
-                                                </Badge>
-                                                <Switch checked={config.is_active} disabled />
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Enter direct image URL. Transparency supported.
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
 
+                                    {/* Brand Color */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="slogan">Slogan</Label>
+                                        <Label>{t.brandColor}</Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                type="color"
+                                                value={config.brand_color || '#1a73e8'}
+                                                onChange={(e) => updateConfig('brand_color', e.target.value)}
+                                                className="w-12 h-10 p-1 cursor-pointer"
+                                            />
+                                            <Input
+                                                type="text"
+                                                value={config.brand_color || ''}
+                                                onChange={(e) => updateConfig('brand_color', e.target.value || null)}
+                                                placeholder="#1a73e8"
+                                                className="flex-1 font-mono"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Slogan */}
+                                    <div className="space-y-2">
+                                        <Label>{t.slogan}</Label>
                                         <Input
-                                            id="slogan"
                                             value={config.slogan || ''}
                                             onChange={(e) => updateConfig('slogan', e.target.value || null)}
                                             placeholder="Your trusted mortgage partner"
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Slogan Font Size + Style */}
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="slogan_font_size">Slogan Font Size</Label>
+                                            <Label>{t.sloganSize}</Label>
                                             <Select
                                                 value={config.slogan_font_size || 'sm'}
                                                 onValueChange={(val) => updateConfig('slogan_font_size', val as SloganFontSize)}
                                             >
-                                                <SelectTrigger id="slogan_font_size">
-                                                    <SelectValue />
-                                                </SelectTrigger>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
                                                 <SelectContent>
-                                                    {Object.entries(FONT_SIZE_LABELS).map(([value, label]) => (
-                                                        <SelectItem key={value} value={value}>
-                                                            {label}
-                                                        </SelectItem>
-                                                    ))}
+                                                    <SelectItem value="xs">Extra Small</SelectItem>
+                                                    <SelectItem value="sm">Small</SelectItem>
+                                                    <SelectItem value="base">Medium</SelectItem>
+                                                    <SelectItem value="lg">Large</SelectItem>
+                                                    <SelectItem value="xl">Extra Large</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="slogan_font_style">Slogan Font Style</Label>
+                                            <Label>{t.sloganStyle}</Label>
                                             <Select
                                                 value={config.slogan_font_style || 'normal'}
                                                 onValueChange={(val) => updateConfig('slogan_font_style', val as SloganFontStyle)}
                                             >
-                                                <SelectTrigger id="slogan_font_style">
-                                                    <SelectValue />
-                                                </SelectTrigger>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
                                                 <SelectContent>
-                                                    {Object.entries(FONT_STYLE_LABELS).map(([value, label]) => (
-                                                        <SelectItem key={value} value={value}>
-                                                            {label}
-                                                        </SelectItem>
-                                                    ))}
+                                                    <SelectItem value="normal">Normal</SelectItem>
+                                                    <SelectItem value="italic">Italic</SelectItem>
+                                                    <SelectItem value="bold">Bold</SelectItem>
+                                                    <SelectItem value="bold-italic">Bold Italic</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                     </div>
+
+                                    {/* Phone + WhatsApp - EDITABLE */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>{t.phone}</Label>
+                                            <Input
+                                                value={config.phone || ''}
+                                                onChange={(e) => updateConfig('phone', e.target.value || null)}
+                                                placeholder="+972-50-123-4567"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>WhatsApp</Label>
+                                            <Input
+                                                value={config.whatsapp || ''}
+                                                onChange={(e) => updateConfig('whatsapp', e.target.value || null)}
+                                                placeholder="+972-50-123-4567"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Partner Link Box - READ ONLY display */}
+                                    <div className="mt-6 p-4 bg-muted/50 border rounded-lg space-y-3">
+                                        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                                            {t.readOnlyTitle}
+                                        </h4>
+
+                                        {/* Partner Link */}
+                                        <div className="p-3 bg-white border rounded-md shadow-sm">
+                                            <p className="text-xs text-muted-foreground mb-1">🔗 {t.partnerLink}</p>
+                                            <div className="flex items-center gap-2">
+                                                <code className="flex-1 text-sm font-mono text-primary truncate bg-slate-50 p-1.5 rounded">
+                                                    {window.location.origin}/?ref={config.slug}
+                                                </code>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(`${window.location.origin}/?ref=${config.slug}`);
+                                                        toast.success(t.linkCopied);
+                                                    }}
+                                                >
+                                                    <Copy className="w-4 h-4 mr-2" />
+                                                    {t.copyLink}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Name, Email, Status - read-only */}
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">{t.companyName}</p>
+                                                <p className="text-sm font-medium">{config.name}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">{t.email}</p>
+                                                <p className="text-sm font-medium">{config.email}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-muted-foreground">{t.status}</p>
+                                                <Badge variant={config.is_active ? "secondary" : "outline"} className={config.is_active ? "bg-green-100 text-green-800" : ""}>
+                                                    {config.is_active ? t.active : t.inactive}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </CardContent>
                             </Card>
                         </TabsContent>
 
-                        {/* Tab 2: Credit Policy */}
+                        {/* --- TAB 2: CREDIT POLICY --- */}
                         <TabsContent value="credit">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>מדיניות אשראי</CardTitle>
+                                    <CardTitle>{t.tabCredit}</CardTitle>
                                     <CardDescription>Credit Policy & Risk Limits</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
@@ -700,11 +654,11 @@ export function ConfigurationPanel() {
                             </Card>
                         </TabsContent>
 
-                        {/* Tab 3: Financials & Fees */}
+                        {/* --- TAB 3: FINANCIALS & FEES --- */}
                         <TabsContent value="fees">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>עמלות וריביות</CardTitle>
+                                    <CardTitle>{t.tabFees}</CardTitle>
                                     <CardDescription>Financials & Fees Configuration</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
@@ -790,11 +744,11 @@ export function ConfigurationPanel() {
                             </Card>
                         </TabsContent>
 
-                        {/* Tab 4: Advanced Calculator Settings */}
+                        {/* --- TAB 4: CALCULATOR SETTINGS --- */}
                         <TabsContent value="calculator">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>הגדרות מחשבון</CardTitle>
+                                    <CardTitle>{t.tabCalculator}</CardTitle>
                                     <CardDescription>Advanced Calculator Settings</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
