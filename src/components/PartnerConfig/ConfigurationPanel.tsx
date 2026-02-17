@@ -263,18 +263,18 @@ export function ConfigurationPanel() {
                 ...configOnly,
             };
 
-            const { error } = await supabase
+            const { error: updateError } = await supabase
                 .from('partners')
                 .update(updateData)
                 .eq('id', partnerId);
 
-            if (error) throw error;
+            if (updateError) throw updateError;
 
             setOriginalConfig(config);
-            toast.success('Configuration saved successfully');
-        } catch (error) {
-            console.error('Error saving config:', error);
-            toast.error('Failed to save configuration');
+            toast.success(t.configSaved);
+        } catch (e: any) {
+            console.error('Save error:', e);
+            toast.error(t.configSaveError);
         } finally {
             setIsSaving(false);
         }
@@ -313,10 +313,10 @@ export function ConfigurationPanel() {
                 .getPublicUrl(path);
 
             updateConfig('logo_url', data.publicUrl);
-            toast.success('Logo uploaded successfully');
+            toast.success(t.logoUploadSuccess);
         } catch (error) {
             console.error('Error uploading logo:', error);
-            toast.error('Failed to upload logo');
+            toast.error(t.logoUploadError);
         } finally {
             setIsUploadingLogo(false);
         }
@@ -324,7 +324,7 @@ export function ConfigurationPanel() {
 
     const handleReset = () => {
         setConfig(originalConfig);
-        toast.info('Changes reverted');
+        toast.info(t.changesReverted);
     };
 
     const updateConfig = <K extends keyof ExtendedConfig>(key: K, value: ExtendedConfig[K]) => {
@@ -333,11 +333,11 @@ export function ConfigurationPanel() {
     };
 
     if (isLoading) {
-        return <div className="flex items-center justify-center min-h-[400px]">Loading configuration...</div>;
+        return <div className="flex items-center justify-center min-h-[400px]">{t.loadingText}</div>;
     }
 
     if (!config) {
-        return <div className="p-8 text-center text-muted-foreground">No partner configuration found for this user.</div>;
+        return <div className="p-8 text-center text-muted-foreground">{t.configLoadError}</div>;
     }
 
     return (
@@ -357,7 +357,7 @@ export function ConfigurationPanel() {
                                 onClick={() => navigate(config.slug ? `/?ref=${config.slug}` : '/')}
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back to App
+                                {t.backToApp}
                             </Button>
                             <Button
                                 variant="destructive"
@@ -368,20 +368,20 @@ export function ConfigurationPanel() {
                                 }}
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                Logout
+                                {t.logout}
                             </Button>
                         </div>
                     )}
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-3xl font-bold">Partner Configuration</h1>
+                            <h1 className="text-3xl font-bold">{t.partnerConfigTitle}</h1>
                             {config.is_active ? (
-                                <Badge variant="secondary">Active</Badge>
+                                <Badge variant="secondary">{t.active}</Badge>
                             ) : (
-                                <Badge variant="outline">Inactive</Badge>
+                                <Badge variant="outline">{t.inactive}</Badge>
                             )}
                         </div>
-                        <p className="text-muted-foreground">Customize your branding, policies, and simulation parameters.</p>
+                        <p className="text-muted-foreground">{t.partnerConfigDesc}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -389,11 +389,11 @@ export function ConfigurationPanel() {
                         <>
                             <Button variant="outline" onClick={handleReset} disabled={isSaving}>
                                 <RotateCcw className="w-4 h-4 mr-2" />
-                                Reset
+                                {t.reset}
                             </Button>
                             <Button onClick={handleSave} disabled={isSaving}>
                                 <Save className="w-4 h-4 mr-2" />
-                                {isSaving ? 'Saving...' : 'Save Changes'}
+                                {isSaving ? t.saving : t.saveChanges}
                             </Button>
                         </>
                     )}
@@ -427,7 +427,7 @@ export function ConfigurationPanel() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>{t.tabBranding}</CardTitle>
-                                    <CardDescription>Your brand identity and contact details shown to clients</CardDescription>
+                                    <CardDescription>{t.brandingTabDesc}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
 
@@ -455,7 +455,7 @@ export function ConfigurationPanel() {
                                                 {isUploadingLogo && <span className="text-sm text-muted-foreground animate-pulse">{t.uploading}</span>}
                                             </div>
                                             <p className="text-[10px] text-muted-foreground italic">
-                                                Recommended: PNG or SVG with transparent background. Max 2MB.
+                                                {t.logoUploadDesc}
                                             </p>
                                         </div>
                                     </div>
@@ -478,6 +478,9 @@ export function ConfigurationPanel() {
                                                 className="flex-1 font-mono"
                                             />
                                         </div>
+                                        <p className="text-[10px] text-muted-foreground italic pt-1">
+                                            {t.brandColorDesc}
+                                        </p>
                                     </div>
 
                                     {/* Slogan */}
@@ -486,7 +489,7 @@ export function ConfigurationPanel() {
                                         <Input
                                             value={config.slogan || ''}
                                             onChange={(e) => updateConfig('slogan', e.target.value || null)}
-                                            placeholder="Your trusted mortgage partner"
+                                            placeholder={t.sloganPlaceholder}
                                         />
                                     </div>
 
@@ -500,11 +503,11 @@ export function ConfigurationPanel() {
                                             >
                                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="xs">Extra Small</SelectItem>
-                                                    <SelectItem value="sm">Small</SelectItem>
-                                                    <SelectItem value="base">Medium</SelectItem>
-                                                    <SelectItem value="lg">Large</SelectItem>
-                                                    <SelectItem value="xl">Extra Large</SelectItem>
+                                                    <SelectItem value="xs">{t.sloganSizeXs}</SelectItem>
+                                                    <SelectItem value="sm">{t.sloganSizeSm}</SelectItem>
+                                                    <SelectItem value="base">{t.sloganSizeBase}</SelectItem>
+                                                    <SelectItem value="lg">{t.sloganSizeLg}</SelectItem>
+                                                    <SelectItem value="xl">{t.sloganSizeXl}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -516,10 +519,10 @@ export function ConfigurationPanel() {
                                             >
                                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="normal">Normal</SelectItem>
-                                                    <SelectItem value="italic">Italic</SelectItem>
-                                                    <SelectItem value="bold">Bold</SelectItem>
-                                                    <SelectItem value="bold-italic">Bold Italic</SelectItem>
+                                                    <SelectItem value="normal">{t.sloganStyleNormal}</SelectItem>
+                                                    <SelectItem value="italic">{t.sloganStyleItalic}</SelectItem>
+                                                    <SelectItem value="bold">{t.sloganStyleBold}</SelectItem>
+                                                    <SelectItem value="bold-italic">{t.sloganStyleBoldItalic}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -532,7 +535,7 @@ export function ConfigurationPanel() {
                                             <Input
                                                 value={config.phone || ''}
                                                 onChange={(e) => updateConfig('phone', e.target.value || null)}
-                                                placeholder="+972-50-123-4567"
+                                                placeholder={t.phonePlaceholder}
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -540,7 +543,7 @@ export function ConfigurationPanel() {
                                             <Input
                                                 value={config.whatsapp || ''}
                                                 onChange={(e) => updateConfig('whatsapp', e.target.value || null)}
-                                                placeholder="+972-50-123-4567"
+                                                placeholder={t.whatsappPlaceholder}
                                             />
                                         </div>
                                     </div>
@@ -600,21 +603,21 @@ export function ConfigurationPanel() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>{t.tabCredit}</CardTitle>
-                                    <CardDescription>Credit Policy & Risk Limits</CardDescription>
+                                    <CardDescription>{t.creditTabDesc}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     {/* Max DTI Ratio */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <Label className="flex items-center gap-2">
-                                                Max DTI Ratio (%)
+                                                {t.maxDtiLabel}
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger>
                                                             <Info className="w-4 h-4 text-muted-foreground" />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Maximum percentage of net income for mortgage payments. Bank of Israel limit is 40%.</p>
+                                                            <p>{t.maxDtiTooltip}</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
@@ -633,8 +636,8 @@ export function ConfigurationPanel() {
                                     {/* Max Age */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <Label>Max Applicant Age</Label>
-                                            <span className="font-mono text-primary font-bold">{config.max_age} years</span>
+                                            <Label>{t.maxAgeLabel}</Label>
+                                            <span className="font-mono text-primary font-bold">{config.max_age} {t.maxAgeUnit}</span>
                                         </div>
                                         <Slider
                                             value={[config.max_age]}
@@ -648,8 +651,8 @@ export function ConfigurationPanel() {
                                     {/* Max Loan Term */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <Label>Max Loan Term (Years)</Label>
-                                            <span className="font-mono text-primary font-bold">{config.max_loan_term_years} years</span>
+                                            <Label>{t.maxLoanTermLabel}</Label>
+                                            <span className="font-mono text-primary font-bold">{config.max_loan_term_years} {t.maxLoanTermUnit}</span>
                                         </div>
                                         <Slider
                                             value={[config.max_loan_term_years]}
@@ -662,7 +665,7 @@ export function ConfigurationPanel() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="rent_recog_first">Rent Recognition (1st Property) %</Label>
+                                            <Label htmlFor="rent_recog_first">{t.rentRecogFirstLabel}</Label>
                                             <Input
                                                 id="rent_recog_first"
                                                 type="number"
@@ -674,7 +677,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="rent_recog_inv">Rent Recognition (Investment) %</Label>
+                                            <Label htmlFor="rent_recog_inv">{t.rentRecogInvLabel}</Label>
                                             <Input
                                                 id="rent_recog_inv"
                                                 type="number"
@@ -688,7 +691,7 @@ export function ConfigurationPanel() {
                                     </div>
 
                                     <div className="flex items-center justify-between space-x-2 pt-4">
-                                        <Label htmlFor="enable_rent_validation">Enable Rent Validation Logic</Label>
+                                        <Label htmlFor="enable_rent_validation">{t.enableRentValidationLabel}</Label>
                                         <Switch
                                             id="enable_rent_validation"
                                             checked={config.enable_rent_validation}
@@ -704,12 +707,12 @@ export function ConfigurationPanel() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>{t.tabFees}</CardTitle>
-                                    <CardDescription>Financials & Fees Configuration</CardDescription>
+                                    <CardDescription>{t.feesTabDesc}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="interest_rate">Default Interest Rate (%)</Label>
+                                            <Label htmlFor="interest_rate">{t.defaultInterestLabel}</Label>
                                             <Input
                                                 id="interest_rate"
                                                 type="number"
@@ -721,7 +724,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="vat_percent">VAT % (מע״מ)</Label>
+                                            <Label htmlFor="vat_percent">{t.vatLabel}</Label>
                                             <Input
                                                 id="vat_percent"
                                                 type="number"
@@ -736,7 +739,7 @@ export function ConfigurationPanel() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="lawyer_fee">Lawyer Fee (%)</Label>
+                                            <Label htmlFor="lawyer_fee">{t.lawyerFeeLabel}</Label>
                                             <Input
                                                 id="lawyer_fee"
                                                 type="number"
@@ -748,7 +751,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="broker_fee">Broker Fee (%)</Label>
+                                            <Label htmlFor="broker_fee">{t.brokerFeeLabel}</Label>
                                             <Input
                                                 id="broker_fee"
                                                 type="number"
@@ -763,7 +766,7 @@ export function ConfigurationPanel() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="advisor_fee">Advisor Fee (Fixed ₪)</Label>
+                                            <Label htmlFor="advisor_fee">{t.advisorFeeLabel}</Label>
                                             <Input
                                                 id="advisor_fee"
                                                 type="number"
@@ -774,7 +777,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="other_fee">Other Fee (Fixed ₪)</Label>
+                                            <Label htmlFor="other_fee">{t.otherFeeLabel}</Label>
                                             <Input
                                                 id="other_fee"
                                                 type="number"
@@ -794,12 +797,12 @@ export function ConfigurationPanel() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>{t.tabCalculator}</CardTitle>
-                                    <CardDescription>Advanced Calculator Settings</CardDescription>
+                                    <CardDescription>{t.calcTabDesc}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="rental_yield">Default Rental Yield (%)</Label>
+                                            <Label htmlFor="rental_yield">{t.defaultRentalYieldLabel}</Label>
                                             <Input
                                                 id="rental_yield"
                                                 type="number"
@@ -811,7 +814,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="max_amort_months">Max Amortization Months (Display)</Label>
+                                            <Label htmlFor="max_amort_months">{t.maxAmortMonthsLabel}</Label>
                                             <Input
                                                 id="max_amort_months"
                                                 type="number"
@@ -826,7 +829,7 @@ export function ConfigurationPanel() {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label htmlFor="rent_warn_high">Rent High Warning Multiplier</Label>
+                                            <Label htmlFor="rent_warn_high">{t.rentWarnHighLabel}</Label>
                                             <Input
                                                 id="rent_warn_high"
                                                 type="number"
@@ -838,7 +841,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="rent_warn_low">Rent Low Warning Multiplier</Label>
+                                            <Label htmlFor="rent_warn_low">{t.rentWarnLowLabel}</Label>
                                             <Input
                                                 id="rent_warn_low"
                                                 type="number"
@@ -853,7 +856,7 @@ export function ConfigurationPanel() {
 
                                     <div className="space-y-4 pt-4">
                                         <div className="flex items-center justify-between space-x-2">
-                                            <Label htmlFor="enable_what_if">Enable "What If" Module</Label>
+                                            <Label htmlFor="enable_what_if">{t.enableWhatIfLabel}</Label>
                                             <Switch
                                                 id="enable_what_if"
                                                 checked={config.enable_what_if_calculator}
@@ -861,7 +864,7 @@ export function ConfigurationPanel() {
                                             />
                                         </div>
                                         <div className="flex items-center justify-between space-x-2">
-                                            <Label htmlFor="show_amort">Show Amortization Table</Label>
+                                            <Label htmlFor="show_amort">{t.showAmortTableLabel}</Label>
                                             <Switch
                                                 id="show_amort"
                                                 checked={config.show_amortization_table}
@@ -881,40 +884,40 @@ export function ConfigurationPanel() {
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-primary" />
-                                Impact Preview
+                                {t.impactPreviewTitle}
                             </CardTitle>
-                            <CardDescription>Instant impact of your settings on a sample ₪500k equity case.</CardDescription>
+                            <CardDescription>{t.impactPreviewDesc}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {previewStats ? (
                                 <div className="space-y-4">
                                     <div className="p-4 bg-white rounded-lg border shadow-sm">
-                                        <p className="text-sm text-muted-foreground">Estimated Max Property</p>
+                                        <p className="text-sm text-muted-foreground">{t.impactMaxProperty}</p>
                                         <p className="text-2xl font-bold text-primary">₪{formatNumber(previewStats.maxPropertyValue)}</p>
                                     </div>
                                     <div className="p-4 bg-white rounded-lg border shadow-sm">
-                                        <p className="text-sm text-muted-foreground">Monthly Payment</p>
+                                        <p className="text-sm text-muted-foreground">{t.impactMonthlyPayment}</p>
                                         <p className="text-xl font-bold">₪{formatNumber(previewStats.monthlyPayment)}</p>
                                         <p className="text-xs text-muted-foreground">DTI: {toDisplayPercent(config.max_dti_ratio)}% of ₪20k income</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-3 bg-white rounded-lg border">
-                                            <p className="text-xs text-muted-foreground">Loan Term</p>
-                                            <p className="font-semibold">{previewStats.loanTermYears} Years</p>
+                                            <p className="text-xs text-muted-foreground">{t.impactLoanTerm}</p>
+                                            <p className="font-semibold">{previewStats.loanTermYears} {t.maxLoanTermUnit}</p>
                                         </div>
                                         <div className="p-3 bg-white rounded-lg border">
-                                            <p className="text-xs text-muted-foreground">Interest</p>
+                                            <p className="text-xs text-muted-foreground">{t.impactInterest}</p>
                                             <p className="font-semibold">{config.default_interest_rate}%</p>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="text-center py-8 text-muted-foreground italic">
-                                    Calculation unavailable for current settings.
+                                    {t.impactUnavailable}
                                 </div>
                             )}
                             <p className="text-[10px] text-muted-foreground text-center">
-                                * Sample: Borrower Age 40, Net Income ₪20k, Equity ₪500k.
+                                {t.impactSampleNotice(40, 20000, 500000)}
                             </p>
                         </CardContent>
                     </Card>

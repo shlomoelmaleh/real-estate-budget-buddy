@@ -206,6 +206,68 @@ export interface Translations {
   active: string;
   inactive: string;
   companyNameLabel: string;
+  partnerConfigTitle: string;
+  partnerConfigDesc: string;
+  backToApp: string;
+  logout: string;
+  reset: string;
+  saveChanges: string;
+  saving: string;
+  brandingTabDesc: string;
+  logoUploadDesc: string;
+  brandColorDesc: string;
+  sloganPlaceholder: string;
+  sloganSizeXs: string;
+  sloganSizeSm: string;
+  sloganSizeBase: string;
+  sloganSizeLg: string;
+  sloganSizeXl: string;
+  sloganStyleNormal: string;
+  sloganStyleItalic: string;
+  sloganStyleBold: string;
+  sloganStyleBoldItalic: string;
+  phonePlaceholder: string;
+  whatsappPlaceholder: string;
+  creditTabDesc: string;
+  maxDtiLabel: string;
+  maxDtiTooltip: string;
+  maxAgeLabel: string;
+  maxAgeUnit: string;
+  maxLoanTermLabel: string;
+  maxLoanTermUnit: string;
+  rentRecogFirstLabel: string;
+  rentRecogInvLabel: string;
+  enableRentValidationLabel: string;
+  feesTabDesc: string;
+  defaultInterestLabel: string;
+  vatLabel: string;
+  lawyerFeeLabel: string;
+  brokerFeeLabel: string;
+  advisorFeeLabel: string;
+  otherFeeLabel: string;
+  calcTabDesc: string;
+  defaultRentalYieldLabel: string;
+  maxAmortMonthsLabel: string;
+  rentWarnHighLabel: string;
+  rentWarnLowLabel: string;
+  enableWhatIfLabel: string;
+  showAmortTableLabel: string;
+  changesReverted: string;
+  configSaved: string;
+  configLoadError: string;
+  configSaveError: string;
+  logoUploadSuccess: string;
+  logoUploadError: string;
+  imageFileError: string;
+  fileSizeError: string;
+  impactPreviewTitle: string;
+  impactPreviewDesc: string;
+  impactMaxProperty: string;
+  impactMonthlyPayment: string;
+  impactLoanTerm: string;
+  impactInterest: string;
+  impactSampleNotice: (age: number, income: number, equity: number) => string;
+  impactUnavailable: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -404,6 +466,68 @@ export const translations: Record<Language, Translations> = {
     active: "פעיל",
     inactive: "לא פעיל",
     companyNameLabel: "שם החברה",
+    partnerConfigTitle: "הגדרות שותף",
+    partnerConfigDesc: "התאמה אישית של מיתוג, מדיניות ופרמטרים של הסימולציה.",
+    backToApp: "חזרה לאפליקציה",
+    logout: "התנתק",
+    reset: "איפוס",
+    saveChanges: "שמור שינויים",
+    saving: "שומר...",
+    brandingTabDesc: "זהות המותג ופרטי הקשר שלכם שיוצגו ללקוחות",
+    logoUploadDesc: "מומלץ: PNG או SVG עם רקע שקוף. מקסימום 2MB.",
+    brandColorDesc: "צבע ראשי שיופיע בכפתורים ובאלמנטים עיצוביים",
+    sloganPlaceholder: "השותף המהימן שלך למשכנתאות",
+    sloganSizeXs: "קטן מאוד",
+    sloganSizeSm: "קטן",
+    sloganSizeBase: "בינוני",
+    sloganSizeLg: "גדול",
+    sloganSizeXl: "גדול מאוד",
+    sloganStyleNormal: "רגיל",
+    sloganStyleItalic: "נטוי",
+    sloganStyleBold: "מודגש",
+    sloganStyleBoldItalic: "מודגש ונטוי",
+    phonePlaceholder: "למשל: 050-1234567",
+    whatsappPlaceholder: "למשל: 050-1234567",
+    creditTabDesc: "מדיניות אשראי ומגבלות סיכון",
+    maxDtiLabel: "יחס החזר מקסימלי (DTI %)",
+    maxDtiTooltip: "אחוז מקסימלי מההכנסה הפנויה המיועד להחזר משכנתא. מגבלת בנק ישראל היא 40%.",
+    maxAgeLabel: "גיל מקסימלי של הלווה",
+    maxAgeUnit: "שנים",
+    maxLoanTermLabel: "תקופת הלוואה מקסימלית",
+    maxLoanTermUnit: "שנים",
+    rentRecogFirstLabel: "הכרה בשכירות (דירה יחידה) %",
+    rentRecogInvLabel: "הכרה בשכירות (דירה להשקעה) %",
+    enableRentValidationLabel: "הפעל לוגיקת אימות שכירות",
+    feesTabDesc: "הגדרות פיננסיות ועמלות",
+    defaultInterestLabel: "ריבית ברירת מחדל (%)",
+    vatLabel: "מע״מ (%)",
+    lawyerFeeLabel: "שכר טרחת עו״ד (%)",
+    brokerFeeLabel: "עמלת תיווך (%)",
+    advisorFeeLabel: "עמלת יועץ (קבוע ₪)",
+    otherFeeLabel: "הוצאות אחרות (קבוע ₪)",
+    calcTabDesc: "הגדרות מחשבון מתקדמות",
+    defaultRentalYieldLabel: "תשואת שכירות ברירת מחדל (%)",
+    maxAmortMonthsLabel: "מספר חודשי לוח סילוקין (תצוגה)",
+    rentWarnHighLabel: "מקדם אזהרת שכירות גבוהה",
+    rentWarnLowLabel: "מקדם אזהרת שכירות נמוכה",
+    enableWhatIfLabel: "הפעל מודול 'מה אם'",
+    showAmortTableLabel: "הצג לוח סילוקין",
+    changesReverted: "השינויים בוטלו",
+    configSaved: "ההגדרות נשמרו בהצלחה",
+    configLoadError: "טעינת ההגדרות נכשלה",
+    configSaveError: "שמירת ההגדרות נכשלה",
+    logoUploadSuccess: "הלוגו הועלה בהצלחה",
+    logoUploadError: "העלאת הלוגו נכשלה",
+    imageFileError: "נא להעלות קובץ תמונה",
+    fileSizeError: "גודל הקובץ חייב להיות פחות מ-2MB",
+    impactPreviewTitle: "תצוגת השפעה",
+    impactPreviewDesc: "השפעה מיידית של ההגדרות שלכם על מקרה לדוגמה של 500 אלף ש״ח הון עצמי.",
+    impactMaxProperty: "שווי נכס מקסימלי משוער",
+    impactMonthlyPayment: "החזר חודשי",
+    impactLoanTerm: "תקופת הלוואה",
+    impactInterest: "ריבית",
+    impactSampleNotice: (age, income, equity) => `* דוגמה: גיל לווה ${age}, הכנסה נטו ${income} ₪, הון עצמי ${equity} ₪.`,
+    impactUnavailable: "החישוב אינו זמין עבור ההגדרות הנוכחיות.",
   },
   en: {
     dir: 'ltr',
@@ -600,6 +724,68 @@ export const translations: Record<Language, Translations> = {
     active: "Active",
     inactive: "Inactive",
     companyNameLabel: "Company Name",
+    partnerConfigTitle: "Partner Configuration",
+    partnerConfigDesc: "Customize your branding, policies, and simulation parameters.",
+    backToApp: "Back to App",
+    logout: "Logout",
+    reset: "Reset",
+    saveChanges: "Save Changes",
+    saving: "Saving...",
+    brandingTabDesc: "Your brand identity and contact details shown to clients",
+    logoUploadDesc: "Recommended: PNG or SVG with transparent background. Max 2MB.",
+    brandColorDesc: "Primary color for buttons and design elements",
+    sloganPlaceholder: "Your trusted mortgage partner",
+    sloganSizeXs: "Extra Small",
+    sloganSizeSm: "Small",
+    sloganSizeBase: "Medium",
+    sloganSizeLg: "Large",
+    sloganSizeXl: "Extra Large",
+    sloganStyleNormal: "Normal",
+    sloganStyleItalic: "Italic",
+    sloganStyleBold: "Bold",
+    sloganStyleBoldItalic: "Bold Italic",
+    phonePlaceholder: "+972-50-123-4567",
+    whatsappPlaceholder: "+972-50-123-4567",
+    creditTabDesc: "Credit Policy & Risk Limits",
+    maxDtiLabel: "Max DTI Ratio (%)",
+    maxDtiTooltip: "Maximum percentage of net income for mortgage payments. Bank of Israel limit is 40%.",
+    maxAgeLabel: "Max Applicant Age",
+    maxAgeUnit: "years",
+    maxLoanTermLabel: "Max Loan Term",
+    maxLoanTermUnit: "years",
+    rentRecogFirstLabel: "Rent Recognition (1st Property) %",
+    rentRecogInvLabel: "Rent Recognition (Investment) %",
+    enableRentValidationLabel: "Enable Rent Validation Logic",
+    feesTabDesc: "Financials & Fees Configuration",
+    defaultInterestLabel: "Default Interest Rate (%)",
+    vatLabel: "VAT %",
+    lawyerFeeLabel: "Lawyer Fee (%)",
+    brokerFeeLabel: "Broker Fee (%)",
+    advisorFeeLabel: "Advisor Fee (Fixed ₪)",
+    otherFeeLabel: "Other Fee (Fixed ₪)",
+    calcTabDesc: "Advanced Calculator Settings",
+    defaultRentalYieldLabel: "Default Rental Yield (%)",
+    maxAmortMonthsLabel: "Max Amortization Months (Display)",
+    rentWarnHighLabel: "Rent High Warning Multiplier",
+    rentWarnLowLabel: "Rent Low Warning Multiplier",
+    enableWhatIfLabel: "Enable 'What If' Module",
+    showAmortTableLabel: "Show Amortization Table",
+    changesReverted: "Changes reverted",
+    configSaved: "Configuration saved successfully",
+    configLoadError: "Failed to load configuration",
+    configSaveError: "Failed to save configuration",
+    logoUploadSuccess: "Logo uploaded successfully",
+    logoUploadError: "Failed to upload logo",
+    imageFileError: "Please upload an image file",
+    fileSizeError: "File size must be less than 2MB",
+    impactPreviewTitle: "Impact Preview",
+    impactPreviewDesc: "Instant impact of your settings on a sample ₪500k equity case.",
+    impactMaxProperty: "Estimated Max Property",
+    impactMonthlyPayment: "Monthly Payment",
+    impactLoanTerm: "Loan Term",
+    impactInterest: "Interest",
+    impactSampleNotice: (age, income, equity) => `* Sample: Borrower Age ${age}, Net Income ₪${income / 1000}k, Equity ₪${equity / 1000}k.`,
+    impactUnavailable: "Calculation unavailable for current settings.",
   },
   fr: {
     dir: 'ltr',
@@ -796,5 +982,67 @@ export const translations: Record<Language, Translations> = {
     active: "Actif",
     inactive: "Inactif",
     companyNameLabel: "Nom de la société",
+    partnerConfigTitle: "Configuration partenaire",
+    partnerConfigDesc: "Personnalisez votre image de marque, vos politiques et vos paramètres de simulation.",
+    backToApp: "Retour à l'application",
+    logout: "Déconnexion",
+    reset: "Réinitialiser",
+    saveChanges: "Enregistrer",
+    saving: "Enregistrement...",
+    brandingTabDesc: "Votre identité de marque et vos coordonnées affichées aux clients",
+    logoUploadDesc: "Recommandé : PNG ou SVG avec fond transparent. Max 2 Mo.",
+    brandColorDesc: "Couleur principale pour les boutons et les éléments de design",
+    sloganPlaceholder: "Votre partenaire hypothécaire de confiance",
+    sloganSizeXs: "Très petit",
+    sloganSizeSm: "Petit",
+    sloganSizeBase: "Moyen",
+    sloganSizeLg: "Grand",
+    sloganSizeXl: "Très grand",
+    sloganStyleNormal: "Normal",
+    sloganStyleItalic: "Italique",
+    sloganStyleBold: "Gras",
+    sloganStyleBoldItalic: "Gras italique",
+    phonePlaceholder: "+972-50-123-4567",
+    whatsappPlaceholder: "+972-50-123-4567",
+    creditTabDesc: "Politique de crédit et limites de risque",
+    maxDtiLabel: "Taux d'endettement max (%)",
+    maxDtiTooltip: "Pourcentage maximum du revenu net pour les paiements hypothécaires. La limite de la Banque d'Israël est de 40%.",
+    maxAgeLabel: "Âge maximum du demandeur",
+    maxAgeUnit: "ans",
+    maxLoanTermLabel: "Durée maximale du prêt",
+    maxLoanTermUnit: "ans",
+    rentRecogFirstLabel: "Reconnaissance du loyer (1ère propriété) %",
+    rentRecogInvLabel: "Reconnaissance du loyer (Investissement) %",
+    enableRentValidationLabel: "Activer la logique de validation du loyer",
+    feesTabDesc: "Configuration des finances et des frais",
+    defaultInterestLabel: "Taux d'intérêt par défaut (%)",
+    vatLabel: "TVA %",
+    lawyerFeeLabel: "Frais d'avocat (%)",
+    brokerFeeLabel: "Frais de courtage (%)",
+    advisorFeeLabel: "Frais de conseil (Fixe ₪)",
+    otherFeeLabel: "Autres frais (Fixe ₪)",
+    calcTabDesc: "Paramètres avancés du calculateur",
+    defaultRentalYieldLabel: "Rendement locatif par défaut (%)",
+    maxAmortMonthsLabel: "Mois d'amortissement max (Affichage)",
+    rentWarnHighLabel: "Multiplicateur d'avertissement de loyer élevé",
+    rentWarnLowLabel: "Multiplicateur d'avertissement de loyer bas",
+    enableWhatIfLabel: "Activer le module 'Et si'",
+    showAmortTableLabel: "Afficher le tableau d'amortissement",
+    changesReverted: "Changements annulés",
+    configSaved: "Configuration enregistrée avec succès",
+    configLoadError: "Échec du chargement de la configuration",
+    configSaveError: "Échec de l'enregistrement de la configuration",
+    logoUploadSuccess: "Logo téléchargé avec succès",
+    logoUploadError: "Échec du téléchargement du logo",
+    imageFileError: "Veuillez télécharger un fichier image",
+    fileSizeError: "La taille du fichier doit être inférieure à 2 Mo",
+    impactPreviewTitle: "Aperçu de l'impact",
+    impactPreviewDesc: "Impact immédiat de vos paramètres sur un cas type de 500k ₪ d'apport.",
+    impactMaxProperty: "Valeur max estimée du bien",
+    impactMonthlyPayment: "Mensualité",
+    impactLoanTerm: "Durée du prêt",
+    impactInterest: "Intérêt",
+    impactSampleNotice: (age, income, equity) => `* Exemple : Âge de l'emprunteur ${age}, Revenu net ${income} ₪, Apport ${equity} ₪.`,
+    impactUnavailable: "Calcul indisponible pour les paramètres actuels.",
   }
 };
