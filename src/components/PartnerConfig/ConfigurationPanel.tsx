@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { calculateMaxBudget } from '@/lib/calculatorLogic';
@@ -80,6 +80,8 @@ export function ConfigurationPanel() {
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
 
     // Check if current user is the super admin
     useEffect(() => {
@@ -278,6 +280,9 @@ export function ConfigurationPanel() {
 
             setOriginalConfig(config);
             toast.success(t.configSaved);
+            // Reset file input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            setSelectedFileName(null);
         } catch (e: any) {
             console.error('Save error:', e);
             toast.error(t.configSaveError);
@@ -288,7 +293,12 @@ export function ConfigurationPanel() {
 
     const handleLogoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file || !partnerId) return;
+        if (!file || !partnerId) {
+            setSelectedFileName(null);
+            return;
+        }
+
+        setSelectedFileName(file.name);
 
         // Validation
         if (!file.type.startsWith('image/')) {
@@ -325,6 +335,8 @@ export function ConfigurationPanel() {
             toast.error(t.logoUploadError);
         } finally {
             setIsUploadingLogo(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            setSelectedFileName(null);
         }
     };
 
@@ -451,14 +463,29 @@ export function ConfigurationPanel() {
                                                 </div>
                                             )}
                                             <div className="flex items-center gap-3">
-                                                <Input
+                                                <input
                                                     type="file"
                                                     accept="image/*"
                                                     onChange={handleLogoUpload}
                                                     disabled={isUploadingLogo}
-                                                    className="max-w-xs cursor-pointer"
+                                                    ref={fileInputRef}
+                                                    className="hidden"
                                                 />
-                                                {isUploadingLogo && <span className="text-sm text-muted-foreground animate-pulse">{t.uploading}</span>}
+                                                <div className="flex items-center w-full max-w-sm border rounded-md bg-white shadow-sm overflow-hidden h-10 px-3 gap-3">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 text-xs font-semibold bg-slate-100 hover:bg-slate-200 border-none shrink-0"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        disabled={isUploadingLogo}
+                                                    >
+                                                        {t.chooseFile}
+                                                    </Button>
+                                                    <span className="text-sm text-muted-foreground truncate flex-1">
+                                                        {selectedFileName || (isUploadingLogo ? t.uploading : t.noFileChosen)}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <p className="text-[10px] text-muted-foreground italic">
                                                 {t.logoUploadDesc}

@@ -204,6 +204,8 @@ export interface Translations {
   logo: string;
   uploadLogo: string;
   uploading: string;
+  chooseFile: string;
+  noFileChosen: string;
   preview: string;
   // Read Only
   readOnlyTitle: string;
@@ -477,6 +479,8 @@ export const translations: Record<Language, Translations> = {
     logo: "לוגו",
     uploadLogo: "העלאת לוגו",
     uploading: "מעלה...",
+    chooseFile: "בחירת קובץ",
+    noFileChosen: "",
     preview: "תצוגה מקדימה",
     readOnlyTitle: "פרטים קבועים",
     partnerLink: "קישור שותף",
@@ -745,6 +749,8 @@ export const translations: Record<Language, Translations> = {
     logo: "Logo",
     uploadLogo: "Upload Logo",
     uploading: "Uploading...",
+    chooseFile: "Choose File",
+    noFileChosen: "",
     preview: "Preview",
     readOnlyTitle: "Read-Only Details",
     partnerLink: "Partner Link",
@@ -1013,6 +1019,8 @@ export const translations: Record<Language, Translations> = {
     logo: "Logo",
     uploadLogo: "Télécharger le logo",
     uploading: "Téléchargement...",
+    chooseFile: "Choisir un fichier",
+    noFileChosen: "",
     preview: "Aperçu",
     readOnlyTitle: "Détails en lecture seule",
     partnerLink: "Lien partenaire",
