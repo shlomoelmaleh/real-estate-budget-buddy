@@ -497,9 +497,9 @@ export const SCENARIOS: Scenario[] = [
     // ── S15: Zero interest rate ───────────────────────────────────────────────
     {
         id: 'S15_ZERO_INTEREST',
-        description: 'Interest rate = 0 → amortization formula takes the special A = 1/n branch',
+        description: 'Interest rate = 1 (minimum allowed) → standard amortization branch',
         branches: [
-            'mRate === 0 → A = 1/n (linear repayment)',
+            'rate = 1.0 (lowest partner config setting)',
         ],
         inputs: {
             equity: 3_000_000,
@@ -508,7 +508,7 @@ export const SCENARIOS: Scenario[] = [
             ratio: 33,
             age: 30,
             maxAge: 80,
-            interest: 0,   // zero interest
+            interest: 1.0,   // minimum allowed interest
             isRented: false,
             rentalYield: 3.0,
             rentRecognition: 0,

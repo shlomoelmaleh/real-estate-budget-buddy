@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-19T18:20:00.478Z",
+  "generatedAt": "2026-02-19T18:59:28.845Z",
   "totalScenarios": 16,
   "note": "For each scenario, verify INPUTS (all 3 categories) against OUTPUTS using an external tool. When satisfied, run: npm run test:approve",
   "scenarios": [
@@ -867,9 +867,9 @@
     },
     {
       "id": "S15_ZERO_INTEREST",
-      "description": "Interest rate = 0 → amortization formula takes the special A = 1/n branch",
+      "description": "Interest rate = 1 (minimum allowed) → standard amortization branch",
       "branches": [
-        "mRate === 0 → A = 1/n (linear repayment)"
+        "rate = 1.0 (lowest partner config setting)"
       ],
       "INPUTS": {
         "CATEGORY_1_USER": {
@@ -889,7 +889,7 @@
           "maxApplicantAge": 80,
           "maxLoanTermYears": 30,
           "rentRecognition_investment_pct": 80,
-          "defaultInterestRate_pct": 0,
+          "defaultInterestRate_pct": 1,
           "lawyerFee_pct": 1,
           "brokerFee_pct": 2,
           "advisorFeeFixed_NIS": 9000,
@@ -906,24 +906,24 @@
         }
       },
       "OUTPUTS": {
-        "maxPropertyValue": 7195816.0400390625,
-        "loanAmount": 4752000,
-        "actualLTV": 66.03837526638888,
+        "maxPropertyValue": 6614799.499511719,
+        "loanAmount": 4103973.287137023,
+        "actualLTV": 62.04229300434524,
         "monthlyPayment": 13200,
         "rentIncome": 0,
         "netPayment": 13200,
-        "closingCosts": 556283.3960205079,
-        "totalInterest": 0,
+        "closingCosts": 489234.0872436523,
+        "totalInterest": 648026.7128629768,
         "totalCost": 4752000,
         "loanTermYears": 30,
-        "purchaseTax": 289551.50820312503,
+        "purchaseTax": 243070.1849609375,
         "taxProfile": "SINGLE_HOME",
-        "equityUsed": 3000099.43605957,
-        "equityRemaining": -99.43605956993997,
-        "lawyerFeeTTC": 84910.62927246094,
-        "brokerFeeTTC": 169821.25854492188,
+        "equityUsed": 3000060.2996183475,
+        "equityRemaining": -60.29961834754795,
+        "lawyerFeeTTC": 78054.63409423828,
+        "brokerFeeTTC": 156109.26818847656,
         "limitingFactor": "EQUITY_LIMIT",
-        "estimatedMarketRent": 17989.540100097656,
+        "estimatedMarketRent": 16536.998748779297,
         "rentWarning": null
       }
     },
