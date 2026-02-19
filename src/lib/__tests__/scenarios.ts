@@ -162,9 +162,9 @@ export const SCENARIOS: Scenario[] = [
             ratio: 33,
             age: 45,
             maxAge: 80,
-            interest: 5.5,
+            interest: 5.0,
             isRented: true,
-            rentalYield: 3.5,
+            rentalYield: 3.0,          // matches DEFAULT_CONFIG.rental_yield_default
             rentRecognition: 80,
             budgetCap: null,
             isFirstProperty: false,
@@ -220,7 +220,7 @@ export const SCENARIOS: Scenario[] = [
         ],
         inputs: {
             equity: 5_000_000,
-            ltv: 50,
+            ltv: 75,
             netIncome: 200_000,  // extremely high income → not the bottleneck
             ratio: 33,
             age: 35,
@@ -320,9 +320,9 @@ export const SCENARIOS: Scenario[] = [
             ratio: 33,
             age: 40,
             maxAge: 80,
-            interest: 5.5,
+            interest: 5.0,
             isRented: true,
-            rentalYield: 4.0,
+            rentalYield: 3.0,
             rentRecognition: 80,
             budgetCap: null,
             isFirstProperty: false,
