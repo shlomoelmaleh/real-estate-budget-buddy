@@ -46,6 +46,7 @@ export function BudgetCalculator() {
     getValues,
     watch,
     setValue,
+    setError,
   } = useForm<CalculatorFormValues>({
     resolver: zodResolver(calculatorSchema),
     mode: 'onChange',
@@ -86,6 +87,7 @@ export function BudgetCalculator() {
     trigger,
     getValues,
     setValue,
+    setError,
     t,
   });
 

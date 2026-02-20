@@ -16,6 +16,7 @@ export function Step1({ control, errors, t }: StepProps) {
                             icon={<User className="w-4 h-4" />}
                             {...field}
                             hasError={!!errors.fullName}
+                            error={errors.fullName?.message}
                             className="bg-white/50"
                         />
                     )}
@@ -31,6 +32,7 @@ export function Step1({ control, errors, t }: StepProps) {
                             {...field}
                             formatNumber={true}
                             hasError={!!errors.age}
+                            error={errors.age?.message}
                             className="bg-white/50"
                         />
                     )}

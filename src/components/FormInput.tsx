@@ -14,6 +14,7 @@ interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   onChange: (value: string) => void;
   required?: boolean;
   hasError?: boolean;
+  error?: string;
 }
 
 export function FormInput({
@@ -101,6 +102,11 @@ export function FormInput({
           )}
         />
       </div>
+      {error && (
+        <p className="text-[10px] sm:text-xs font-semibold text-destructive animate-in fade-in slide-in-from-top-1 duration-200">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

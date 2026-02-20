@@ -280,6 +280,7 @@ export interface Translations {
   impactUnavailable: string;
   sentToRecipient: string;
   contactRep: string;
+  errorAgeTooHigh: (max: number) => string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -552,6 +553,7 @@ export const translations: Record<Language, Translations> = {
     impactInterest: "ריבית",
     impactSampleNotice: (age, income, equity) => `* דוגמה: גיל לווה ${age}, הכנסה נטו ${income} ₪, הון עצמי ${equity} ₪.`,
     impactUnavailable: "החישוב אינו זמין עבור ההגדרות הנוכחיות.",
+    errorAgeTooHigh: (max) => `גיל הלווה אינו יכול לעלות על ${max} (לפי הגדרות המערכת)`,
   },
   en: {
     dir: 'ltr',
@@ -822,6 +824,7 @@ export const translations: Record<Language, Translations> = {
     impactInterest: "Interest",
     impactSampleNotice: (age, income, equity) => `* Sample: Borrower Age ${age}, Net Income ₪${income / 1000}k, Equity ₪${equity / 1000}k.`,
     impactUnavailable: "Calculation unavailable for current settings.",
+    errorAgeTooHigh: (max) => `Age cannot exceed ${max} years (system limit)`,
   },
   fr: {
     dir: 'ltr',
@@ -1092,5 +1095,6 @@ export const translations: Record<Language, Translations> = {
     impactInterest: "Intérêt",
     impactSampleNotice: (age, income, equity) => `* Exemple : Âge de l'emprunteur ${age}, Revenu net ${income} ₪, Apport ${equity} ₪.`,
     impactUnavailable: "Calcul indisponible pour les paramètres actuels.",
+    errorAgeTooHigh: (max) => `L'âge ne peut pas dépasser ${max} ans (limite système)`,
   }
 };

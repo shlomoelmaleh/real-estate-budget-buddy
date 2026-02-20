@@ -12,6 +12,7 @@ export interface UseBudgetWizardProps {
     trigger: UseFormTrigger<CalculatorFormValues>;
     getValues: UseFormGetValues<CalculatorFormValues>;
     setValue: UseFormSetValue<CalculatorFormValues>;
+    setError: any;
     t: any;
 }
 
@@ -21,6 +22,7 @@ export function useBudgetWizard({
     trigger,
     getValues,
     setValue,
+    setError,
     t,
 }: UseBudgetWizardProps) {
     const { config, partner: contextPartner, binding } = usePartner(); // Using partner config from context
@@ -142,6 +144,20 @@ export function useBudgetWizard({
 
         const isValid = await trigger(fields);
         if (isValid) {
+            // Custom business logic validation: Age vs MaxAge
+            if (step === 1) {
+                const userAge = parseFormattedNumber(getValues('age'));
+                const maxAllowedAge = config?.max_age || 80;
+
+                if (userAge > maxAllowedAge) {
+                    setError('age', {
+                        type: 'manual',
+                        message: t.errorAgeTooHigh(maxAllowedAge)
+                    });
+                    return; // Block navigation
+                }
+            }
+
             logCompletion();
             const nextStep = step + 1;
             setAnimClass('animate-in slide-in-from-right fade-in duration-500');
