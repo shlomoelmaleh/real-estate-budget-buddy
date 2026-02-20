@@ -29,6 +29,7 @@ export function FormInput({
   className,
   required = false,
   hasError = false,
+  error,
   ...props
 }: FormInputProps) {
   const [displayValue, setDisplayValue] = useState(value);
