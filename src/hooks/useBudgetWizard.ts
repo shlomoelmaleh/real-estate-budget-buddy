@@ -149,7 +149,7 @@ export function useBudgetWizard({
                 const userAge = parseFormattedNumber(getValues('age'));
                 const maxAllowedAge = config?.max_age || 80;
 
-                if (userAge > maxAllowedAge) {
+                if (userAge >= maxAllowedAge) {
                     setError('age', {
                         type: 'manual',
                         message: t.errorAgeTooHigh(maxAllowedAge)
