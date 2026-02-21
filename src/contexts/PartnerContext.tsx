@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Partner } from "@/lib/partnerTypes";
 import { applyPartnerBrandColor, normalizeHexColor } from "@/lib/color";
 import { PartnerConfig, DEFAULT_PARTNER_CONFIG } from "@/types/partnerConfig";
+import { checkIsAdmin, isAdminUser } from "@/lib/admin";
 
 type PartnerBinding = {
   partnerId: string;
@@ -17,6 +18,7 @@ type PartnerContextValue = {
   binding: PartnerBinding | null;
   isLoading: boolean;
   isOwner: boolean;
+  isAdmin: boolean;
   clearBinding: () => void;
 };
 
@@ -84,6 +86,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
   const [binding, setBinding] = useState<PartnerBinding | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const clearBinding = () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -192,6 +195,10 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
 
       if (cancelled) return;
 
+      // Check admin status
+      const isUserAdmin = await checkIsAdmin();
+      if (!cancelled) setIsAdmin(isUserAdmin);
+
       if (!pError && pData) {
         setIsOwner(true);
         // Only auto-load if no partner is currently active.
@@ -251,8 +258,8 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
   }, [isOwner, partner]);
 
   const value = useMemo<PartnerContextValue>(
-    () => ({ partner, config, binding, isLoading, isOwner, clearBinding }),
-    [partner, config, binding, isLoading, isOwner],
+    () => ({ partner, config, binding, isLoading, isOwner, isAdmin, clearBinding }),
+    [partner, config, binding, isLoading, isOwner, isAdmin],
   );
 
   return <PartnerContext.Provider value={value}>{children}</PartnerContext.Provider>;

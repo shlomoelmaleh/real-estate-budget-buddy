@@ -15,9 +15,7 @@ export function LoginRedirect() {
             // 1. Check admin role via server-side RPC
             const isAdmin = await checkIsAdmin();
             if (isAdmin) {
-                if (path.startsWith("/admin")) return;
-                console.log("[LoginRedirect] Admin detected → /admin/partners");
-                navigate("/admin/partners", { replace: true });
+                console.log("[LoginRedirect] Admin detected (Auto-redirect to /admin/partners disabled)");
                 return;
             }
 

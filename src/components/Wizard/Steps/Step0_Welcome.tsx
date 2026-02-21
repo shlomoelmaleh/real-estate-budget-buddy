@@ -10,7 +10,7 @@ import logoEshel from '@/assets/logo-eshel.png';
 
 export function Step0({ onNext }: { onNext: () => void }) {
     const { t, language } = useLanguage();
-    const { partner, isOwner } = usePartner();
+    const { partner, isOwner, isAdmin } = usePartner();
     const displayLogo = partner?.logo_url || logoEshel;
     const isHe = language === 'he';
 
@@ -22,19 +22,19 @@ export function Step0({ onNext }: { onNext: () => void }) {
                 <div className="scale-90 md:scale-100">
                     <LanguageSwitcher />
                 </div>
-                {!isOwner && (
+                {isAdmin ? (
                     <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-500 hover:text-primary transition-colors px-4"
+                        className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-600 hover:text-primary transition-colors px-4 gap-2"
                         asChild
                     >
-                        <Link to="/login">
-                            {t.partnerLogin}
+                        <Link to="/admin/my-config">
+                            <Settings className="w-3.5 h-3.5" />
+                            {t.managePartnerSettings}
                         </Link>
                     </Button>
-                )}
-                {isOwner && (
+                ) : isOwner ? (
                     <Button
                         variant="outline"
                         size="sm"
@@ -44,6 +44,17 @@ export function Step0({ onNext }: { onNext: () => void }) {
                         <Link to="/admin/settings">
                             <Settings className="w-3.5 h-3.5" />
                             {t.managePartnerSettings}
+                        </Link>
+                    </Button>
+                ) : (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 text-xs font-semibold text-slate-500 hover:text-primary transition-colors px-4"
+                        asChild
+                    >
+                        <Link to="/login">
+                            {t.partnerLogin}
                         </Link>
                     </Button>
                 )}
