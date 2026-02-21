@@ -12,19 +12,19 @@ export function LoginRedirect() {
         const handleRedirect = async (userId: string) => {
             const path = location.pathname;
 
+            // Only auto-redirect when coming from /login page
+            // Never redirect users away from the main app (/) or admin pages
+            if (path !== "/login") return;
+
             // 1. Check admin role via server-side RPC
             const isAdmin = await checkIsAdmin();
             if (isAdmin) {
-                if (path.startsWith("/admin")) return;
                 console.log("[LoginRedirect] Admin detected → /admin/partners");
                 navigate("/admin/partners", { replace: true });
                 return;
             }
 
-            // 2. Already on the partner settings page — nothing to do
-            if (path === "/admin/settings") return;
-
-            // 3. Check if the user owns a partner record
+            // 2. Check if the user owns a partner record
             setIsChecking(true);
             try {
                 const { data: partner, error } = await supabase
@@ -34,20 +34,19 @@ export function LoginRedirect() {
                     .maybeSingle();
 
                 if (!error && partner) {
-                    console.log("[LoginRedirect] Partner owner detected (Auto-redirect disabled)");
+                    console.log("[LoginRedirect] Partner owner → /admin/settings");
+                    navigate("/admin/settings", { replace: true });
+                    return;
                 }
             } catch (err) {
                 console.error("[LoginRedirect] Error:", err);
             } finally {
                 setIsChecking(false);
             }
-        };
 
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                handleRedirect(session.user.id);
-            }
-        });
+            // 3. Regular user — go home
+            navigate("/", { replace: true });
+        };
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session?.user) {

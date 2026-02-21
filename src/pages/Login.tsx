@@ -21,13 +21,7 @@ export default function Login() {
 
     setIsSending(true);
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const refParam = urlParams.get('ref');
-
-      let redirectUrl = window.location.origin;
-      if (refParam) {
-        redirectUrl += `?ref=${refParam}`;
-      }
+      const redirectUrl = window.location.origin + '/login';
 
       const { error } = await supabase.auth.signInWithOtp({
         email: normalized,
