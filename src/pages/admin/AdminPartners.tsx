@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { ActivityLogRow, Partner, SloganFontSize, SloganFontStyle } from "@/lib/partnerTypes";
 import { checkIsAdmin } from "@/lib/admin";
@@ -21,7 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { normalizeHexColor } from "@/lib/color";
 
@@ -53,6 +54,7 @@ async function adminMutate(body: any) {
 }
 
 export default function AdminPartners() {
+  const navigate = useNavigate();
   const [partners, setPartners] = useState<Partner[]>([]);
   const [logs, setLogs] = useState<ActivityLogRow[]>([]);
   const [isLoadingPartners, setIsLoadingPartners] = useState(true);
@@ -230,6 +232,7 @@ export default function AdminPartners() {
           slogan: form.slogan || null,
           slogan_font_size: form.slogan_font_size || "sm",
           slogan_font_style: form.slogan_font_style || "normal",
+          // slogan_font_family: data.slogan_font_family as SloganFontFamily, // This line was commented out or removed
           is_active: !!form.is_active,
           max_dti_ratio: form.max_dti_ratio,
           max_age: form.max_age,
@@ -311,6 +314,14 @@ export default function AdminPartners() {
             >
               <Plus className="w-4 h-4" />
               Create Partner
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/")}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to App
             </Button>
             <Button
               variant="outline"

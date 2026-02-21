@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { Info, Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft, Copy } from 'lucide-react'; // Added Copy
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext'; // Added useLanguage
+import logoEshel from '@/assets/logo_eshel.png';
 
 // Extended config with all partner fields
 interface ExtendedConfig extends PartnerConfig {
@@ -184,14 +185,14 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                     is_active: data.is_active ?? true,
 
                     // Branding - Editable
-                    logo_url: data.logo_url,
+                    logo_url: data.logo_url || (isAdminMode ? logoEshel : null),
                     brand_color: data.brand_color,
-                    slogan: data.slogan,
+                    slogan: data.slogan || (isAdminMode ? t.advisorTitle : null),
                     slogan_font_size: data.slogan_font_size as SloganFontSize,
                     slogan_font_style: data.slogan_font_style as SloganFontStyle,
                     slogan_font_family: data.slogan_font_family as SloganFontFamily,
-                    phone: data.phone,
-                    whatsapp: data.whatsapp,
+                    phone: data.phone || (isAdminMode ? t.advisorPhone : null),
+                    whatsapp: data.whatsapp || (isAdminMode ? t.advisorPhone : null),
 
                     // Configuration
                     max_dti_ratio: data.max_dti_ratio ?? DEFAULT_PARTNER_CONFIG.max_dti_ratio,
@@ -431,7 +432,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(config.slug ? `/?ref=${config.slug}` : '/')}
+                                onClick={() => navigate('/')}
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
                                 {t.backToApp}
@@ -703,7 +704,8 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => {
-                                                        navigator.clipboard.writeText(`${window.location.origin}/?ref=${config.slug}`);
+                                                        const url = config.slug ? `${window.location.origin}/?ref=${config.slug}` : window.location.origin;
+                                                        navigator.clipboard.writeText(url);
                                                         toast.success(t.linkCopied);
                                                     }}
                                                 >
