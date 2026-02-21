@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import AdminPartners from "./pages/admin/AdminPartners";
+import AdminMyConfig from "./pages/admin/AdminMyConfig";
 import { AdminRoute } from "./components/auth/AdminRoute";
 import { PartnerRoute } from "./components/auth/PartnerRoute";
 import { ConfigurationPanel } from "./components/PartnerConfig/ConfigurationPanel";
@@ -48,6 +49,14 @@ const App = () => (
                 element={
                   <AdminRoute>
                     <AdminPartners />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/my-config"
+                element={
+                  <AdminRoute>
+                    <AdminMyConfig />
                   </AdminRoute>
                 }
               />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { checkIsAdmin } from "@/lib/admin";
+import { checkIsAdmin, isAdminUser } from "@/lib/admin";
 
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
         if (mounted) { setOk(false); navigate("/login", { replace: true }); }
         return;
       }
-      const isAdmin = await checkIsAdmin();
+      const isAdmin = (await checkIsAdmin()) || isAdminUser(session.user);
       if (!mounted) return;
       if (!isAdmin) {
         setOk(false);

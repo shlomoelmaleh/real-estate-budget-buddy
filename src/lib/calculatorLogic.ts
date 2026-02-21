@@ -125,24 +125,24 @@ export function solveMaximumBudget(
             }
 
             bestResult = {
-                maxPropertyValue: price,
-                loanAmount: loan,
-                actualLTV: (loan / price) * 100,
-                monthlyPayment: payment,
-                rentIncome: actualRent,
-                netPayment: payment - actualRent,
-                closingCosts: closingCosts,
-                totalInterest: (payment * maxLoanTermMonths) - loan,
-                totalCost: payment * maxLoanTermMonths,
+                maxPropertyValue: Math.round(price),
+                loanAmount: Math.round(loan),
+                actualLTV: Number(((loan / price) * 100).toFixed(2)),
+                monthlyPayment: Math.round(payment),
+                rentIncome: Math.round(actualRent),
+                netPayment: Math.round(payment - actualRent),
+                closingCosts: Math.round(closingCosts),
+                totalInterest: Math.round((payment * maxLoanTermMonths) - loan),
+                totalCost: Math.round(payment * maxLoanTermMonths),
                 loanTermYears: maxLoanTermMonths / 12,
-                purchaseTax,
+                purchaseTax: Math.round(purchaseTax),
                 taxProfile,
-                equityUsed: price + closingCosts - loan,
-                equityRemaining: equity - (price + closingCosts - loan),
-                lawyerFeeTTC: price * (config.lawyer_fee_percent / 100) * (1 + config.vat_percent / 100),
-                brokerFeeTTC: price * (config.broker_fee_percent / 100) * (1 + config.vat_percent / 100),
+                equityUsed: Math.round(price + closingCosts - loan),
+                equityRemaining: Math.round(equity - (price + closingCosts - loan)),
+                lawyerFeeTTC: Math.round(price * (config.lawyer_fee_percent / 100) * (1 + config.vat_percent / 100)),
+                brokerFeeTTC: Math.round(price * (config.broker_fee_percent / 100) * (1 + config.vat_percent / 100)),
                 limitingFactor: 'EQUITY_LIMIT', // Logic simplified for preview
-                estimatedMarketRent,
+                estimatedMarketRent: Math.round(estimatedMarketRent),
                 rentWarning
             };
         } else {

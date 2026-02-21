@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import heroBg from '@/assets/hero-bg.jpg';
@@ -5,6 +7,10 @@ import logoEshel from '@/assets/logo-eshel.png';
 import { usePartner } from '@/contexts/PartnerContext';
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import type { SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
+import { supabase } from '@/integrations/supabase/client';
+import { checkIsAdmin, isAdminUser } from '@/lib/admin';
+import { Settings } from 'lucide-react';
+import { Button } from './ui/button';
 
 function getSloganFontSizeClass(size: SloganFontSize | null | undefined): string {
   switch (size) {
@@ -30,6 +36,21 @@ function getSloganFontStyleClass(style: SloganFontStyle | null | undefined): str
 export function HeroHeader() {
   const { t } = useLanguage();
   const { partner } = usePartner();
+  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const isSuperAdmin = await checkIsAdmin();
+        const isEmailAdmin = isAdminUser(session.user);
+        setIsAdmin(isSuperAdmin || isEmailAdmin);
+      }
+    };
+    checkAdmin();
+  }, []);
+
   return (
     <header className="relative overflow-hidden min-h-[280px] md:min-h-[320px]">
       {/* Background Image */}
@@ -39,10 +60,22 @@ export function HeroHeader() {
       />
 
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/75 via-background/65 to-background/85" />
 
       <div className="relative z-10 text-center py-6 md:py-8 px-4 space-y-4 md:space-y-5">
-        <LanguageSwitcher />
+        <div className="flex justify-between items-start">
+          <LanguageSwitcher />
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/my-config')}
+              className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.myConfig}</span>
+            </Button>
+          )}
+        </div>
 
         {/* Logo */}
         <div className="flex flex-col items-center justify-center pt-3 md:pt-4 gap-3">

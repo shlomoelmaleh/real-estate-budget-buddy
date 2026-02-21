@@ -132,6 +132,7 @@ export interface Translations {
   step4Desc: string;
   nextBtn: string;
   backBtn: string;
+  myConfig: string;
   revealBtn: string;
   loadingText: string;
   successTitle: string;
@@ -409,6 +410,7 @@ export const translations: Record<Language, Translations> = {
     step4Desc: "האם הנכס מושכר וכמה תוכלו להחזיר?",
     nextBtn: "המשך לשלב הבא",
     backBtn: "חזור",
+    myConfig: "הגדרות שלי",
     revealBtn: "חשוף את הפוטנציאל שלי ✨",
     loadingText: "מנתח נתונים...",
     successTitle: "הנה פוטנציאל הרכישה המקסימלי שלכם:",
@@ -680,6 +682,7 @@ export const translations: Record<Language, Translations> = {
     step4Desc: "Rental plan & monthly comfort limit",
     nextBtn: "Next Step",
     backBtn: "Back",
+    myConfig: "My Configuration",
     revealBtn: "Reveal My Potential ✨",
     loadingText: "Analyzing regulations...",
     successTitle: "Your property acquisition potential is:",
@@ -951,6 +954,7 @@ export const translations: Record<Language, Translations> = {
     step4Desc: "Location prévue & limite mensuelle",
     nextBtn: "Étape Suivante",
     backBtn: "Retour",
+    myConfig: "Ma Configuration",
     revealBtn: "Révéler Mon Potentiel ✨",
     loadingText: "Analyse en cours...",
     successTitle: "Voici votre potentiel d'acquisition :",

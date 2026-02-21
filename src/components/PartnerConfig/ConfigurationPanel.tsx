@@ -69,7 +69,7 @@ const FONT_STYLE_LABELS: Record<SloganFontStyle, string> = {
 
 // Font family options with CSS stacks removed, now imported from partnerTypes.ts
 
-export function ConfigurationPanel() {
+export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: boolean }) {
     const { t } = useLanguage();
     const navigate = useNavigate();
     const [config, setConfig] = useState<ExtendedConfig | null>(null);
@@ -97,7 +97,7 @@ export function ConfigurationPanel() {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
 
-                const { data, error } = await supabase
+                let query = supabase
                     .from('partners')
                     .select(`
                         id, name, slug, email, is_active,
@@ -110,11 +110,43 @@ export function ConfigurationPanel() {
                         rent_warning_high_multiplier, rent_warning_low_multiplier,
                         enable_rent_validation, enable_what_if_calculator,
                         show_amortization_table, max_amortization_months
-                    `)
-                    .eq('owner_user_id', user.id)
-                    .single();
+                    `);
+
+                if (isAdminMode) {
+                    // Admin mode: specifically look for the record with owner_user_id and special slug or just owner_user_id
+                    // The requirement mentioned: "existing admin partner record (the one with no slug, or create a special admin record if needed)"
+                    query = query.eq('owner_user_id', user.id).is('slug', null);
+                } else {
+                    query = query.eq('owner_user_id', user.id);
+                }
+
+                let { data, error } = await query.maybeSingle();
+
+                // If admin mode and no record found, create the "Default/Admin" record
+                if (isAdminMode && !data && !error) {
+                    console.log("[ConfigurationPanel] Creating default admin record...");
+                    const { data: newData, error: createError } = await supabase
+                        .from('partners')
+                        .insert({
+                            name: 'Admin',
+                            slug: null, // Use null for the admin default record
+                            email: user.email,
+                            owner_user_id: user.id,
+                            is_active: true,
+                            ...DEFAULT_PARTNER_CONFIG
+                        })
+                        .select()
+                        .single();
+
+                    if (createError) throw createError;
+                    data = newData;
+                }
 
                 if (error) throw error;
+                if (!data) {
+                    setIsLoading(false);
+                    return;
+                }
 
                 // Map database row to ExtendedConfig (filling nulls with defaults)
                 const mappedConfig: ExtendedConfig = {
