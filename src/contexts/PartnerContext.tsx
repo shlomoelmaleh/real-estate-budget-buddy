@@ -36,7 +36,19 @@ function safeJsonParse<T>(raw: string | null): T | null {
   }
 }
 
+async function fetchDefaultPartner(): Promise<Partner | null> {
+  // Use partners_public view
+  const { data, error } = await supabase
+    .from("partners_public")
+    .select("*")
+    .is("slug", null)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as unknown as Partner;
+}
+
 async function fetchPartnerBySlug(slug: string): Promise<Partner | null> {
+  if (!slug) return fetchDefaultPartner();
   // Use partners_public view - base partners table has admin-only RLS
   const { data, error } = await supabase
     .from("partners_public")
@@ -107,16 +119,19 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
       const idParam = sp.get("partnerId")?.trim();
       const param = refParam || idParam;
 
-      if (!param) return;
-
       setIsLoading(true);
 
       let p: Partner | null = null;
-      // If it looks like a UUID, try fetching by ID, otherwise by slug
-      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(param)) {
-        p = await fetchPartnerById(param);
+      if (param) {
+        // If it looks like a UUID, try fetching by ID, otherwise by slug
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(param)) {
+          p = await fetchPartnerById(param);
+        } else {
+          p = await fetchPartnerBySlug(param);
+        }
       } else {
-        p = await fetchPartnerBySlug(param);
+        // NO PARAMETER: Load system-wide default
+        p = await fetchDefaultPartner();
       }
 
       if (cancelled) return;
@@ -130,10 +145,14 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
 
       const newBinding: PartnerBinding = {
         partnerId: p.id,
-        slug: p.slug,
+        slug: p.slug || "",
         expiresAt: Date.now() + THIRTY_DAYS_MS,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newBinding));
+      if (p.slug) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newBinding));
+      } else {
+        localStorage.removeItem(STORAGE_KEY); // Don't persist null slug as a "binding" to allow redirection back to partner-less state
+      }
       setBinding(newBinding);
       setPartner(p);
       setConfig(mapToPartnerConfig(p));
@@ -154,7 +173,15 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       const stored = safeJsonParse<PartnerBinding>(localStorage.getItem(STORAGE_KEY));
       if (!stored || !stored.partnerId || !stored.expiresAt || stored.expiresAt < Date.now()) {
-        clearBinding();
+        // Only load default if NO partner is bound
+        if (!partner && !window.location.search) {
+          const p = await fetchDefaultPartner();
+          if (!cancelled && p) {
+            setPartner(p);
+            setConfig(mapToPartnerConfig(p));
+            applyPartnerBrandColor(normalizeHexColor(p.brand_color));
+          }
+        }
         setIsLoading(false);
         return;
       }

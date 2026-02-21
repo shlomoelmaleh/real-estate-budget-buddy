@@ -186,8 +186,9 @@ export default function AdminPartners() {
     });
   };
 
-  const copyLink = async (slug: string) => {
-    const url = `https://dream-deal-planner-29.lovable.app/?ref=${encodeURIComponent(slug)}`;
+  const copyLink = async (slug: string | null) => {
+    const baseUrl = "https://dream-deal-planner-29.lovable.app/";
+    const url = slug ? `${baseUrl}?ref=${encodeURIComponent(slug)}` : baseUrl;
     await navigator.clipboard.writeText(url);
     toast.success("Copied");
   };

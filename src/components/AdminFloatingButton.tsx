@@ -10,12 +10,12 @@ interface AdminFloatingButtonProps {
 }
 
 export function AdminFloatingButton({ onClick }: AdminFloatingButtonProps) {
-    const { isOwner } = usePartner();
+    const { isOwner, isAdmin } = usePartner();
     const { t } = useLanguage();
     const navigate = useNavigate();
 
     // Only check ownership. Visibility logic is now handled by the parent (BudgetCalculator).
-    if (!isOwner) {
+    if (!isOwner && !isAdmin) {
         return null;
     }
 
@@ -23,7 +23,7 @@ export function AdminFloatingButton({ onClick }: AdminFloatingButtonProps) {
         if (onClick) {
             onClick();
         } else {
-            navigate('/admin/settings');
+            navigate(isAdmin ? '/admin/my-config' : '/admin/settings');
         }
     };
 

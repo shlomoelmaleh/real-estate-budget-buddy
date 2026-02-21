@@ -113,18 +113,45 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                     `);
 
                 if (isAdminMode) {
-                    // Admin mode: specifically look for the record with owner_user_id and special slug or just owner_user_id
-                    // The requirement mentioned: "existing admin partner record (the one with no slug, or create a special admin record if needed)"
-                    query = query.eq('owner_user_id', user.id).is('slug', null);
+                    // Admin mode: specifically look for the record with slug null
+                    query = query.is('slug', null);
                 } else {
                     query = query.eq('owner_user_id', user.id);
                 }
 
                 let { data, error } = await query.maybeSingle();
 
-                // If admin mode and no record found, create the "Default/Admin" record
+                // If admin mode and no record found, check for an existing null-slug record without owner
                 if (isAdminMode && !data && !error) {
-                    console.log("[ConfigurationPanel] Creating default admin record...");
+                    console.log("[ConfigurationPanel] Checking for ownerless default record...");
+                    const { data: globalDefault, error: globalError } = await supabase
+                        .from('partners')
+                        .select('*')
+                        .is('slug', null)
+                        .is('owner_user_id', null)
+                        .maybeSingle();
+
+                    if (!globalError && globalDefault) {
+                        console.log("[ConfigurationPanel] Ownerless default found, claiming ownership...");
+                        const { data: updatedData, error: updateError } = await supabase
+                            .from('partners')
+                            .update({
+                                owner_user_id: user.id,
+                                email: user.email,
+                                name: globalDefault.name || 'Admin',
+                                is_active: true
+                            })
+                            .eq('id', globalDefault.id)
+                            .select()
+                            .single();
+                        if (updateError) throw updateError;
+                        data = updatedData;
+                    }
+                }
+
+                // If still no record found for admin, create one
+                if (isAdminMode && !data) {
+                    console.log("[ConfigurationPanel] Creating new admin record...");
                     const { data: newData, error: createError } = await supabase
                         .from('partners')
                         .insert({

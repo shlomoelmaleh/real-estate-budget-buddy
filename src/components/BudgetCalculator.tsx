@@ -34,7 +34,7 @@ import { useBudgetWizard } from '@/hooks/useBudgetWizard';
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
-  const { partner } = usePartner();
+  const { partner, isAdmin } = usePartner();
   const navigate = useNavigate();
   const confirmationRef = useRef<HTMLDivElement>(null);
 
@@ -383,10 +383,9 @@ export function BudgetCalculator() {
           onClick={() => {
             // Persist current step so we can resume after returning from admin
             sessionStorage.setItem('wizard_return_step', step.toString());
-            // Navigate to admin
-            // define navigate outside render or import usage
-            navigate('/admin/settings'); // OR use useNavigate hook if available in this context
-            // Since we are in a component inside Router, better to use hook.
+
+            // Navigate to appropriate admin page
+            navigate(isAdmin ? '/admin/my-config' : '/admin/settings');
           }}
         />
       )}
