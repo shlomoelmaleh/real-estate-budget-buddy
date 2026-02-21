@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { Info, Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft, Copy } from 'lucide-react'; // Added Copy
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLanguage } from '@/contexts/LanguageContext'; // Added useLanguage
-import logoEshel from '@/assets/logo_eshel.png';
+import logoEshel from '@/assets/logo-eshel.png';
 
 // Extended config with all partner fields
 interface ExtendedConfig extends PartnerConfig {
