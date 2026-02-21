@@ -223,7 +223,7 @@ export default function AdminPartners() {
         id: editing?.id,
         partner: {
           name: form.name,
-          slug: form.slug,
+          slug: form.slug || null,
           email: form.email || null,
           phone: form.phone || null,
           whatsapp: form.whatsapp || null,

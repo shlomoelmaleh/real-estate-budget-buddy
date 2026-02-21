@@ -423,9 +423,21 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     {isAdmin && (
-                        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/partners')}>
-                            <ArrowLeft className="w-5 h-5" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate('/')}
+                            >
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                {t.backToApp}
+                            </Button>
+                            {isAdminMode && (
+                                <Button variant="ghost" size="icon" onClick={() => navigate('/admin/partners')} title="Partners Management">
+                                    <ArrowLeft className="w-5 h-5" />
+                                </Button>
+                            )}
+                        </div>
                     )}
                     {!isAdmin && (
                         <div className="flex items-center gap-2">
@@ -698,7 +710,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                                             <p className="text-xs text-muted-foreground mb-1">🔗 {t.partnerLink}</p>
                                             <div className="flex items-center gap-2">
                                                 <code className="flex-1 text-sm font-mono text-primary truncate bg-slate-50 p-1.5 rounded">
-                                                    {window.location.origin}/?ref={config.slug}
+                                                    {window.location.origin}{config.slug ? `/?ref=${config.slug}` : ''}
                                                 </code>
                                                 <Button
                                                     variant="outline"
