@@ -1,1 +1,0 @@
-ALTER TABLE public.partners ALTER COLUMN slug DROP NOT NULL;

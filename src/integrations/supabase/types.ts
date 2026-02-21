@@ -183,7 +183,7 @@ export type Database = {
           slogan_font_family: string | null
           slogan_font_size: string | null
           slogan_font_style: string | null
-          slug: string | null
+          slug: string
           vat_percent: number | null
           whatsapp: string | null
         }
@@ -220,7 +220,7 @@ export type Database = {
           slogan_font_family?: string | null
           slogan_font_size?: string | null
           slogan_font_style?: string | null
-          slug?: string | null
+          slug: string
           vat_percent?: number | null
           whatsapp?: string | null
         }
@@ -257,7 +257,7 @@ export type Database = {
           slogan_font_family?: string | null
           slogan_font_size?: string | null
           slogan_font_style?: string | null
-          slug?: string | null
+          slug?: string
           vat_percent?: number | null
           whatsapp?: string | null
         }
