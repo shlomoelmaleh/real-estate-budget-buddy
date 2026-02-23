@@ -1870,6 +1870,13 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    if (!RESEND_API_KEY) {
+      console.error("[send-report-email] RESEND_API_KEY not configured");
+      return new Response(
+        JSON.stringify({ error: "Email service temporarily unavailable" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // קריאת המידע מהבקשה וביצוע ולידציה
     const rawBody = await req.json();
