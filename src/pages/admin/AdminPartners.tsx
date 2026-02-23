@@ -191,8 +191,8 @@ export default function AdminPartners() {
   };
 
   const copyLink = async (slug: string | null) => {
-    const baseUrl = window.location.origin;
-    const url = slug ? `${baseUrl}/?ref=${encodeURIComponent(slug)}` : baseUrl;
+    const baseUrl = window.location.origin + "/";
+    const url = slug ? `${baseUrl}?ref=${encodeURIComponent(slug)}` : baseUrl;
     await navigator.clipboard.writeText(url);
     toast.success("Copied");
   };

@@ -64,6 +64,11 @@ export function BudgetCalculator() {
       expectedRent: '',
       budgetCap: '',
       targetPropertyPrice: '',
+      advisorFee: '',
+      otherFee: '',
+      lawyerPct: '',
+      brokerPct: '',
+      vatPct: '',
     },
   });
 

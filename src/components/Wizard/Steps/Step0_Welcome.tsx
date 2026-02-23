@@ -4,9 +4,30 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
-import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
+import { FONT_FAMILY_OPTIONS, SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import logoEshel from '@/assets/logo-eshel.png';
+
+function getSloganFontSizeClass(size: SloganFontSize | null | undefined): string {
+    switch (size) {
+        case 'xs': return 'text-sm sm:text-base';
+        case 'sm': return 'text-base sm:text-lg';
+        case 'base': return 'text-lg sm:text-xl';
+        case 'lg': return 'text-xl sm:text-2xl';
+        case 'xl': return 'text-2xl sm:text-3xl';
+        default: return 'text-lg sm:text-xl';
+    }
+}
+
+function getSloganFontStyleClass(style: SloganFontStyle | null | undefined): string {
+    switch (style) {
+        case 'normal': return 'font-normal not-italic';
+        case 'italic': return 'font-normal italic';
+        case 'bold': return 'font-bold not-italic';
+        case 'bold-italic': return 'font-bold italic';
+        default: return 'font-normal not-italic';
+    }
+}
 
 export function Step0({ onNext }: { onNext: () => void }) {
     const { t, language } = useLanguage();
@@ -102,7 +123,11 @@ export function Step0({ onNext }: { onNext: () => void }) {
                         </h1>
 
                         <p
-                            className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+                            className={cn(
+                                "max-w-2xl mx-auto mb-10 leading-relaxed text-muted-foreground",
+                                getSloganFontSizeClass(partner?.slogan_font_size),
+                                getSloganFontStyleClass(partner?.slogan_font_style)
+                            )}
                             style={{
                                 fontFamily: partner?.slogan_font_family ? FONT_FAMILY_OPTIONS[partner.slogan_font_family].css : 'inherit'
                             }}

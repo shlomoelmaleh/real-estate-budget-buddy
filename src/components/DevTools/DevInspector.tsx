@@ -44,7 +44,7 @@ export function DevInspector({ formData, results, language = 'he' }: DevInspecto
     // Generate HTML for preview
     const htmlContent = showPreview && results
         ? getDossierPreview(
-            { ...formData, advisorFee: '9000', otherFee: '3000' }, // Inputs
+            { ...formData, advisorFee: formData?.advisorFee || '0', otherFee: formData?.otherFee || '0' }, // Inputs
             results, // Results
             language as any, // Language
             previewTab === 'advisor' // isAdvisorCopy
