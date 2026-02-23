@@ -94,6 +94,9 @@ export function Step0({ onNext }: { onNext: () => void }) {
                                 src={displayLogo}
                                 alt="Logo"
                                 className="w-full h-full object-contain"
+                                fetchPriority="high"
+                                loading="eager"
+                                decoding="async"
                             />
                         </div>
 
