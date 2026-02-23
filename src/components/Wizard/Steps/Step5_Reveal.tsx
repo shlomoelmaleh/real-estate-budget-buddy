@@ -368,7 +368,7 @@ export function Step5({
                                         document.getElementById('lead-capture-section')?.scrollIntoView({ behavior: 'smooth' });
                                     }, 100);
                                 }}
-                                className="mt-8 bg-gradient-to-r from-primary via-primary-dark to-primary hover:bg-pos-100 bg-pos-0 bg-[length:200%_auto] text-white rounded-2xl px-12 h-16 md:h-20 text-lg md:text-xl font-black shadow-[0_20px_60px_rgba(30,64,175,0.4)] hover:shadow-[0_20px_80px_rgba(30,64,175,0.6)] hover:scale-[1.05] active:scale-[0.98] transition-all duration-500 group relative overflow-hidden"
+                                className="mt-8 w-full max-w-sm bg-gradient-to-r from-primary via-primary-dark to-primary hover:bg-pos-100 bg-pos-0 bg-[length:200%_auto] text-white rounded-2xl px-6 md:px-12 h-16 md:h-20 text-base md:text-xl font-black shadow-[0_20px_60px_rgba(30,64,175,0.4)] hover:shadow-[0_20px_80px_rgba(30,64,175,0.6)] hover:scale-[1.05] active:scale-[0.98] transition-all duration-500 group relative overflow-hidden mx-auto"
                             >
                                 {/* Animated Shine Effect */}
                                 <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-25deg] -translate-x-full group-hover:animate-shine pointer-events-none" />
@@ -378,7 +378,7 @@ export function Step5({
                                     <motion.span
                                         animate={{ y: [0, 6, 0] }}
                                         transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                                        className="ms-4 text-2xl"
+                                        className="ms-2 md:ms-4 text-xl md:text-2xl"
                                     >
                                         ↓
                                     </motion.span>
@@ -460,7 +460,7 @@ export function Step5({
                     "transition-all duration-1000 ease-out transform",
                     showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}>
-                <div className="bg-white rounded-3xl p-8 md:p-10 border-2 border-primary/10 space-y-10 mt-12 shadow-[0_30px_70px_rgba(30,64,175,0.1)] relative overflow-hidden">
+                <div className="bg-white rounded-[2rem] p-5 sm:p-8 md:p-10 border-2 border-primary/10 space-y-8 md:space-y-10 mt-12 shadow-[0_30px_70px_rgba(30,64,175,0.1)] relative overflow-hidden w-full mx-auto">
 
                     {/* Premium Header */}
                     <div className="space-y-6 text-center relative z-10">
@@ -473,15 +473,15 @@ export function Step5({
                         </div>
 
                         <div className="space-y-4">
-                            <h3 className="font-black text-2xl md:text-4xl text-primary tracking-tight">
+                            <h3 className="font-black text-xl sm:text-2xl md:text-4xl text-primary tracking-tight text-balance">
                                 {t.dossierTeaser}
                             </h3>
 
                             <div className="space-y-4 max-w-2xl mx-auto">
-                                <p className="text-lg md:text-xl text-slate-800 leading-relaxed font-bold px-4">
+                                <p className="text-base sm:text-lg md:text-xl text-slate-800 leading-relaxed font-bold px-2 md:px-4 text-balance">
                                     {getDiagnosisHook()}
                                 </p>
-                                <p className="text-base text-slate-600 leading-relaxed font-medium px-4 opacity-90">
+                                <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium px-2 md:px-4 opacity-90 text-balance">
                                     {t.leadCaptureTitle}
                                 </p>
                             </div>
