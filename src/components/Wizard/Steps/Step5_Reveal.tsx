@@ -361,23 +361,28 @@ export function Step5({
                             transition={{ delay: 0.5 }}
                         >
                             <Button
-                                variant="outline"
+                                variant="default"
                                 onClick={() => {
                                     setShowDossier(true);
                                     setTimeout(() => {
                                         document.getElementById('lead-capture-section')?.scrollIntoView({ behavior: 'smooth' });
                                     }, 100);
                                 }}
-                                className="mt-4 border-primary/30 text-primary hover:bg-primary/5 rounded-full px-6 h-11 font-bold shadow-sm group"
+                                className="mt-8 bg-gradient-to-r from-primary via-primary-dark to-primary hover:bg-pos-100 bg-pos-0 bg-[length:200%_auto] text-white rounded-2xl px-12 h-16 md:h-20 text-lg md:text-xl font-black shadow-[0_20px_60px_rgba(30,64,175,0.4)] hover:shadow-[0_20px_80px_rgba(30,64,175,0.6)] hover:scale-[1.05] active:scale-[0.98] transition-all duration-500 group relative overflow-hidden"
                             >
-                                {t.jumpToDossier}
-                                <motion.span
-                                    animate={{ y: [0, 4, 0] }}
-                                    transition={{ repeat: Infinity, duration: 1.5 }}
-                                    className="ms-2"
-                                >
-                                    ↓
-                                </motion.span>
+                                {/* Animated Shine Effect */}
+                                <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-25deg] -translate-x-full group-hover:animate-shine pointer-events-none" />
+
+                                <span className="relative z-10 flex items-center">
+                                    {t.jumpToDossier}
+                                    <motion.span
+                                        animate={{ y: [0, 6, 0] }}
+                                        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                                        className="ms-4 text-2xl"
+                                    >
+                                        ↓
+                                    </motion.span>
+                                </span>
                             </Button>
                         </motion.div>
                     )}
@@ -455,25 +460,32 @@ export function Step5({
                     "transition-all duration-1000 ease-out transform",
                     showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}>
-                <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/60 space-y-8 mt-8 shadow-sm relative overflow-hidden">
+                <div className="bg-white rounded-3xl p-8 md:p-10 border-2 border-primary/10 space-y-10 mt-12 shadow-[0_30px_70px_rgba(30,64,175,0.1)] relative overflow-hidden">
 
                     {/* Premium Header */}
-                    <div className="space-y-4 text-center relative z-10">
-                        <div className="inline-flex items-center justify-center p-4 rounded-full bg-blue-950/5 mb-2 ring-1 ring-blue-900/10">
+                    <div className="space-y-6 text-center relative z-10">
+                        <div className="inline-flex items-center justify-center p-6 rounded-3xl bg-primary/10 mb-2 ring-1 ring-primary/20 shadow-inner">
                             {/* Premium Icon composed of Folder + Text */}
                             <div className="relative">
-                                <FolderOpen className="w-10 h-10 text-[#1e3a8a]" strokeWidth={1.5} />
-                                <FileText className="w-5 h-5 text-[#d97706] absolute -right-1 -bottom-1 bg-white rounded-full p-0.5 shadow-sm" />
+                                <FolderOpen className="w-12 h-12 text-primary" strokeWidth={1.5} />
+                                <FileText className="w-6 h-6 text-accent absolute -right-2 -bottom-2 bg-white rounded-lg p-1 shadow-md border border-primary/10" />
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-xl text-[#1e3a8a]">
-                            {t.dossierTeaser}
-                        </h3>
+                        <div className="space-y-4">
+                            <h3 className="font-black text-2xl md:text-4xl text-primary tracking-tight">
+                                {t.dossierTeaser}
+                            </h3>
 
-                        <p className="text-base text-slate-600 leading-relaxed max-w-lg mx-auto font-medium">
-                            {getDiagnosisHook()}
-                        </p>
+                            <div className="space-y-4 max-w-2xl mx-auto">
+                                <p className="text-lg md:text-xl text-slate-800 leading-relaxed font-bold px-4">
+                                    {getDiagnosisHook()}
+                                </p>
+                                <p className="text-base text-slate-600 leading-relaxed font-medium px-4 opacity-90">
+                                    {t.leadCaptureTitle}
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Form Fields & Button Container - Vertical Stack (Strict Gap 8) */}
