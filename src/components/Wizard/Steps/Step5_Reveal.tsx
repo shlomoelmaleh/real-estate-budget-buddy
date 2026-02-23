@@ -481,9 +481,6 @@ export function Step5({
                                 <p className="text-base sm:text-lg md:text-xl text-slate-800 leading-relaxed font-bold px-2 md:px-4 whitespace-normal break-words">
                                     {getDiagnosisHook()}
                                 </p>
-                                <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium px-2 md:px-4 opacity-90 whitespace-normal break-words">
-                                    {t.leadCaptureTitle}
-                                </p>
                             </div>
                         </div>
                     </div>
