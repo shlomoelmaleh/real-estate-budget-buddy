@@ -38,10 +38,14 @@ export function Step3({ control, errors, t }: StepProps) {
         <div className="space-y-8 animate-in slide-in-from-right duration-500">
             {/* First Property */}
             <div className="space-y-3">
-                <Label className="text-base font-semibold flex items-center gap-2">
-                    <Home className="w-5 h-5 text-primary" />
-                    {t.isFirstProperty}
-                    <span className="text-destructive">*</span>
+                <Label className="text-base font-semibold block">
+                    <div className="flex items-start gap-2">
+                        <Home className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                        <span>
+                            {t.isFirstProperty}
+                            <span className="text-destructive ml-1">*</span>
+                        </span>
+                    </div>
                 </Label>
                 <Controller
                     name="isFirstProperty"
@@ -72,10 +76,14 @@ export function Step3({ control, errors, t }: StepProps) {
 
             {/* Israeli Citizen */}
             <div className="space-y-3">
-                <Label className="text-base font-semibold flex items-center gap-2">
-                    <Flag className="w-5 h-5 text-primary" />
-                    {t.isIsraeliCitizen}
-                    <span className="text-destructive">*</span>
+                <Label className="text-base font-semibold block">
+                    <div className="flex items-start gap-2">
+                        <Flag className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                        <span>
+                            {t.isIsraeliCitizen}
+                            <span className="text-destructive ml-1">*</span>
+                        </span>
+                    </div>
                 </Label>
                 <Controller
                     name="isIsraeliCitizen"
@@ -106,10 +114,14 @@ export function Step3({ control, errors, t }: StepProps) {
 
             {/* Tax Resident */}
             <div className="space-y-3">
-                <Label className="text-base font-semibold flex items-center gap-2">
-                    <Banknote className="w-5 h-5 text-primary" />
-                    {t.isIsraeliTaxResident}
-                    <span className="text-destructive">*</span>
+                <Label className="text-base font-semibold block">
+                    <div className="flex items-start gap-2">
+                        <Banknote className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                        <span>
+                            {t.isIsraeliTaxResident}
+                            <span className="text-destructive ml-1">*</span>
+                        </span>
+                    </div>
                 </Label>
                 <Controller
                     name="isIsraeliTaxResident"
