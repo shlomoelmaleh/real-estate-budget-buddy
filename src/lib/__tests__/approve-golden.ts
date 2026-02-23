@@ -24,6 +24,16 @@ if (!fs.existsSync(SNAPSHOT_FILE)) {
     process.exit(1);
 }
 
+// Guard: Reject stale snapshots (older than 1 hour)
+const ONE_HOUR_MS = 60 * 60 * 1000;
+const snapshotAge = Date.now() - fs.statSync(SNAPSHOT_FILE).mtimeMs;
+if (snapshotAge > ONE_HOUR_MS) {
+    const minutesAgo = Math.round(snapshotAge / 60_000);
+    console.warn(`\n⚠️  Snapshot is ${minutesAgo} minutes old (>${Math.round(ONE_HOUR_MS / 60_000)} min limit).`);
+    console.warn('   Re-run: npm run test:snapshot\n');
+    process.exit(1);
+}
+
 fs.copyFileSync(SNAPSHOT_FILE, REFERENCE_FILE);
 
 const data = JSON.parse(fs.readFileSync(REFERENCE_FILE, 'utf-8'));

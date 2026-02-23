@@ -178,6 +178,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (isUrlBound.current) { setIsLoading(false); return; }
       const stored = safeJsonParse<PartnerBinding>(localStorage.getItem(STORAGE_KEY));
       if (!stored || !stored.partnerId || !stored.expiresAt || stored.expiresAt < Date.now()) {
         // Only load default if NO partner is bound
@@ -192,7 +193,6 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         return;
       }
-      if (isUrlBound.current) { setIsLoading(false); return; }
       setBinding(stored);
       const p = await fetchPartnerById(stored.partnerId);
       if (cancelled) return;
