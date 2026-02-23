@@ -13,7 +13,7 @@ export type TaxProfile = 'SINGLE_HOME' | 'INVESTOR';
 
 export interface TaxBracket {
     min: number;
-    max: number;
+    max: number | null;
     rate: number;
 }
 
