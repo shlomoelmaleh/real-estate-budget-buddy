@@ -373,12 +373,12 @@ export function Step5({
                                 {/* Animated Shine Effect */}
                                 <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-25deg] -translate-x-full group-hover:animate-shine pointer-events-none" />
 
-                                <span className="relative z-10 flex items-center">
-                                    {t.jumpToDossier}
+                                <span className="relative z-10 flex flex-wrap items-center justify-center leading-tight whitespace-normal break-words">
+                                    <span className="text-center">{t.jumpToDossier}</span>
                                     <motion.span
                                         animate={{ y: [0, 6, 0] }}
                                         transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                                        className="ms-2 md:ms-4 text-xl md:text-2xl"
+                                        className="ms-2 md:ms-4 text-xl md:text-2xl shrink-0"
                                     >
                                         ↓
                                     </motion.span>
@@ -473,15 +473,15 @@ export function Step5({
                         </div>
 
                         <div className="space-y-4">
-                            <h3 className="font-black text-xl sm:text-2xl md:text-4xl text-primary tracking-tight text-balance">
+                            <h3 className="font-black text-xl sm:text-2xl md:text-4xl text-primary tracking-tight whitespace-normal break-words">
                                 {t.dossierTeaser}
                             </h3>
 
                             <div className="space-y-4 max-w-2xl mx-auto">
-                                <p className="text-base sm:text-lg md:text-xl text-slate-800 leading-relaxed font-bold px-2 md:px-4 text-balance">
+                                <p className="text-base sm:text-lg md:text-xl text-slate-800 leading-relaxed font-bold px-2 md:px-4 whitespace-normal break-words">
                                     {getDiagnosisHook()}
                                 </p>
-                                <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium px-2 md:px-4 opacity-90 text-balance">
+                                <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium px-2 md:px-4 opacity-90 whitespace-normal break-words">
                                     {t.leadCaptureTitle}
                                 </p>
                             </div>
@@ -546,7 +546,7 @@ export function Step5({
                             ) : (
                                 <FileText className="w-5 h-5 sm:w-6 sm:h-6 mr-2 shrink-0" />
                             )}
-                            <span className="text-balance leading-tight">
+                            <span className="whitespace-normal break-words leading-tight">
                                 {t.leadCaptureBtn}
                             </span>
                         </Button>
