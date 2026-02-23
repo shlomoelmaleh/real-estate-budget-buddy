@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-23T11:41:30.349Z",
+  "generatedAt": "2026-02-23T20:08:34.092Z",
   "totalScenarios": 22,
   "note": "For each scenario, verify INPUTS (all 3 categories) against OUTPUTS using an external tool. When satisfied, run: npm run test:approve",
   "scenarios": [

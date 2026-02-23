@@ -41,6 +41,7 @@ export function Step3({ control, errors, t }: StepProps) {
                 <Label className="text-base font-semibold flex items-center gap-2">
                     <Home className="w-5 h-5 text-primary" />
                     {t.isFirstProperty}
+                    <span className="text-destructive">*</span>
                 </Label>
                 <Controller
                     name="isFirstProperty"
@@ -74,6 +75,7 @@ export function Step3({ control, errors, t }: StepProps) {
                 <Label className="text-base font-semibold flex items-center gap-2">
                     <Flag className="w-5 h-5 text-primary" />
                     {t.isIsraeliCitizen}
+                    <span className="text-destructive">*</span>
                 </Label>
                 <Controller
                     name="isIsraeliCitizen"
@@ -107,6 +109,7 @@ export function Step3({ control, errors, t }: StepProps) {
                 <Label className="text-base font-semibold flex items-center gap-2">
                     <Banknote className="w-5 h-5 text-primary" />
                     {t.isIsraeliTaxResident}
+                    <span className="text-destructive">*</span>
                 </Label>
                 <Controller
                     name="isIsraeliTaxResident"

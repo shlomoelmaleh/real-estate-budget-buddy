@@ -1,0 +1,63 @@
+﻿
+ΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנ
+  CALCULATOR SNAPSHOT RUNNER
+ΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנ
+
+  [S01_BASELINE] Standard first-time Israeli buyer, no rental, typical inputs ... Γ£ף
+  [S02_TAX_ZERO] Budget for a low-equity buyer Γאפ final price likely below 1,978,745 Γזע purchase tax = 0 ... Γ£ף
+  [S03_TAX_3_5_PCT] Buyer whose result price lands in the 3.5% SINGLE_HOME tax bracket (1.97MΓאף2.35M) ... Γ£ף
+  [S04_INVESTOR] Second property purchase Γזע INVESTOR tax profile (flat 8% from 0) ... Γ£ף
+  [S05_NON_ISRAELI] First property but non-Israeli resident Γזע INVESTOR profile (foreign buyer) ... Γ£ף
+  [S06_LTV_BINDING] Very high income Γאפ LTV cap restricts the loan before income does ... Γ£ף
+  [S07_INCOME_BINDING] High equity but low income Γאפ DTI ratio limits the loan amount ... Γ£ף
+  [S08_BUDGET_CAP] User sets an explicit monthly payment ceiling via budgetCap ... Γ£ף
+  [S09_RENTAL_YIELD] Investment property with no explicit rent Γאפ rent estimated from yield ... Γ£ף
+  [S10_EXPLICIT_RENT] User provides a specific expected rent value Γאפ overrides yield calculation ... Γ£ף
+  [S11_RENT_WARNING_HIGH] Explicit rent far above market estimate Γזע rentWarning = high ... Γ£ף
+  [S12_RENT_WARNING_LOW] Explicit rent far below market estimate Γזע rentWarning = low ... Γ£ף
+  [S13_RENT_VALIDATION_OFF] enable_rent_validation=false Γזע rentWarning stays null even with extreme rent ... Γ£ף
+  [S14_AGE_TOO_OLD] Borrower age equals or exceeds maxAge Γזע calculateMaxBudget returns null ... Γתá  returned null (expected for some edge cases)
+  [S15_ZERO_INTEREST] Interest rate = 1 (minimum allowed) Γזע standard amortization branch ... Γ£ף
+  [S16_AMORTIZATION_TABLE] show_amortization_table=true Γזע amortizationTable is populated and mathematically consistent ... Γ£ף
+  [S17_LUXURY_8_PCT] Luxury home price > 6,055,070 Γזע lands in the 8% SINGLE_HOME bracket ... Γ£ף
+  [S18_ULTRA_LUXURY_10_PCT] Ultra-luxury home price > 20,183,565 Γזע lands in the 10% SINGLE_HOME bracket ... Γ£ף
+  [S19_LUXURY_INVESTOR] Investor purchase > 6,055,070 Γזע lands in the 10% INVESTOR bracket ... Γ£ף
+  [S20_FIRST_HOME_WITH_RENTAL] First property purchase where user will rent it out Γזע uses rent_recognition_first_property ... Γ£ף
+  [S21_ZERO_FEES] Partner config has 0% for variable fees and 0 NIS for fixed fees ... Γ£ף
+  [S22_TERM_REDUCTION] Effective years reduced because age is close to maxAge ... Γ£ף
+
+ΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנ
+  SUMMARY
+ΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנΓץנ
+ID                              Max Prop. Value   Purch. Tax   Monthly Pmt  Tax Profile
+ΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפא
+S01_BASELINE                          5,114,651      151,271        13,200  SINGLE_HOME
+S02_TAX_ZERO                          1,540,070            0         5,940  SINGLE_HOME
+S03_TAX_3_5_PCT                       1,755,341            0         6,600  SINGLE_HOME
+S04_INVESTOR                          3,230,515      258,441         8,671     INVESTOR
+S05_NON_ISRAELI                       4,043,007      323,441        10,852     INVESTOR
+S06_LTV_BINDING                      14,434,052      868,610        58,114  SINGLE_HOME
+S07_INCOME_BINDING                    9,652,138      486,057         2,640  SINGLE_HOME
+S08_BUDGET_CAP                        4,222,183      106,647         8,000  SINGLE_HOME
+S09_RENTAL_YIELD                      4,559,326      364,746        11,259     INVESTOR
+S10_EXPLICIT_RENT                     3,729,725      298,378         8,976     INVESTOR
+S11_RENT_WARNING_HIGH                 4,855,499      388,440        13,033     INVESTOR
+S12_RENT_WARNING_LOW                  3,825,245      306,020         6,864     INVESTOR
+S13_RENT_VALIDATION_OFF               4,855,499      388,440        13,033     INVESTOR
+S14_AGE_TOO_OLD                 null (expected)
+S15_ZERO_INTEREST                     6,614,799      243,070        13,200  SINGLE_HOME
+S16_AMORTIZATION_TABLE                5,114,651      151,271        13,200  SINGLE_HOME
+S17_LUXURY_8_PCT                     10,034,065      516,611        26,400  SINGLE_HOME
+S18_ULTRA_LUXURY_10_PCT              42,303,741    3,540,589       120,000  SINGLE_HOME
+S19_LUXURY_INVESTOR                  12,556,305    1,134,529        33,000     INVESTOR
+S20_FIRST_HOME_WITH_RENTAL            3,060,608       48,569         6,600  SINGLE_HOME
+S21_ZERO_FEES                         3,760,681       83,572         9,900  SINGLE_HOME
+S22_TERM_REDUCTION                    4,387,093      114,893        13,200  SINGLE_HOME
+ΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפאΓפא
+
+Γ£ו Output written to:
+   E:\antigravity - simulator budget\real-estate-budget-buddy\src\lib\__tests__\golden\snapshot-output.json
+
+≡ƒסי Next step: open snapshot-output.json, verify INPUTS vs OUTPUTS manually,
+   then run:  npm run test:approve
+

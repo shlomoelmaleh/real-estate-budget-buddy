@@ -13,6 +13,7 @@ export function Step1({ control, errors, t }: StepProps) {
                     render={({ field }) => (
                         <FormInput
                             label={t.fullName}
+                            required={true}
                             icon={<User className="w-4 h-4" />}
                             {...field}
                             hasError={!!errors.fullName}
@@ -28,6 +29,7 @@ export function Step1({ control, errors, t }: StepProps) {
                     render={({ field }) => (
                         <FormInput
                             label={t.age}
+                            required={true}
                             icon={<Clock className="w-4 h-4" />}
                             {...field}
                             formatNumber={true}

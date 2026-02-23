@@ -13,6 +13,7 @@ export function Step2({ control, errors, t }: StepProps) {
                     render={({ field }) => (
                         <FormInput
                             label={`${t.equity} (₪)`}
+                            required={true}
                             currencySymbol={t.currencySymbol}
                             icon={<Coins className="w-4 h-4" />}
                             {...field}
@@ -29,6 +30,7 @@ export function Step2({ control, errors, t }: StepProps) {
                     render={({ field }) => (
                         <FormInput
                             label={`${t.netIncome} (₪)`}
+                            required={true}
                             currencySymbol={t.currencySymbol}
                             icon={<TrendingUp className="w-4 h-4" />}
                             {...field}
