@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Partner } from "@/lib/partnerTypes";
 import { applyPartnerBrandColor, normalizeHexColor } from "@/lib/color";
 import { PartnerConfig, DEFAULT_PARTNER_CONFIG } from "@/types/partnerConfig";
-import { checkIsAdmin, isAdminUser } from "@/lib/admin";
+import { checkIsAdmin } from "@/lib/admin";
 
 type PartnerBinding = {
   partnerId: string;
@@ -110,6 +110,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const isUrlBound = useRef(false);
+  const isLoadedRef = useRef(false);
 
   // Detect ?ref=slug (initial load is the primary use-case)
   useEffect(() => {
@@ -191,6 +192,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         return;
       }
+      if (isUrlBound.current) { setIsLoading(false); return; }
       setBinding(stored);
       const p = await fetchPartnerById(stored.partnerId);
       if (cancelled) return;
@@ -236,10 +238,9 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
 
       if (!pError && pData) {
         setIsOwner(true);
-        // Only auto-load if no partner is currently active.
-        // This prevents hijacking when an admin views a specific partner link.
         if (!partner) {
           console.log("[PartnerContext] Owner detected, auto-loading owner partner:", pData.name);
+          isLoadedRef.current = true;
           setPartner(pData as unknown as Partner);
           setConfig(mapToPartnerConfig(pData));
           applyPartnerBrandColor(normalizeHexColor(pData.brand_color));
@@ -276,7 +277,7 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
       subscription.unsubscribe();
     };
-  }, [partner]);
+  }, []);
 
   // Welcome Toast Logic (Once per session)
   const hasWelcomedRef = React.useRef(false);

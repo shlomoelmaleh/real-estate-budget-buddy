@@ -8,7 +8,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import type { SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
 import { supabase } from '@/integrations/supabase/client';
-import { checkIsAdmin, isAdminUser } from '@/lib/admin';
+import { checkIsAdmin } from '@/lib/admin';
 import { Settings } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -44,8 +44,7 @@ export function HeroHeader() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         const isSuperAdmin = await checkIsAdmin();
-        const isEmailAdmin = isAdminUser(session.user);
-        setIsAdmin(isSuperAdmin || isEmailAdmin);
+        setIsAdmin(isSuperAdmin);
       }
     };
     checkAdmin();

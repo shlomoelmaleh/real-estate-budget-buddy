@@ -11,7 +11,7 @@ const corsHeaders = {
 const partnerSchema = z
   .object({
     name: z.string().min(1),
-    slug: z.string().min(1),
+    slug: z.union([z.string().min(1), z.null()]).optional(),
     email: z.string().email().optional().nullable(),
     // ... (add other basic fields as loose validation)
     // Config fields
@@ -25,6 +25,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("CREATE"), partner: partnerSchema }),
   z.object({ action: z.literal("UPDATE"), id: z.string(), partner: partnerSchema }),
   z.object({ action: z.literal("DELETE"), id: z.string() }),
+  z.object({ action: z.literal("SET_ACTIVE"), id: z.string(), is_active: z.boolean() }),
 ]);
 
 serve(async (req) => {
@@ -68,9 +69,7 @@ serve(async (req) => {
     }
 
     if (parsed.action === "UPDATE") {
-      // This logic was missing!
       const { error } = await adminClient.from("partners").update(parsed.partner).eq("id", parsed.id);
-
       if (error) throw error;
       return new Response(JSON.stringify({ ok: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -84,12 +83,22 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    if (parsed.action === "SET_ACTIVE") {
+      const { error } = await adminClient.from("partners").update({ is_active: parsed.is_active }).eq("id", parsed.id);
+      if (error) throw error;
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[admin-partners] Error:", error instanceof Error ? error.message : "Unknown error");
-    return new Response(JSON.stringify({ error: "Operation failed. Please try again." }), {
+    const errMsg = error instanceof z.ZodError
+      ? error.errors.map(e => e.message).join(', ')
+      : (error instanceof Error ? error.message : "Unknown error");
+    console.error("[admin-partners] Error:", errMsg);
+    return new Response(JSON.stringify({ error: errMsg }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -124,6 +124,19 @@ export function solveMaximumBudget(
                 }
             }
 
+            // Dynamic limiting factor (mirrors Edge Function logic)
+            const equityUsed = price + closingCosts - loan;
+            const hasExcessEquity = equity - equityUsed >= 1000;
+            let limitingFactor: CalculatorResults['limitingFactor'];
+            if (hasExcessEquity) {
+                limitingFactor = maxLoanByPayment < maxLoanByLTV ? 'INCOME_LIMIT' : 'LTV_LIMIT';
+                if (maxLoanTermMonths < 360 && inputs.age > 45 && limitingFactor === 'INCOME_LIMIT') {
+                    limitingFactor = 'AGE_LIMIT';
+                }
+            } else {
+                limitingFactor = 'EQUITY_LIMIT';
+            }
+
             bestResult = {
                 maxPropertyValue: Math.round(price),
                 loanAmount: Math.round(loan),
@@ -137,11 +150,11 @@ export function solveMaximumBudget(
                 loanTermYears: maxLoanTermMonths / 12,
                 purchaseTax: Math.round(purchaseTax),
                 taxProfile,
-                equityUsed: Math.round(price + closingCosts - loan),
-                equityRemaining: Math.round(equity - (price + closingCosts - loan)),
+                equityUsed: Math.round(equityUsed),
+                equityRemaining: Math.round(equity - equityUsed),
                 lawyerFeeTTC: Math.round(price * (config.lawyer_fee_percent / 100) * (1 + config.vat_percent / 100)),
                 brokerFeeTTC: Math.round(price * (config.broker_fee_percent / 100) * (1 + config.vat_percent / 100)),
-                limitingFactor: 'EQUITY_LIMIT', // Logic simplified for preview
+                limitingFactor,
                 estimatedMarketRent: Math.round(estimatedMarketRent),
                 rentWarning
             };
