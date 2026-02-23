@@ -19,7 +19,7 @@ ADD COLUMN IF NOT EXISTS rent_recognition_investment DECIMAL(4,3) DEFAULT 0.8 CH
 ADD COLUMN IF NOT EXISTS default_interest_rate DECIMAL(5,3) DEFAULT 5.0 CHECK (default_interest_rate >= 1.0 AND default_interest_rate <= 15.0),
 ADD COLUMN IF NOT EXISTS lawyer_fee_percent DECIMAL(5,3) DEFAULT 1.0 CHECK (lawyer_fee_percent >= 0 AND lawyer_fee_percent <= 10),
 ADD COLUMN IF NOT EXISTS broker_fee_percent DECIMAL(5,3) DEFAULT 2.0 CHECK (broker_fee_percent >= 0 AND broker_fee_percent <= 10),
-ADD COLUMN IF NOT EXISTS vat_percent DECIMAL(5,3) DEFAULT 17.0 CHECK (vat_percent >= 0 AND vat_percent <= 25),
+ADD COLUMN IF NOT EXISTS vat_percent DECIMAL(5,3) DEFAULT 18.0 CHECK (vat_percent >= 0 AND vat_percent <= 25),
 ADD COLUMN IF NOT EXISTS advisor_fee_fixed INTEGER DEFAULT 9000 CHECK (advisor_fee_fixed >= 0 AND advisor_fee_fixed <= 100000),
 ADD COLUMN IF NOT EXISTS other_fee_fixed INTEGER DEFAULT 3000 CHECK (other_fee_fixed >= 0 AND other_fee_fixed <= 100000),
 ADD COLUMN IF NOT EXISTS rental_yield_default DECIMAL(5,3) DEFAULT 3.0 CHECK (rental_yield_default >= 0 AND rental_yield_default <= 20),
