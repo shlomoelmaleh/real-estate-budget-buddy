@@ -8,6 +8,8 @@ import {
   generateAmortizationTable,
   type PartnerConfig,
   type CalculatorResults,
+  type TaxBracket,
+  type TaxProfile,
 } from "../_shared/calculatorEngine.ts";
 
 // CORS headers - allow all origins for this public calculator
@@ -104,6 +106,30 @@ async function loadPartnerConfig(
   } catch (error) {
     console.error('Exception loading partner config:', error);
     return DEFAULT_PARTNER_CONFIG;
+  }
+}
+
+// ============= LOAD SYSTEM TAX BRACKETS =============
+
+async function loadSystemTaxBrackets(
+  supabaseClient: any
+): Promise<Record<TaxProfile, TaxBracket[]> | undefined> {
+  try {
+    const { data, error } = await supabaseClient
+      .from('system_settings')
+      .select('value')
+      .eq('key', 'tax_brackets')
+      .single();
+
+    if (error) {
+      console.warn('Could not load system tax brackets, using defaults:', error.message);
+      return undefined;
+    }
+
+    return data.value;
+  } catch (err) {
+    console.error('Exception loading system tax brackets:', err);
+    return undefined;
   }
 }
 
@@ -234,11 +260,14 @@ const handler = async (req: Request): Promise<Response> => {
     const partnerId = inputs.partnerId;
     const inputConfig = inputs.config;
 
-    // Load partner configuration
-    const config = inputConfig || await loadPartnerConfig(supabaseAdmin, partnerId || null);
+    // Load partner configuration and system tax brackets in parallel
+    const [config, systemBrackets] = await Promise.all([
+      inputConfig || loadPartnerConfig(supabaseAdmin, partnerId || null),
+      loadSystemTaxBrackets(supabaseAdmin)
+    ]);
 
-    // Perform calculation using the canonical shared engine
-    const results = calculateMaxBudget(inputs, config);
+    // Perform calculation using the canonical shared engine with dynamic tax brackets
+    const results = calculateMaxBudget(inputs, config, systemBrackets);
 
     if (!results) {
       return new Response(

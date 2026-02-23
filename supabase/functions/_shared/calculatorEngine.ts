@@ -120,12 +120,13 @@ function determineTaxProfile(isFirstProperty: boolean, isIsraeliTaxResident: boo
     return 'INVESTOR';
 }
 
-export function computePurchaseTax(price: number, profile: TaxProfile): number {
-    const brackets = TAX_BRACKETS[profile];
+export function computePurchaseTax(price: number, profile: TaxProfile, customBrackets?: Record<TaxProfile, TaxBracket[]>): number {
+    const brackets = (customBrackets || TAX_BRACKETS)[profile];
     let tax = 0;
     for (const bracket of brackets) {
         if (price <= bracket.min) break;
-        const taxableAmount = Math.min(price, bracket.max) - bracket.min;
+        const maxLimit = bracket.max === null || bracket.max === Infinity ? Infinity : bracket.max;
+        const taxableAmount = Math.min(price, maxLimit) - bracket.min;
         tax += taxableAmount * bracket.rate;
     }
     return tax;
@@ -152,7 +153,8 @@ export function solveMaximumBudget(
     taxProfile: TaxProfile,
     amortizationFactor: number,
     maxLoanTermMonths: number,
-    config: PartnerConfig
+    config: PartnerConfig,
+    taxBrackets?: Record<TaxProfile, TaxBracket[]>
 ): CalculatorResults | null {
     const {
         equity,
@@ -181,7 +183,7 @@ export function solveMaximumBudget(
         iterations++;
         const price = (low + high) / 2;
 
-        const purchaseTax = computePurchaseTax(price, taxProfile);
+        const purchaseTax = computePurchaseTax(price, taxProfile, taxBrackets);
         const closingCosts = calculateClosingCosts(price, purchaseTax, lawyerPct, brokerPct, vatPct, advisorFee, otherFee);
 
         // Actual rent: user input overrides yield formula
@@ -278,7 +280,8 @@ export function solveMaximumBudget(
  */
 export function calculateMaxBudget(
     inputs: CalculatorInputs,
-    config: PartnerConfig
+    config: PartnerConfig,
+    taxBrackets?: Record<TaxProfile, TaxBracket[]>
 ): CalculatorResults | null {
     const { age, maxAge, interest, isFirstProperty, isIsraeliTaxResident } = inputs;
 
@@ -292,7 +295,7 @@ export function calculateMaxBudget(
     const A = mRate === 0 ? 1 / n : mRate / (1 - Math.pow(1 + mRate, -n));
 
     const taxProfile = determineTaxProfile(isFirstProperty, isIsraeliTaxResident);
-    const results = solveMaximumBudget(inputs, taxProfile, A, n, config);
+    const results = solveMaximumBudget(inputs, taxProfile, A, n, config, taxBrackets);
 
     if (results && config.show_amortization_table) {
         results.amortizationTable = generateAmortizationTable(
