@@ -51,6 +51,7 @@ export function FloatingWhatsApp() {
                 href={getWhatsAppHref()}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={t.floatingContact || "WhatsApp"}
                 className={cn(
                     "w-14 h-14 bg-[#25D366] text-white flex items-center justify-center shadow-glow z-20 transition-all duration-500",
                     // Shape: Flat against the screen edge, round on the inside
