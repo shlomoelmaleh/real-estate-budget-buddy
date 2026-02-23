@@ -368,7 +368,7 @@ export function Step5({
                                         document.getElementById('lead-capture-section')?.scrollIntoView({ behavior: 'smooth' });
                                     }, 100);
                                 }}
-                                className="mt-8 w-full max-w-sm bg-gradient-to-r from-primary via-primary-dark to-primary hover:bg-pos-100 bg-pos-0 bg-[length:200%_auto] text-white rounded-2xl px-6 md:px-12 h-16 md:h-20 text-base md:text-xl font-black shadow-[0_20px_60px_rgba(30,64,175,0.4)] hover:shadow-[0_20px_80px_rgba(30,64,175,0.6)] hover:scale-[1.05] active:scale-[0.98] transition-all duration-500 group relative overflow-hidden mx-auto"
+                                className="mt-8 w-full max-w-sm bg-gradient-to-r from-primary via-primary-dark to-primary hover:bg-pos-100 bg-pos-0 bg-[length:200%_auto] text-white rounded-[2rem] px-8 md:px-12 py-10 md:py-12 text-base md:text-xl font-black shadow-[0_20px_60px_rgba(30,64,175,0.4)] hover:shadow-[0_20px_80px_rgba(30,64,175,0.6)] hover:scale-[1.05] active:scale-[0.98] transition-all duration-500 group relative overflow-hidden mx-auto h-auto min-h-[5rem]"
                             >
                                 {/* Animated Shine Effect */}
                                 <div className="absolute inset-0 w-1/2 h-full bg-white/20 skew-x-[-25deg] -translate-x-full group-hover:animate-shine pointer-events-none" />
@@ -460,7 +460,7 @@ export function Step5({
                     "transition-all duration-1000 ease-out transform",
                     showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 )}>
-                <div className="bg-white rounded-[2rem] p-5 sm:p-8 md:p-10 border-2 border-primary/10 space-y-8 md:space-y-10 mt-12 shadow-[0_30px_70px_rgba(30,64,175,0.1)] relative overflow-hidden w-full mx-auto">
+                <div className="bg-white rounded-[2rem] p-8 sm:p-12 md:p-16 border-2 border-primary/10 space-y-12 md:space-y-16 mt-12 shadow-[0_30px_70px_rgba(30,64,175,0.1)] relative overflow-hidden w-full mx-auto">
 
                     {/* Premium Header */}
                     <div className="space-y-6 text-center relative z-10">
