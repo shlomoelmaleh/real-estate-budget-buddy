@@ -27,6 +27,8 @@ const corsHeaders = {
 
 import { calculateLeadScore, getLimitingFactorDescription } from "./leadScoring.ts";
 import { generateEmailHtml, toBase64, type ReportEmailRequest } from "./emailTemplate.ts";
+import { calculateMaxBudget, type CalculatorInputs } from "../_shared/calculatorEngine.ts";
+import { loadPartnerConfig, loadSystemTaxBrackets } from "../_shared/configLoader.ts";
 
 type PartnerContactOverride = {
   name?: string | null;
@@ -275,6 +277,75 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Email request received. Version: ${FUNCTION_VERSION}`);
 
     const effectivePartnerId = data.partnerId || data.partner_id || null;
+
+    // === ZERO-TRUST SECURITY: Backend Recalculation ===
+    console.log(`[${requestId}] Performing zero-trust calculation...`);
+    const [partnerConfig, systemBrackets] = await Promise.all([
+      loadPartnerConfig(supabaseAdmin, effectivePartnerId),
+      loadSystemTaxBrackets(supabaseAdmin)
+    ]);
+
+    const parsedInputs: CalculatorInputs = {
+      equity: parseFloat(data.inputs.equity || "0"),
+      ltv: parseFloat(data.inputs.ltv || "0"),
+      netIncome: parseFloat(data.inputs.netIncome || "0"),
+      ratio: parseFloat(data.inputs.ratio || "0"),
+      age: parseInt(data.inputs.age || "0", 10),
+      maxAge: parseInt(data.inputs.maxAge || "0", 10),
+      interest: parseFloat(data.inputs.interest || "0"),
+      isRented: data.inputs.isRented,
+      rentalYield: parseFloat(data.inputs.rentalYield || "0"),
+      rentRecognition: parseFloat(data.inputs.rentRecognition || "0"),
+      budgetCap: data.inputs.budgetCap ? parseFloat(data.inputs.budgetCap) : null,
+      isFirstProperty: data.inputs.isFirstProperty,
+      isIsraeliTaxResident: data.inputs.isIsraeliTaxResident,
+      expectedRent: data.inputs.expectedRent ? parseFloat(data.inputs.expectedRent) : null,
+      lawyerPct: parseFloat(data.inputs.lawyerPct || "0"),
+      brokerPct: parseFloat(data.inputs.brokerPct || "0"),
+      vatPct: parseFloat(data.inputs.vatPct || "0"),
+      advisorFee: parseFloat(data.inputs.advisorFee || "0"),
+      otherFee: parseFloat(data.inputs.otherFee || "0")
+    };
+
+    const secureResults = calculateMaxBudget(parsedInputs, partnerConfig, systemBrackets);
+
+    if (secureResults) {
+      // Override client payload with trusted backend calculated values
+      const incomeNet = parsedInputs.netIncome;
+      // Re-calculate derived shekelRatio if needed
+      const safeShekelRatio = parsedInputs.netIncome > 0
+        ? ((secureResults.netPayment / incomeNet) * 100)
+        : data.results.shekelRatio;
+
+      data.results = {
+        ...data.results,
+        maxPropertyValue: secureResults.maxPropertyValue,
+        loanAmount: secureResults.loanAmount,
+        actualLTV: secureResults.actualLTV,
+        monthlyPayment: secureResults.monthlyPayment,
+        rentIncome: secureResults.rentIncome,
+        netPayment: secureResults.netPayment,
+        closingCosts: secureResults.closingCosts,
+        totalInterest: secureResults.totalInterest,
+        totalCost: secureResults.totalCost,
+        loanTermYears: secureResults.loanTermYears,
+        purchaseTax: secureResults.purchaseTax,
+        taxProfile: secureResults.taxProfile,
+        equityUsed: secureResults.equityUsed,
+        equityRemaining: secureResults.equityRemaining,
+        lawyerFeeTTC: secureResults.lawyerFeeTTC,
+        brokerFeeTTC: secureResults.brokerFeeTTC,
+        limitingFactor: secureResults.limitingFactor,
+        estimatedMarketRent: secureResults.estimatedMarketRent,
+        rentWarning: secureResults.rentWarning,
+        shekelRatio: safeShekelRatio
+      };
+
+      console.log(`[${requestId}] Zero-trust override applied successfully.`);
+    } else {
+      console.warn(`[${requestId}] Zero-trust failed to calculate results. Falling back to client or rejecting.`);
+    }
+    // === END ZERO-TRUST SECURITY ===
 
     // Calculate Lead Score
     const leadAnalysis = calculateLeadScore(data.inputs, data.results, data.language);

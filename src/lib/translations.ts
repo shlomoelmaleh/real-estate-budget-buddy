@@ -282,6 +282,7 @@ export interface Translations {
   sentToRecipient: string;
   contactRep: string;
   errorAgeTooHigh: (max: number) => string;
+  errorAgeTooLow: (min: number) => string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -556,6 +557,7 @@ export const translations: Record<Language, Translations> = {
     impactSampleNotice: (age, income, equity) => `* דוגמה: גיל לווה ${age}, הכנסה נטו ${income} ₪, הון עצמי ${equity} ₪.`,
     impactUnavailable: "החישוב אינו זמין עבור ההגדרות הנוכחיות.",
     errorAgeTooHigh: (max) => `גיל הלווה אינו יכול לעלות על ${max} (לפי הגדרות המערכת)`,
+    errorAgeTooLow: (min) => `גיל הלווה חייב להיות לפחות ${min}`,
   },
   en: {
     dir: 'ltr',
@@ -828,6 +830,7 @@ export const translations: Record<Language, Translations> = {
     impactSampleNotice: (age, income, equity) => `* Sample: Borrower Age ${age}, Net Income ₪${income / 1000}k, Equity ₪${equity / 1000}k.`,
     impactUnavailable: "Calculation unavailable for current settings.",
     errorAgeTooHigh: (max) => `Age cannot exceed ${max} years (system limit)`,
+    errorAgeTooLow: (min) => `Age must be at least ${min} years old`,
   },
   fr: {
     dir: 'ltr',
@@ -1100,5 +1103,6 @@ export const translations: Record<Language, Translations> = {
     impactSampleNotice: (age, income, equity) => `* Exemple : Âge de l'emprunteur ${age}, Revenu net ${income} ₪, Apport ${equity} ₪.`,
     impactUnavailable: "Calcul indisponible pour les paramètres actuels.",
     errorAgeTooHigh: (max) => `L'âge ne peut pas dépasser ${max} ans (limite système)`,
+    errorAgeTooLow: (min) => `L'âge doit être d'au moins ${min} ans`,
   }
 };

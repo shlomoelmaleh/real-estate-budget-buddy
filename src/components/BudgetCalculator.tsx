@@ -54,7 +54,7 @@ export function BudgetCalculator() {
       fullName: '',
       phone: '',
       email: '',
-      equity: '1,000,000',
+      equity: '',
       netIncome: '',
       age: '',
       isFirstProperty: undefined,

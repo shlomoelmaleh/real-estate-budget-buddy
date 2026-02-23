@@ -8,67 +8,20 @@ import type { SloganFontSize, SloganFontStyle, SloganFontFamily } from '@/lib/pa
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import { checkIsAdmin } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Info, Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft, Copy } from 'lucide-react'; // Added Copy
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useLanguage } from '@/contexts/LanguageContext'; // Added useLanguage
+import { Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import logoEshel from '@/assets/logo-eshel-sm.webp';
 
-// Extended config with all partner fields
-interface ExtendedConfig extends PartnerConfig {
-    // Branding & Contact - EDITABLE
-    logo_url: string | null;
-    brand_color: string | null;
-    slogan: string | null;
-    slogan_font_size: SloganFontSize | null;
-    slogan_font_style: SloganFontStyle | null;
-    slogan_font_family: SloganFontFamily | null;
-    phone: string | null;
-    whatsapp: string | null;
-
-    // Read-only display fields (NOT in update payload)
-    name: string;
-    slug: string;
-    email: string | null;
-    is_active: boolean;
-}
-
-// Helper: Convert DB percentage decimals to display percentages (0.17 → 17)
-function toDisplayPercent(value: number): number {
-    return Math.round(value * 100);
-}
-
-// Helper: Convert display percentages to DB decimals (17 → 0.17)
-function toDbDecimal(value: number): number {
-    return value / 100;
-}
-
-// Font size labels
-const FONT_SIZE_LABELS: Record<SloganFontSize, string> = {
-    xs: 'Extra Small',
-    sm: 'Small',
-    base: 'Medium',
-    lg: 'Large',
-    xl: 'Extra Large',
-};
-
-// Font style labels
-const FONT_STYLE_LABELS: Record<SloganFontStyle, string> = {
-    normal: 'Normal',
-    italic: 'Italic',
-    bold: 'Bold',
-    'bold-italic': 'Bold Italic',
-};
-
-// Font family options with CSS stacks removed, now imported from partnerTypes.ts
+// New Tab Components
+import { BrandingTab } from './Tabs/BrandingTab';
+import { CreditPolicyTab } from './Tabs/CreditPolicyTab';
+import { FeesTab } from './Tabs/FeesTab';
+import { CalculatorTab } from './Tabs/CalculatorTab';
+import { ExtendedConfig, toDisplayPercent, toDbDecimal } from './types';
 
 export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: boolean }) {
     const { t } = useLanguage();
@@ -79,10 +32,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
     const [previewStats, setPreviewStats] = useState<CalculatorResults | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
 
     // Check if current user is the super admin
     useEffect(() => {
@@ -350,9 +300,6 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
 
             setOriginalConfig(config);
             toast.success(t.configSaved);
-            // Reset file input
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            setSelectedFileName(null);
         } catch (e: any) {
             console.error('Save error:', e);
             toast.error(t.configSaveError);
@@ -361,54 +308,6 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
         }
     };
 
-    const handleLogoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file || !partnerId) {
-            setSelectedFileName(null);
-            return;
-        }
-
-        setSelectedFileName(file.name);
-
-        // Validation
-        if (!file.type.startsWith('image/')) {
-            toast.error('Please upload an image file');
-            return;
-        }
-        if (file.size > 2 * 1024 * 1024) {
-            toast.error('File size must be less than 2MB');
-            return;
-        }
-
-        setIsUploadingLogo(true);
-        try {
-            const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-            const path = `${partnerId}/logo-${Date.now()}.${ext}`;
-
-            const { error: uploadError } = await supabase.storage
-                .from('partner-logos')
-                .upload(path, file, {
-                    cacheControl: '3600',
-                    upsert: true
-                });
-
-            if (uploadError) throw uploadError;
-
-            const { data } = supabase.storage
-                .from('partner-logos')
-                .getPublicUrl(path);
-
-            updateConfig('logo_url', data.publicUrl);
-            toast.success(t.logoUploadSuccess);
-        } catch (error) {
-            console.error('Error uploading logo:', error);
-            toast.error(t.logoUploadError);
-        } finally {
-            setIsUploadingLogo(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            setSelectedFileName(null);
-        }
-    };
 
     const handleReset = () => {
         setConfig(originalConfig);
@@ -522,520 +421,44 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* --- TAB 1: BRANDING (Editable + Read-Only) --- */}
+                        {/* --- TAB 1: BRANDING --- */}
                         <TabsContent value="branding">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t.tabBranding}</CardTitle>
-                                    <CardDescription>{t.brandingTabDesc}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-
-                                    {/* Logo Upload */}
-                                    <div className="space-y-2">
-                                        <Label>{t.logo}</Label>
-                                        <div className="flex flex-col gap-4">
-                                            {config.logo_url && (
-                                                <div className="p-4 border rounded-md bg-white shadow-sm w-fit">
-                                                    <img
-                                                        src={config.logo_url}
-                                                        alt="Logo Preview"
-                                                        className="h-20 w-auto object-contain"
-                                                    />
-                                                </div>
-                                            )}
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleLogoUpload}
-                                                    disabled={isUploadingLogo}
-                                                    ref={fileInputRef}
-                                                    className="hidden"
-                                                />
-                                                <div className="flex items-center w-full max-w-sm border rounded-md bg-white shadow-sm overflow-hidden h-10 px-3 gap-3">
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 text-xs font-semibold bg-slate-100 hover:bg-slate-200 border-none shrink-0"
-                                                        onClick={() => fileInputRef.current?.click()}
-                                                        disabled={isUploadingLogo}
-                                                    >
-                                                        {t.chooseFile}
-                                                    </Button>
-                                                    <span className="text-sm text-muted-foreground truncate flex-1">
-                                                        {selectedFileName || (isUploadingLogo ? t.uploading : t.noFileChosen)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <p className="text-[10px] text-muted-foreground italic">
-                                                {t.logoUploadDesc}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Brand Color */}
-                                    <div className="space-y-2">
-                                        <Label>{t.brandColor}</Label>
-                                        <div className="flex gap-2">
-                                            <Input
-                                                type="color"
-                                                value={config.brand_color || '#1a73e8'}
-                                                onChange={(e) => updateConfig('brand_color', e.target.value)}
-                                                className="w-12 h-10 p-1 cursor-pointer"
-                                            />
-                                            <Input
-                                                type="text"
-                                                value={config.brand_color || ''}
-                                                onChange={(e) => updateConfig('brand_color', e.target.value || null)}
-                                                placeholder="#1a73e8"
-                                                className="flex-1 font-mono"
-                                            />
-                                        </div>
-                                        <p className="text-[10px] text-muted-foreground italic pt-1">
-                                            {t.brandColorDesc}
-                                        </p>
-                                    </div>
-
-                                    {/* Slogan */}
-                                    <div className="space-y-2">
-                                        <Label>{t.slogan}</Label>
-                                        <Input
-                                            value={config.slogan || ''}
-                                            onChange={(e) => updateConfig('slogan', e.target.value || null)}
-                                            placeholder={t.sloganPlaceholder}
-                                        />
-                                    </div>
-
-                                    {/* Slogan Font Settings */}
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>{t.sloganFont}</Label>
-                                            <Select
-                                                value={config.slogan_font_family || 'system'}
-                                                onValueChange={(val) => updateConfig('slogan_font_family', val as SloganFontFamily)}
-                                            >
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    {Object.entries(FONT_FAMILY_OPTIONS).map(([value]) => {
-                                                        const label =
-                                                            value === 'system' ? t.fontSystem :
-                                                                value === 'assistant' ? t.fontAssistant :
-                                                                    value === 'heebo' ? t.fontHeebo :
-                                                                        value === 'frank-ruhl-libre' ? t.fontFrank :
-                                                                            value === 'rubik' ? t.fontRubik :
-                                                                                value === 'inter' ? t.fontInter : value;
-
-                                                        return (
-                                                            <SelectItem key={value} value={value}>
-                                                                {label}
-                                                            </SelectItem>
-                                                        );
-                                                    })}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>{t.sloganSize}</Label>
-                                            <Select
-                                                value={config.slogan_font_size || 'sm'}
-                                                onValueChange={(val) => updateConfig('slogan_font_size', val as SloganFontSize)}
-                                            >
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="xs">{t.sloganSizeXs}</SelectItem>
-                                                    <SelectItem value="sm">{t.sloganSizeSm}</SelectItem>
-                                                    <SelectItem value="base">{t.sloganSizeBase}</SelectItem>
-                                                    <SelectItem value="lg">{t.sloganSizeLg}</SelectItem>
-                                                    <SelectItem value="xl">{t.sloganSizeXl}</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>{t.sloganStyle}</Label>
-                                            <Select
-                                                value={config.slogan_font_style || 'normal'}
-                                                onValueChange={(val) => updateConfig('slogan_font_style', val as SloganFontStyle)}
-                                            >
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="normal">{t.sloganStyleNormal}</SelectItem>
-                                                    <SelectItem value="italic">{t.sloganStyleItalic}</SelectItem>
-                                                    <SelectItem value="bold">{t.sloganStyleBold}</SelectItem>
-                                                    <SelectItem value="bold-italic">{t.sloganStyleBoldItalic}</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-
-                                    {/* Slogan Preview */}
-                                    {config.slogan && (
-                                        <div className="p-4 bg-muted/50 border rounded-lg">
-                                            <p className="text-xs text-muted-foreground mb-2">{t.preview}:</p>
-                                            <p
-                                                style={{
-                                                    fontFamily: FONT_FAMILY_OPTIONS[config.slogan_font_family || 'system'].css,
-                                                    fontSize: config.slogan_font_size === 'xs' ? '12px' :
-                                                        config.slogan_font_size === 'sm' ? '14px' :
-                                                            config.slogan_font_size === 'base' ? '16px' :
-                                                                config.slogan_font_size === 'lg' ? '18px' : '20px',
-                                                    fontStyle: config.slogan_font_style === 'italic' || config.slogan_font_style === 'bold-italic' ? 'italic' : 'normal',
-                                                    fontWeight: config.slogan_font_style === 'bold' || config.slogan_font_style === 'bold-italic' ? '700' : '400',
-                                                }}
-                                            >
-                                                {config.slogan}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {/* Phone + WhatsApp - EDITABLE */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>{t.phone}</Label>
-                                            <Input
-                                                value={config.phone || ''}
-                                                onChange={(e) => updateConfig('phone', e.target.value || null)}
-                                                placeholder={t.phonePlaceholder}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>{t.whatsappLabel}</Label>
-                                            <Input
-                                                value={config.whatsapp || ''}
-                                                onChange={(e) => updateConfig('whatsapp', e.target.value || null)}
-                                                placeholder={t.whatsappPlaceholder}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Partner Link Box - READ ONLY display */}
-                                    <div className="mt-6 p-4 bg-muted/50 border rounded-lg space-y-3">
-                                        <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                                            {t.readOnlyTitle}
-                                        </h4>
-
-                                        {/* Partner Link */}
-                                        <div className="p-3 bg-white border rounded-md shadow-sm">
-                                            <p className="text-xs text-muted-foreground mb-1">🔗 {t.partnerLink}</p>
-                                            <div className="flex items-center gap-2">
-                                                <code className="flex-1 text-sm font-mono text-primary truncate bg-slate-50 p-1.5 rounded">
-                                                    {window.location.origin}{config.slug ? `/?ref=${config.slug}` : ''}
-                                                </code>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        const url = config.slug ? `${window.location.origin}/?ref=${config.slug}` : window.location.origin;
-                                                        navigator.clipboard.writeText(url);
-                                                        toast.success(t.linkCopied);
-                                                    }}
-                                                >
-                                                    <Copy className="w-4 h-4 mr-2" />
-                                                    {t.copyLink}
-                                                </Button>
-                                            </div>
-                                        </div>
-
-                                        {/* Name, Email, Status - read-only */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <div>
-                                                <p className="text-xs text-muted-foreground">{t.companyNameLabel}</p>
-                                                <p className="text-sm font-medium">{config.name}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-muted-foreground">{t.email}</p>
-                                                <p className="text-sm font-medium">{config.email}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-muted-foreground">{t.status}</p>
-                                                <Badge variant={config.is_active ? "secondary" : "outline"} className={config.is_active ? "bg-green-100 text-green-800" : ""}>
-                                                    {config.is_active ? t.active : t.inactive}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </CardContent>
-                            </Card>
+                            <BrandingTab
+                                config={config}
+                                updateConfig={updateConfig}
+                                t={t}
+                                partnerId={partnerId}
+                            />
                         </TabsContent>
 
                         {/* --- TAB 2: CREDIT POLICY --- */}
                         <TabsContent value="credit">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t.tabCredit}</CardTitle>
-                                    <CardDescription>{t.creditTabDesc}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    {/* Max DTI Ratio */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <Label className="flex items-center gap-2">
-                                                {t.maxDtiLabel}
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <Info className="w-4 h-4 text-muted-foreground" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>{t.maxDtiTooltip}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </Label>
-                                            <span className="font-mono text-primary font-bold">{toDisplayPercent(config.max_dti_ratio)}%</span>
-                                        </div>
-                                        <Slider
-                                            value={[toDisplayPercent(config.max_dti_ratio)]}
-                                            min={25}
-                                            max={50}
-                                            step={1}
-                                            onValueChange={([val]) => updateConfig('max_dti_ratio', toDbDecimal(val))}
-                                        />
-                                    </div>
-
-                                    {/* Max Age */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <Label>{t.maxAgeLabel}</Label>
-                                            <span className="font-mono text-primary font-bold">{config.max_age} {t.maxAgeUnit}</span>
-                                        </div>
-                                        <Slider
-                                            value={[config.max_age]}
-                                            min={70}
-                                            max={95}
-                                            step={1}
-                                            onValueChange={([val]) => updateConfig('max_age', val)}
-                                        />
-                                    </div>
-
-                                    {/* Max Loan Term */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <Label>{t.maxLoanTermLabel}</Label>
-                                            <span className="font-mono text-primary font-bold">{config.max_loan_term_years} {t.maxLoanTermUnit}</span>
-                                        </div>
-                                        <Slider
-                                            value={[config.max_loan_term_years]}
-                                            min={10}
-                                            max={35}
-                                            step={1}
-                                            onValueChange={([val]) => updateConfig('max_loan_term_years', val)}
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="rent_recog_first">{t.rentRecogFirstLabel}</Label>
-                                            <Input
-                                                id="rent_recog_first"
-                                                type="number"
-                                                step="1"
-                                                min="0"
-                                                max="100"
-                                                value={toDisplayPercent(config.rent_recognition_first_property)}
-                                                onChange={(e) => updateConfig('rent_recognition_first_property', toDbDecimal(parseFloat(e.target.value) || 0))}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="rent_recog_inv">{t.rentRecogInvLabel}</Label>
-                                            <Input
-                                                id="rent_recog_inv"
-                                                type="number"
-                                                step="1"
-                                                min="0"
-                                                max="100"
-                                                value={toDisplayPercent(config.rent_recognition_investment)}
-                                                onChange={(e) => updateConfig('rent_recognition_investment', toDbDecimal(parseFloat(e.target.value) || 0))}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between space-x-2 pt-4">
-                                        <Label htmlFor="enable_rent_validation">{t.enableRentValidationLabel}</Label>
-                                        <Switch
-                                            id="enable_rent_validation"
-                                            checked={config.enable_rent_validation}
-                                            onCheckedChange={(val) => updateConfig('enable_rent_validation', val)}
-                                        />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <CreditPolicyTab
+                                config={config}
+                                updateConfig={updateConfig}
+                                t={t}
+                                partnerId={partnerId}
+                            />
                         </TabsContent>
 
                         {/* --- TAB 3: FINANCIALS & FEES --- */}
                         <TabsContent value="fees">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t.tabFees}</CardTitle>
-                                    <CardDescription>{t.feesTabDesc}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="interest_rate">{t.defaultInterestLabel}</Label>
-                                            <Input
-                                                id="interest_rate"
-                                                type="number"
-                                                step="0.1"
-                                                min="1"
-                                                max="15"
-                                                value={config.default_interest_rate}
-                                                onChange={(e) => updateConfig('default_interest_rate', parseFloat(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="vat_percent">{t.vatLabel}</Label>
-                                            <Input
-                                                id="vat_percent"
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="25"
-                                                value={config.vat_percent}
-                                                onChange={(e) => updateConfig('vat_percent', parseFloat(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="lawyer_fee">{t.lawyerFeeLabel}</Label>
-                                            <Input
-                                                id="lawyer_fee"
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="10"
-                                                value={config.lawyer_fee_percent}
-                                                onChange={(e) => updateConfig('lawyer_fee_percent', parseFloat(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="broker_fee">{t.brokerFeeLabel}</Label>
-                                            <Input
-                                                id="broker_fee"
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="10"
-                                                value={config.broker_fee_percent}
-                                                onChange={(e) => updateConfig('broker_fee_percent', parseFloat(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="advisor_fee">{t.advisorFeeLabel}</Label>
-                                            <Input
-                                                id="advisor_fee"
-                                                type="number"
-                                                min="0"
-                                                max="100000"
-                                                value={config.advisor_fee_fixed}
-                                                onChange={(e) => updateConfig('advisor_fee_fixed', parseInt(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="other_fee">{t.otherFeeLabel}</Label>
-                                            <Input
-                                                id="other_fee"
-                                                type="number"
-                                                min="0"
-                                                max="100000"
-                                                value={config.other_fee_fixed}
-                                                onChange={(e) => updateConfig('other_fee_fixed', parseInt(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <FeesTab
+                                config={config}
+                                updateConfig={updateConfig}
+                                t={t}
+                                partnerId={partnerId}
+                            />
                         </TabsContent>
 
                         {/* --- TAB 4: CALCULATOR SETTINGS --- */}
                         <TabsContent value="calculator">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t.tabCalculator}</CardTitle>
-                                    <CardDescription>{t.calcTabDesc}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="rental_yield">{t.defaultRentalYieldLabel}</Label>
-                                            <Input
-                                                id="rental_yield"
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="20"
-                                                value={config.rental_yield_default}
-                                                onChange={(e) => updateConfig('rental_yield_default', parseFloat(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="max_amort_months">{t.maxAmortMonthsLabel}</Label>
-                                            <Input
-                                                id="max_amort_months"
-                                                type="number"
-                                                min="12"
-                                                max="360"
-                                                step="12"
-                                                value={config.max_amortization_months}
-                                                onChange={(e) => updateConfig('max_amortization_months', parseInt(e.target.value) || 12)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="rent_warn_high">{t.rentWarnHighLabel}</Label>
-                                            <Input
-                                                id="rent_warn_high"
-                                                type="number"
-                                                step="0.1"
-                                                min="1"
-                                                max="3"
-                                                value={config.rent_warning_high_multiplier}
-                                                onChange={(e) => updateConfig('rent_warning_high_multiplier', parseFloat(e.target.value) || 1)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="rent_warn_low">{t.rentWarnLowLabel}</Label>
-                                            <Input
-                                                id="rent_warn_low"
-                                                type="number"
-                                                step="0.1"
-                                                min="0.3"
-                                                max="0.9"
-                                                value={config.rent_warning_low_multiplier}
-                                                onChange={(e) => updateConfig('rent_warning_low_multiplier', parseFloat(e.target.value) || 0.3)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 pt-4">
-                                        <div className="flex items-center justify-between space-x-2">
-                                            <Label htmlFor="enable_what_if">{t.enableWhatIfLabel}</Label>
-                                            <Switch
-                                                id="enable_what_if"
-                                                checked={config.enable_what_if_calculator}
-                                                onCheckedChange={(val) => updateConfig('enable_what_if_calculator', val)}
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between space-x-2">
-                                            <Label htmlFor="show_amort">{t.showAmortTableLabel}</Label>
-                                            <Switch
-                                                id="show_amort"
-                                                checked={config.show_amortization_table}
-                                                onCheckedChange={(val) => updateConfig('show_amortization_table', val)}
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <CalculatorTab
+                                config={config}
+                                updateConfig={updateConfig}
+                                t={t}
+                                partnerId={partnerId}
+                            />
                         </TabsContent>
                     </Tabs>
                 </div>

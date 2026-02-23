@@ -149,6 +149,14 @@ export function useBudgetWizard({
                 const userAge = parseFormattedNumber(getValues('age'));
                 const maxAllowedAge = config?.max_age || 80;
 
+                if (userAge < 18) {
+                    setError('age', {
+                        type: 'manual',
+                        message: t.errorAgeTooLow ? t.errorAgeTooLow(18) : "Age must be at least 18"
+                    });
+                    return; // Block navigation
+                }
+
                 if (userAge >= maxAllowedAge) {
                     setError('age', {
                         type: 'manual',
