@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Controller } from 'react-hook-form';
 import { Loader2, Mail, Phone, FileText, CheckCircle2, FolderOpen } from 'lucide-react';
-import confetti from 'canvas-confetti';
+// canvas-confetti is dynamically imported in celebrate() to reduce initial bundle
 import { motion, AnimatePresence } from 'framer-motion';
 import { StepRevealProps } from '../types';
 import { Button } from '@/components/ui/button';
@@ -55,11 +55,12 @@ export function Step5({
     };
 
     // Trigger confetti celebration
-    const celebrate = () => {
+    const celebrate = async () => {
+        const { default: confetti } = await import('canvas-confetti');
         const duration = 3000;
         const end = Date.now() + duration;
 
-        const colors = ['#1e40af', '#3b82f6', '#60a5fa', '#FFD700', '#FDB931', '#D4AF37']; // Blue and Gold
+        const colors = ['#1e40af', '#3b82f6', '#60a5fa', '#FFD700', '#FDB931', '#D4AF37'];
 
         const frame = () => {
             confetti({

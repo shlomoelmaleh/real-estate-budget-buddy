@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, lazy, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -23,7 +23,7 @@ import { Step1 } from './Wizard/Steps/Step1';
 import { Step2 } from './Wizard/Steps/Step2';
 import { Step3 } from './Wizard/Steps/Step3';
 import { Step4 } from './Wizard/Steps/Step4';
-import { Step5 } from './Wizard/Steps/Step5_Reveal';
+const Step5 = lazy(() => import('./Wizard/Steps/Step5_Reveal').then(m => ({ default: m.Step5 })));
 import { Step0 } from './Wizard/Steps/Step0_Welcome';
 import { calculatorSchema, CalculatorFormValues } from './budget/types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -144,19 +144,21 @@ export function BudgetCalculator() {
         return <Step4 control={control} errors={errors} t={t} watch={watch} setValue={setValue} />;
       case 5:
         return (
-          <Step5
-            control={control}
-            errors={errors}
-            t={t}
-            results={results}
-            isLoading={isLoading}
-            onSendReport={handleSendReport}
-            isSending={isSending}
-            watch={watch}
-            onBack={handleBack}
-            calcData={calcData}
-            language={language as 'he' | 'en' | 'fr'}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
+            <Step5
+              control={control}
+              errors={errors}
+              t={t}
+              results={results}
+              isLoading={isLoading}
+              onSendReport={handleSendReport}
+              isSending={isSending}
+              watch={watch}
+              onBack={handleBack}
+              calcData={calcData}
+              language={language as 'he' | 'en' | 'fr'}
+            />
+          </Suspense>
         );
       default: return null;
     }
