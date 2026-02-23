@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
 import { FONT_FAMILY_OPTIONS, SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import logoEshel from '@/assets/logo-eshel.webp';
+import logoEshel from '@/assets/logo-eshel-sm.webp';
 
 function getSloganFontSizeClass(size: SloganFontSize | null | undefined): string {
     switch (size) {
@@ -93,6 +93,8 @@ export function Step0({ onNext }: { onNext: () => void }) {
                             <img
                                 src={displayLogo}
                                 alt="Logo"
+                                width={272}
+                                height={372}
                                 className="w-full h-full object-contain"
                                 fetchPriority="high"
                                 loading="eager"
