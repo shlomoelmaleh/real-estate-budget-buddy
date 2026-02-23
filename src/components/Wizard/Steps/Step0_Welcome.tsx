@@ -107,7 +107,7 @@ export function Step0({ onNext }: { onNext: () => void }) {
                             </div>
                         </div>
                     </div>
-                    <p className="mt-4 text-center text-[11px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+                    <p className="mt-4 text-center text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
                         {t.videoCaption}
                     </p>
                 </div>
