@@ -94,7 +94,7 @@ export default function AdminPartners() {
     enable_rent_validation: true,
     enable_what_if_calculator: true,
     show_amortization_table: true,
-    max_amortization_months: 60,
+    max_amortization_months: 360,
   });
 
   const [pendingToggle, setPendingToggle] = useState<{ id: string; next: boolean } | null>(null);
@@ -169,7 +169,7 @@ export default function AdminPartners() {
       enable_rent_validation: true,
       enable_what_if_calculator: true,
       show_amortization_table: true,
-      max_amortization_months: 60,
+      max_amortization_months: 360,
     });
   };
 
@@ -214,7 +214,7 @@ export default function AdminPartners() {
       enable_rent_validation: p.enable_rent_validation ?? true,
       enable_what_if_calculator: p.enable_what_if_calculator ?? true,
       show_amortization_table: p.show_amortization_table ?? true,
-      max_amortization_months: p.max_amortization_months ?? 60,
+      max_amortization_months: p.max_amortization_months ?? 360,
     });
   };
 
