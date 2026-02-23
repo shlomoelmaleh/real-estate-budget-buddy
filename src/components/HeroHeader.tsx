@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import heroBg from '@/assets/hero-bg.jpg';
-import logoEshel from '@/assets/logo-eshel.png';
+import logoEshel from '@/assets/logo-eshel.webp';
 import { usePartner } from '@/contexts/PartnerContext';
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import type { SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';

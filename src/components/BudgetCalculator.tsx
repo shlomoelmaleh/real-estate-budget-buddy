@@ -13,7 +13,7 @@ import { usePartner } from '@/contexts/PartnerContext';
 import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import logoEshel from '@/assets/logo-eshel.png';
+import logoEshel from '@/assets/logo-eshel.webp';
 import { AdminFloatingButton } from '@/components/AdminFloatingButton';
 
 // Wizard Components
