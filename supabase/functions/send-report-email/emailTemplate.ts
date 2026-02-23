@@ -233,7 +233,7 @@ export function generateEmailHtml(
       noteEquity: "ההכנסה החודשית שלכם מצוינת. מה שמגביל את התקציב כרגע הוא גובה המזומנים הראשוני הנדרש למיסים והוצאות.",
       noteLTV: "אתם מנצלים כרגע את המקסימום המותר לפי נהלי הבנק. השלב הבא הוא להבטיח שהפרופיל שלכם מוצג בצורה מושלמת כדי להשיג את הריביות הנמוכות ביותר.",
       noteAge: "תקופת ההלוואה מוגבלת בשל גיל, מה שמעלה את ההחזר החודשי. מומלץ לבחון מבנה הלוואה הממזער את ההשפעה.",
-      whatIfText: "הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪100,000.",
+      whatIfText: "הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪{amount}.",
       expertCommitment: "התיק ייבדק בידי מומחה כדי לוודא תאימות לכללי בנק ישראל 2025.",
       // Section 2 - Funding
       fundingTitle: "פירוט מימון",
@@ -335,6 +335,17 @@ export function generateEmailHtml(
       labelUserRent: "הכנסה משכירות צפויה (לפי קלט משתמש)",
       rentWarningHigh: "⚠️ השכירות הצפויה שלכם (₪{actual}) גבוהה משמעותית מהממוצע בשוק (₪{market}). מומלץ לאמת מול מודעות עדכניות כדי להימנע מלחץ פיננסי.",
       rentWarningLow: "ℹ️ השכירות הצפויה שלכם (₪{actual}) נמוכה מהממוצע בשוק (₪{market}). הערכה שמרנית זו מותירה מרווח ביטחון חיובי.",
+      yieldNote: "התשואות מחושבות על בסיס ההנחות בסימולציה בלבד.",
+      // Internal Analysis
+      labelLeadScore: "ניקוד ליד",
+      labelActionSla: "SLA לטיפול",
+      labelTimeline: "לו״ז צפוי",
+      labelBudget: "תקציב",
+      labelHealth: "חוסן",
+      labelReady: "מוכנות",
+      labelAge: "גיל",
+      labelCash: "מזומן",
+      labelLimitingFactor: "גורם מגביל",
     },
     en: {
       subject: "Your Strategic Financial Dossier",
@@ -361,7 +372,7 @@ export function generateEmailHtml(
       noteEquity: "Your monthly income is very strong. The budget is currently limited by the initial cash needed for taxes and fees.",
       noteLTV: "You are currently making the most of the bank's standard rules for financing. Our next step should be ensuring your profile is perfectly presented to get you the lowest possible interest rates.",
       noteAge: "The loan term is limited by age, increasing the monthly payment. We should structure the loan to minimize this impact.",
-      whatIfText: "Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪100,000.",
+      whatIfText: "Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪{amount}.",
       expertCommitment: "This dossier will be reviewed by an expert to ensure it aligns with the latest 2025 bank rules.",
       fundingTitle: "Funding Breakdown",
       loanAmount: "Loan Amount",
@@ -458,6 +469,17 @@ export function generateEmailHtml(
       labelUserRent: "Expected monthly rent (User Input)",
       rentWarningHigh: "⚠️ Your expected rent (₪{actual}) is significantly above typical market rates (₪{market}). We recommend verifying this with local listings to avoid financial stress.",
       rentWarningLow: "ℹ️ Your expected rent (₪{actual}) is below typical market rates (₪{market}). This conservative estimate leaves room for a stronger financial position.",
+      yieldNote: "Yields are calculated based on simulation assumptions only.",
+      // Internal Analysis
+      labelLeadScore: "Lead Score",
+      labelActionSla: "Action SLA",
+      labelTimeline: "Predicted Timeline",
+      labelBudget: "Budget",
+      labelHealth: "Health",
+      labelReady: "Ready",
+      labelAge: "Age",
+      labelCash: "Cash",
+      labelLimitingFactor: "Limiting Factor",
     },
     fr: {
       subject: "Votre Dossier Stratégique Financier",
@@ -484,7 +506,7 @@ export function generateEmailHtml(
       noteEquity: "Votre revenu mensuel est très solide. Le budget est actuellement limité par l'argent disponible pour payer les taxes et les frais de clôture.",
       noteLTV: "Vous utilisez actuellement le maximum autorisé par les règles bancaires. La prochaine étape est de présenter votre profil de manière optimale pour obtenir les meilleurs taux d'intérêt.",
       noteAge: "La durée du prêt est limitée par l'âge, ce qui augmente la mensualité. Il faut structurer le prêt pour minimiser cet impact.",
-      whatIfText: "Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ 100 000 ₪.",
+      whatIfText: "Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ {amount} ₪.",
       expertCommitment: "Ce dossier sera revu par un expert pour assurer sa conformité aux règles bancaires 2025.",
       fundingTitle: "Le montage financier",
       loanAmount: "Montant du Prêt",
@@ -582,6 +604,17 @@ export function generateEmailHtml(
       labelUserRent: "Loyer mensuel attendu (Saisi par l'utilisateur)",
       rentWarningHigh: "⚠️ Votre loyer attendu (₪{actual}) est nettement supérieur aux taux du marché (₪{market}). Nous recommandons de vérifier avec les annonces locales.",
       rentWarningLow: "ℹ️ Votre loyer attendu (₪{actual}) est inférieur aux taux du marché (₪{market}). Cette estimation conservatrice laisse une marge de sécurité.",
+      yieldNote: "Rendements calculés sur la base des hypothèses de la simulation uniquement.",
+      // Internal Analysis
+      labelLeadScore: "Score du Lead",
+      labelActionSla: "SLA d'Action",
+      labelTimeline: "Délai prévu",
+      labelBudget: "Budget",
+      labelHealth: "Santé",
+      labelReady: "Prêt",
+      labelAge: "Âge",
+      labelCash: "Apport",
+      labelLimitingFactor: "Facteur limitant",
     },
   };
 
@@ -700,15 +733,18 @@ export function generateEmailHtml(
     ? `₪ ${formatNumber(netMonthlyBalanceValue)}`
     : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
 
-  // Internal Analysis Calculation (for Advisor Email)
-  const { score, priorityLabel, priorityColor, actionSla, predictedTimeline, breakdown } = calculateLeadScore(inputs, results, language);
+  // Internal Analysis  // Lead Scoring (for internal use in Advisor Email)
+  const { score, priorityLabel, priorityColor, actionSla, predictedTimeline, breakdown } = calculateLeadScore(
+    inputs as any,
+    results as any,
+    language
+  );
+  const limitingFactorDescription = getLimitingFactorDescription(results.limitingFactor, language);
 
   // Calculate Bonus Power for What-If
   const interestRateVal = parseFloat(inputs.interest) || 5.0;
   const yearsVal = results.loanTermYears || 30;
   const bonusPower = calculateBonusPower(results.monthlyPayment, interestRateVal, yearsVal);
-
-  const limitingFactorDescription = getLimitingFactorDescription(results.limitingFactor);
 
   return `
     <!DOCTYPE html>
@@ -1028,12 +1064,7 @@ export function generateEmailHtml(
         ${limitingFactor.includes(t.limitingIncome) ? `
         <div style="background: white; border-radius: 8px; padding: 12px; margin-top: 12px; border-${alignStart}: 4px solid #f59e0b; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           <p style="margin: 0; font-size: 13px; color: #b45309; font-weight: 600;">
-            ${language === 'he'
-          ? `הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪${formatNumber(bonusPower)}.`
-          : language === 'fr'
-            ? `Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ ${formatNumber(bonusPower)} ₪.`
-            : `Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪${formatNumber(bonusPower)}.`
-        }
+            ${t.whatIfText.replace('{amount}', formatNumber(bonusPower))}
           </p>
         </div>
         ` : ''}
@@ -1056,28 +1087,28 @@ export function generateEmailHtml(
         </table>
         
         <div style="margin-bottom: 8px;">
-          <strong style="color: #e2e8f0;">&#9889; Action SLA:</strong>
+          <strong style="color: #e2e8f0;">&#9889; ${t.labelActionSla}:</strong>
           <span style="color: #cbd5e1; margin-${isRTL ? 'right' : 'left'}: 6px;">${actionSla}</span>
         </div>
         <div style="margin-bottom: 12px;">
-          <strong style="color: #e2e8f0;">&#9201; ${language === 'he' ? 'לו״ז צפוי:' : language === 'fr' ? 'Délai prévu :' : 'Predicted Timeline:'}</strong>
+          <strong style="color: #e2e8f0;">&#9201; ${t.labelTimeline}:</strong>
           <span style="color: ${priorityColor}; font-weight: 700; margin-${isRTL ? 'right' : 'left'}: 6px;">${predictedTimeline}</span>
         </div>
         
         <!-- Score Breakdown Grid -->
         <div style="background: #f8fafc; border-radius: 8px; padding: 12px; margin: 12px 0;">
           <table style="width: 100%; border-collapse: collapse;">
-            <tr style="font-size: 12px; color: #64748b; font-weight: 600; text-align: center;">
-              <td>Budget: <strong style="color: #0f172a;">${breakdown.budget}/35</strong></td>
-              <td>Health: <strong style="color: #0f172a;">${breakdown.health}/25</strong></td>
-              <td>Ready: <strong style="color: #0f172a;">${breakdown.readiness}/25</strong></td>
-              <td>Age: <strong style="color: #0f172a;">${breakdown.age}/10</strong></td>
-              <td>Cash: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></td>
+            <tr style="font-size: 11px; color: #64748b; font-weight: 600; text-align: center;">
+              <td style="padding: 0 4px;">${t.labelBudget}: <strong style="color: #0f172a;">${breakdown.budget}/35</strong></td>
+              <td style="padding: 0 4px;">${t.labelHealth}: <strong style="color: #0f172a;">${breakdown.health}/25</strong></td>
+              <td style="padding: 0 4px;">${t.labelReady}: <strong style="color: #0f172a;">${breakdown.readiness}/25</strong></td>
+              <td style="padding: 0 4px;">${t.labelAge}: <strong style="color: #0f172a;">${breakdown.age}/10</strong></td>
+              <td style="padding: 0 4px;">${t.labelCash}: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></td>
             </tr>
           </table>
         </div>
         
-        <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #e2e8f0;">Limiting Factor: ${limitingFactor}</div>
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #e2e8f0;">${t.labelLimitingFactor}: ${limitingFactor}</div>
         <div style="font-size: 13px; color: #94a3b8; line-height: 1.4;">${limitingFactorDescription}</div>
       </div>
 
@@ -1241,7 +1272,7 @@ export function generateEmailHtml(
           <span class="value" style="font-size: 12px; color: transparent;">.</span>
         </div>
         <div style="font-size: 10px; color: #64748b; margin-top: 12px; font-style: italic; padding: 8px; background: #e0e7ff; border-radius: 6px;">
-          💡 ${language === 'he' ? 'התשואות מחושבות על בסיס ההנחות בסימולציה בלבד.' : language === 'fr' ? 'Rendements calculés sur la base des hypothèses de la simulation uniquement.' : 'Yields are calculated based on simulation assumptions only.'}
+          💡 ${t.yieldNote}
         </div>
       </div>
       ` : ''}
@@ -1309,7 +1340,7 @@ export function generateEmailHtml(
             <span class="value" style="font-weight: 700; color: ${netBalanceColor}; font-size: 15px;">${netBalanceFormatted}</span>
           </div>
           <div style="font-size: 10px; color: ${isNetBalancePositive ? '#166534' : '#991b1b'}; margin-top: 4px; font-style: italic;">
-            ${isNetBalancePositive ? (language === 'he' ? '✅ ' + t.positiveBalance : language === 'fr' ? '✅ ' + t.positiveBalance : '✅ ' + t.positiveBalance) : (language === 'he' ? '⚠️ ' + t.negativeBalance : language === 'fr' ? '⚠️ ' + t.negativeBalance : '⚠️ ' + t.negativeBalance)}
+            ${isNetBalancePositive ? '✅ ' + t.positiveBalance : '⚠️ ' + t.negativeBalance}
           </div>
           `
       : ""

@@ -349,7 +349,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Calculate Lead Score
     const leadAnalysis = calculateLeadScore(data.inputs, data.results, data.language);
-    const limitingFactorDesc = getLimitingFactorDescription(data.results.limitingFactor);
+    const limitingFactorDesc = getLimitingFactorDescription(data.results.limitingFactor, data.language);
 
     const enrichedResults = {
       ...data.results,

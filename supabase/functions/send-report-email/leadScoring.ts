@@ -77,30 +77,30 @@ export function calculateLeadScore(
     const score = Math.min(100, budgetScore + healthScore + readinessScore + ageScore + liquidityScore);
 
     // Determine Tier & Action
-    let priorityLabel = '❄️ COLD';
+    let priorityLabel = lang === 'he' ? '❄️ קר' : lang === 'fr' ? '❄️ FROID' : '❄️ COLD';
     let priorityColor = '#94a3b8'; // Slate
-    let actionSla = "Add to long-term newsletter.";
+    let actionSla = lang === 'he' ? 'הוספה לניוזלטר ארוך טווח.' : lang === 'fr' ? 'Ajouter à la newsletter.' : "Add to long-term newsletter.";
     let predictedTimeline = lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Planification)' : '3-6 months (Planning phase)';
 
     if (score >= 85) {
-        priorityLabel = '💎 PLATINUM';
+        priorityLabel = lang === 'he' ? '💎 פלטינום' : lang === 'fr' ? '💎 PLATINE' : '💎 PLATINUM';
         priorityColor = '#7c3aed'; // Violet/Purple
-        actionSla = "Call within 1 hour.";
+        actionSla = lang === 'he' ? 'להתקשר תוך שעה אחת.' : lang === 'fr' ? 'Appeler d\'ici 1 heure.' : "Call within 1 hour.";
         predictedTimeline = lang === 'he' ? '1-2 שבועות (מוכנים לתנועה)' : lang === 'fr' ? '1-2 semaines (Prêt)' : '1-2 weeks (Ready to move)';
     } else if (score >= 70) {
-        priorityLabel = '🔥 HOT';
+        priorityLabel = lang === 'he' ? '🔥 חם' : lang === 'fr' ? '🔥 CHAUD' : '🔥 HOT';
         priorityColor = '#ef4444'; // Red
-        actionSla = "Call within 4 hours.";
+        actionSla = lang === 'he' ? 'להתקשר תוך 4 שעות.' : lang === 'fr' ? 'Appeler d\'ici 4 heures.' : "Call within 4 hours.";
         predictedTimeline = lang === 'he' ? '1-2 חודשים (חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Recherche active)' : '1-2 months (Active search)';
     } else if (score >= 50) {
-        priorityLabel = '☀️ WARM';
+        priorityLabel = lang === 'he' ? '☀️ חמים' : lang === 'fr' ? '☀️ CHALEUREUX' : '☀️ WARM';
         priorityColor = '#f59e0b'; // Amber
-        actionSla = "Call within 24 hours.";
+        actionSla = lang === 'he' ? 'להתקשר תוך 24 שעות.' : lang === 'fr' ? 'Appeler d\'ici 24 heures.' : "Call within 24 hours.";
         predictedTimeline = lang === 'he' ? '1-2 חודשים (חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Recherche active)' : '1-2 months (Active search)';
     } else if (score >= 30) {
-        priorityLabel = '🌤️ COOL';
+        priorityLabel = lang === 'he' ? '🌤️ קריר' : lang === 'fr' ? '🌤️ FRAIS' : '🌤️ COOL';
         priorityColor = '#3b82f6'; // Blue
-        actionSla = "Email follow-up.";
+        actionSla = lang === 'he' ? 'מעקב במייל.' : lang === 'fr' ? 'Suivi par e-mail.' : "Email follow-up.";
         predictedTimeline = lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Planification)' : '3-6 months (Planning phase)';
     }
 
@@ -134,19 +134,40 @@ export function calculateBonusPower(
     return Math.round(addedLoan);
 }
 
-export function getLimitingFactorDescription(factor: string | undefined): string {
+export function getLimitingFactorDescription(factor: string | undefined, lang: 'he' | 'en' | 'fr' = 'en'): string {
+    const isHE = lang === 'he';
+    const isFR = lang === 'fr';
+
+    const prefix = isHE ? 'ניתוח: ' : isFR ? 'Analyse : ' : 'Analysis: ';
+
     switch (factor) {
         case 'INCOME_LIMIT':
-            return "Analysis: This client has reached their maximum repayment capacity based on their income. They could afford a more expensive home if they had a co-signer or higher income, as they still have excess cash available.";
+            return prefix + (isHE
+                ? "לקוח זה הגיע ליכולת ההחזר המקסימלית שלו ביחס להכנסה. הם יכלו להרשות לעצמם בית יקר יותר אם היה להם לווה נוסף או הכנסה גבוהה יותר, שכן עדיין יש להם מזומנים פנויים."
+                : isFR
+                    ? "Ce client a atteint sa capacité de remboursement maximale par rapport à ses revenus. Il pourrait se permettre un bien plus cher avec un co-emprunteur ou des revenus plus élevés, car il dispose encore de liquidités."
+                    : "This client has reached their maximum repayment capacity based on their income. They could afford a more expensive home if they had a co-signer or higher income, as they still have excess cash available.");
         case 'EQUITY_LIMIT':
-            return "Analysis: The client is limited by their available cash for down payment and closing costs. Their income could support a higher loan, but they lack the upfront capital.";
+            return prefix + (isHE
+                ? "הלקוח מוגבל על ידי המזומנים הזמינים למקדמה ועלויות סגירה. ההכנסה שלהם יכלה לתמוך בהלוואה גבוהה יותר, אך חסר להם ההון הראשוני."
+                : isFR
+                    ? "Le client est limité par son apport personnel pour l'acompte et les frais de clôture. Ses revenus permettraient un prêt plus élevé, mais il manque de capital initial."
+                    : "The client is limited by their available cash for down payment and closing costs. Their income could support a higher loan, but they lack the upfront capital.");
         case 'LTV_LIMIT':
-            return "Analysis: The client has hit the regulatory Loan-to-Value limit (75% or 50%). They have sufficient income and cash for a higher price, but bank regulations cap the loan size relative to the property value.";
+            return prefix + (isHE
+                ? "הלקוח הגיע למגבלת ה-LTV הרגולטורית (75% או 50%). יש להם הכנסה ומזומנים מספקים למחיר גבוה יותר, אך תקנות הבנק מגבילות את גודל ההלוואה ביחס לשווי הנכס."
+                : isFR
+                    ? "Le client a atteint la limite réglementaire de quotité de financement (LTV de 75% ou 50%). Il a des revenus et un apport suffisants pour un prix plus élevé, mais les réglementations bancaires plafonnent le prêt par rapport à la valeur du bien."
+                    : "The client has hit the regulatory Loan-to-Value limit (75% or 50%). They have sufficient income and cash for a higher price, but bank regulations cap the loan size relative to the property value.");
         case 'AGE_LIMIT':
-            return "Analysis: The loan term is restricted by the borrower's age, forcing higher monthly payments which limits the loan amount. A younger co-signer could extend the term and increase the budget.";
+            return prefix + (isHE
+                ? "תקופת ההלוואה מוגבלת בשל גיל הלווה, מה שמאלץ החזרים חודשיים גבוהים יותר המגבילים את סכום ההלוואה. לווה נוסף צעיר יותר יכול להאריך את התקופה ולהגדיל את התקציב."
+                : isFR
+                    ? "La durée du prêt est limitée par l'âge de l'emprunteur, ce qui impose des mensualités plus élevées et limite le montant du prêt. Un co-emprunteur plus jeune permettrait d'allonger la durée et d'augmenter le budget."
+                    : "The loan term is restricted by the borrower's age, forcing higher monthly payments which limits the loan amount. A younger co-signer could extend the term and increase the budget.");
         case 'INSUFFICIENT_DATA':
-            return "Analysis: Insufficient data to determine the specific limiting factor.";
+            return prefix + (isHE ? "אין מספיק נתונים כדי לקבוע את הגורם המגביל הספציפי." : isFR ? "Données insuffisantes pour déterminer le facteur limitant." : "Insufficient data to determine the specific limiting factor.");
         default:
-            return "Analysis: The limiting factor could not be automatically determined.";
+            return prefix + (isHE ? "לא ניתן היה לקבוע את הגורם המגביל באופן אוטומטי." : isFR ? "Le facteur limitant n'a pas pu être déterminé automatiquement." : "The limiting factor could not be automatically determined.");
     }
 }
