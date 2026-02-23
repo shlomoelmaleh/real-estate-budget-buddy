@@ -85,7 +85,7 @@ export default function AdminPartners() {
     default_interest_rate: 5.0,
     lawyer_fee_percent: 1.0,
     broker_fee_percent: 2.0,
-    vat_percent: 17.0,
+    vat_percent: 18.0,
     advisor_fee_fixed: 9000,
     other_fee_fixed: 3000,
     rental_yield_default: 3.0,
@@ -101,10 +101,7 @@ export default function AdminPartners() {
 
   const loadPartners = async () => {
     setIsLoadingPartners(true);
-    const { data, error } = await supabase
-      .from("partners")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("partners").select("*").order("created_at", { ascending: false });
     if (error) toast.error("Failed to load partners");
     setPartners((data || []) as any);
     setIsLoadingPartners(false);
@@ -142,16 +139,47 @@ export default function AdminPartners() {
   const resetForm = () => {
     setEditing(null);
     setShowCreateDialog(false);
-    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", slogan_font_size: "sm", slogan_font_style: "normal", slogan_font_family: "system", is_active: true, max_dti_ratio: 0.33, max_age: 80, max_loan_term_years: 30, rent_recognition_first_property: 0.0, rent_recognition_investment: 0.8, default_interest_rate: 5.0, lawyer_fee_percent: 1.0, broker_fee_percent: 2.0, vat_percent: 17.0, advisor_fee_fixed: 9000, other_fee_fixed: 3000, rental_yield_default: 3.0, rent_warning_high_multiplier: 1.5, rent_warning_low_multiplier: 0.7, enable_rent_validation: true, enable_what_if_calculator: true, show_amortization_table: true, max_amortization_months: 60 });
+    setForm({
+      name: "",
+      slug: "",
+      email: "",
+      phone: "",
+      whatsapp: "",
+      brand_color: "",
+      logo_url: "",
+      slogan: "",
+      slogan_font_size: "sm",
+      slogan_font_style: "normal",
+      slogan_font_family: "system",
+      is_active: true,
+      max_dti_ratio: 0.33,
+      max_age: 80,
+      max_loan_term_years: 30,
+      rent_recognition_first_property: 0.0,
+      rent_recognition_investment: 0.8,
+      default_interest_rate: 5.0,
+      lawyer_fee_percent: 1.0,
+      broker_fee_percent: 2.0,
+      vat_percent: 17.0,
+      advisor_fee_fixed: 9000,
+      other_fee_fixed: 3000,
+      rental_yield_default: 3.0,
+      rent_warning_high_multiplier: 1.5,
+      rent_warning_low_multiplier: 0.7,
+      enable_rent_validation: true,
+      enable_what_if_calculator: true,
+      show_amortization_table: true,
+      max_amortization_months: 60,
+    });
   };
 
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
   };
 
   const startEdit = (p: any) => {
@@ -317,11 +345,7 @@ export default function AdminPartners() {
               <Plus className="w-4 h-4" />
               Create Partner
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/")}
-              className="gap-2"
-            >
+            <Button variant="outline" onClick={() => navigate("/")} className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Back to App
             </Button>
@@ -354,18 +378,25 @@ export default function AdminPartners() {
                 </div>
                 <div className="space-y-2">
                   {partners.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between gap-3 border border-border/60 rounded-lg p-3">
+                    <div
+                      key={p.id}
+                      className="flex items-center justify-between gap-3 border border-border/60 rounded-lg p-3"
+                    >
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">{p.name}</p>
-                          <Badge variant={p.is_active ? "secondary" : "outline"}>{p.is_active ? "Active" : "Inactive"}</Badge>
+                          <Badge variant={p.is_active ? "secondary" : "outline"}>
+                            {p.is_active ? "Active" : "Inactive"}
+                          </Badge>
                           <span className="text-xs text-muted-foreground truncate">/{p.slug}</span>
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{p.email || "—"}</p>
                       </div>
 
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <Button variant="outline" onClick={() => copyLink(p.slug)}>Copy Link</Button>
+                        <Button variant="outline" onClick={() => copyLink(p.slug)}>
+                          Copy Link
+                        </Button>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">Active</span>
                           <Switch checked={p.is_active} onCheckedChange={(v) => requestToggle(p, v)} />
@@ -384,7 +415,9 @@ export default function AdminPartners() {
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="font-semibold">{editing ? "Edit Partner" : "Add Partner"}</h2>
                   {editing ? (
-                    <Button variant="outline" onClick={resetForm}>New</Button>
+                    <Button variant="outline" onClick={resetForm}>
+                      New
+                    </Button>
                   ) : null}
                 </div>
 
@@ -400,19 +433,35 @@ export default function AdminPartners() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium">Email</label>
-                    <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} type="email" />
+                    <Input
+                      value={form.email}
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      type="email"
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium">Phone</label>
-                    <Input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className="w-full" />
+                    <Input
+                      value={form.phone}
+                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                      className="w-full"
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium">WhatsApp</label>
-                    <Input value={form.whatsapp} onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))} className="w-full" />
+                    <Input
+                      value={form.whatsapp}
+                      onChange={(e) => setForm((f) => ({ ...f, whatsapp: e.target.value }))}
+                      className="w-full"
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium">Brand Color (hex)</label>
-                    <Input value={form.brand_color} onChange={(e) => setForm((f) => ({ ...f, brand_color: e.target.value }))} placeholder="#1a73e8" />
+                    <Input
+                      value={form.brand_color}
+                      onChange={(e) => setForm((f) => ({ ...f, brand_color: e.target.value }))}
+                      placeholder="#1a73e8"
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium">Logo</label>
@@ -437,7 +486,9 @@ export default function AdminPartners() {
                       onChange={(e) => setForm((f) => ({ ...f, slogan: e.target.value }))}
                       placeholder="Your trusted mortgage partner"
                     />
-                    <p className="text-xs text-muted-foreground">Optional text displayed under the logo in the header</p>
+                    <p className="text-xs text-muted-foreground">
+                      Optional text displayed under the logo in the header
+                    </p>
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1">
@@ -502,92 +553,205 @@ export default function AdminPartners() {
                     <p className="text-xs text-muted-foreground">Risk & regulatory limits, fees, and feature flags.</p>
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Max DTI Ratio</label>
-                      <Input type="number" step="0.01" min="0.25" max="0.50" value={form.max_dti_ratio} onChange={(e) => setForm((f) => ({ ...f, max_dti_ratio: parseFloat(e.target.value) || 0 }))} />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0.25"
+                        max="0.50"
+                        value={form.max_dti_ratio}
+                        onChange={(e) => setForm((f) => ({ ...f, max_dti_ratio: parseFloat(e.target.value) || 0 }))}
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Max Borrower Age</label>
-                      <Input type="number" min="70" max="95" value={form.max_age} onChange={(e) => setForm((f) => ({ ...f, max_age: parseInt(e.target.value) || 0 }))} />
+                      <Input
+                        type="number"
+                        min="70"
+                        max="95"
+                        value={form.max_age}
+                        onChange={(e) => setForm((f) => ({ ...f, max_age: parseInt(e.target.value) || 0 }))}
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Max Loan Term (years)</label>
-                      <Input type="number" min="10" max="35" value={form.max_loan_term_years} onChange={(e) => setForm((f) => ({ ...f, max_loan_term_years: parseInt(e.target.value) || 0 }))} />
+                      <Input
+                        type="number"
+                        min="10"
+                        max="35"
+                        value={form.max_loan_term_years}
+                        onChange={(e) => setForm((f) => ({ ...f, max_loan_term_years: parseInt(e.target.value) || 0 }))}
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Default Interest Rate (%)</label>
-                      <Input type="number" step="0.1" min="1" max="15" value={form.default_interest_rate} onChange={(e) => setForm((f) => ({ ...f, default_interest_rate: parseFloat(e.target.value) || 0 }))} />
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="1"
+                        max="15"
+                        value={form.default_interest_rate}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, default_interest_rate: parseFloat(e.target.value) || 0 }))
+                        }
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Lawyer Fee (%)</label>
-                        <Input type="number" step="0.1" value={form.lawyer_fee_percent} onChange={(e) => setForm((f) => ({ ...f, lawyer_fee_percent: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={form.lawyer_fee_percent}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, lawyer_fee_percent: parseFloat(e.target.value) || 0 }))
+                          }
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Broker Fee (%)</label>
-                        <Input type="number" step="0.1" value={form.broker_fee_percent} onChange={(e) => setForm((f) => ({ ...f, broker_fee_percent: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={form.broker_fee_percent}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, broker_fee_percent: parseFloat(e.target.value) || 0 }))
+                          }
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-xs font-medium">VAT (%)</label>
-                        <Input type="number" step="0.1" value={form.vat_percent} onChange={(e) => setForm((f) => ({ ...f, vat_percent: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={form.vat_percent}
+                          onChange={(e) => setForm((f) => ({ ...f, vat_percent: parseFloat(e.target.value) || 0 }))}
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Rental Yield (%)</label>
-                        <Input type="number" step="0.1" value={form.rental_yield_default} onChange={(e) => setForm((f) => ({ ...f, rental_yield_default: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={form.rental_yield_default}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, rental_yield_default: parseFloat(e.target.value) || 0 }))
+                          }
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Advisor Fee (₪)</label>
-                        <Input type="number" value={form.advisor_fee_fixed} onChange={(e) => setForm((f) => ({ ...f, advisor_fee_fixed: parseInt(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          value={form.advisor_fee_fixed}
+                          onChange={(e) => setForm((f) => ({ ...f, advisor_fee_fixed: parseInt(e.target.value) || 0 }))}
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Other Fee (₪)</label>
-                        <Input type="number" value={form.other_fee_fixed} onChange={(e) => setForm((f) => ({ ...f, other_fee_fixed: parseInt(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          value={form.other_fee_fixed}
+                          onChange={(e) => setForm((f) => ({ ...f, other_fee_fixed: parseInt(e.target.value) || 0 }))}
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Rent Recog. (1st)</label>
-                        <Input type="number" step="0.1" min="0" max="1" value={form.rent_recognition_first_property} onChange={(e) => setForm((f) => ({ ...f, rent_recognition_first_property: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          value={form.rent_recognition_first_property}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, rent_recognition_first_property: parseFloat(e.target.value) || 0 }))
+                          }
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Rent Recog. (Inv.)</label>
-                        <Input type="number" step="0.1" min="0" max="1" value={form.rent_recognition_investment} onChange={(e) => setForm((f) => ({ ...f, rent_recognition_investment: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="1"
+                          value={form.rent_recognition_investment}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, rent_recognition_investment: parseFloat(e.target.value) || 0 }))
+                          }
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Rent Warn High (×)</label>
-                        <Input type="number" step="0.1" value={form.rent_warning_high_multiplier} onChange={(e) => setForm((f) => ({ ...f, rent_warning_high_multiplier: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={form.rent_warning_high_multiplier}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, rent_warning_high_multiplier: parseFloat(e.target.value) || 0 }))
+                          }
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className="text-xs font-medium">Rent Warn Low (×)</label>
-                        <Input type="number" step="0.1" value={form.rent_warning_low_multiplier} onChange={(e) => setForm((f) => ({ ...f, rent_warning_low_multiplier: parseFloat(e.target.value) || 0 }))} />
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={form.rent_warning_low_multiplier}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, rent_warning_low_multiplier: parseFloat(e.target.value) || 0 }))
+                          }
+                        />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Max Amortization Months</label>
-                      <Input type="number" min="12" max="360" value={form.max_amortization_months} onChange={(e) => setForm((f) => ({ ...f, max_amortization_months: parseInt(e.target.value) || 0 }))} />
+                      <Input
+                        type="number"
+                        min="12"
+                        max="360"
+                        value={form.max_amortization_months}
+                        onChange={(e) =>
+                          setForm((f) => ({ ...f, max_amortization_months: parseInt(e.target.value) || 0 }))
+                        }
+                      />
                     </div>
                     <div className="space-y-2 pt-2">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-medium">Enable Rent Validation</label>
-                        <Switch checked={form.enable_rent_validation} onCheckedChange={(v) => setForm((f) => ({ ...f, enable_rent_validation: v }))} />
+                        <Switch
+                          checked={form.enable_rent_validation}
+                          onCheckedChange={(v) => setForm((f) => ({ ...f, enable_rent_validation: v }))}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-medium">Enable What-If Calculator</label>
-                        <Switch checked={form.enable_what_if_calculator} onCheckedChange={(v) => setForm((f) => ({ ...f, enable_what_if_calculator: v }))} />
+                        <Switch
+                          checked={form.enable_what_if_calculator}
+                          onCheckedChange={(v) => setForm((f) => ({ ...f, enable_what_if_calculator: v }))}
+                        />
                       </div>
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-medium">Show Amortization Table</label>
-                        <Switch checked={form.show_amortization_table} onCheckedChange={(v) => setForm((f) => ({ ...f, show_amortization_table: v }))} />
+                        <Switch
+                          checked={form.show_amortization_table}
+                          onCheckedChange={(v) => setForm((f) => ({ ...f, show_amortization_table: v }))}
+                        />
                       </div>
                     </div>
                   </details>
 
                   <div className="flex gap-2 pt-2">
-                    <Button onClick={savePartner} className="flex-1">Save</Button>
+                    <Button onClick={savePartner} className="flex-1">
+                      Save
+                    </Button>
                     {editing ? (
                       <Button variant="destructive" onClick={() => deletePartner(editing.id)}>
                         Delete
@@ -655,7 +819,15 @@ export default function AdminPartners() {
                       <tr key={l.id} className="border-b border-border/40 align-top">
                         <td className="py-2 pe-3 whitespace-nowrap">{new Date(l.timestamp).toLocaleString()}</td>
                         <td className="py-2 pe-3 whitespace-nowrap">
-                          <Badge variant={l.event_type === "LEAD_FAILED" ? "destructive" : l.event_type === "STATUS_CHANGE" ? "secondary" : "outline"}>
+                          <Badge
+                            variant={
+                              l.event_type === "LEAD_FAILED"
+                                ? "destructive"
+                                : l.event_type === "STATUS_CHANGE"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                          >
                             {l.event_type}
                           </Badge>
                         </td>
