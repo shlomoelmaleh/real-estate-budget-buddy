@@ -118,6 +118,14 @@ export interface Translations {
   isRentedNo: string;
   optional: string;
   floatingContact: string;
+  // Feasibility
+  dealFeasibility: string;
+  statusGreen: string;
+  statusOrange: string;
+  statusRed: string;
+  targetPropertyPriceLabel: string;
+  estimatedBudgetLabel: string;
+  differenceLabel: string;
   // WhatsApp messages
   whatsappMessageWithPartner: (partnerName: string) => string;
   whatsappMessageDefault: string;
@@ -558,6 +566,13 @@ export const translations: Record<Language, Translations> = {
     impactUnavailable: "החישוב אינו זמין עבור ההגדרות הנוכחיות.",
     errorAgeTooHigh: (max) => `גיל הלווה אינו יכול לעלות על ${max} (לפי הגדרות המערכת)`,
     errorAgeTooLow: (min) => `גיל הלווה חייב להיות לפחות ${min}`,
+    dealFeasibility: "בדיקת היתכנות עסקה",
+    statusGreen: "עסקה טובה",
+    statusOrange: "גבולי",
+    statusRed: "פער גבוה",
+    targetPropertyPriceLabel: "מחיר הנכס המבוקש",
+    estimatedBudgetLabel: "התקציב המשוער שלך",
+    differenceLabel: "הפרש",
   },
   en: {
     dir: 'ltr',
@@ -831,6 +846,13 @@ export const translations: Record<Language, Translations> = {
     impactUnavailable: "Calculation unavailable for current settings.",
     errorAgeTooHigh: (max) => `Age cannot exceed ${max} years (system limit)`,
     errorAgeTooLow: (min) => `Age must be at least ${min} years old`,
+    dealFeasibility: "Deal Feasibility Check",
+    statusGreen: "Excellent Fit",
+    statusOrange: "Borderline",
+    statusRed: "High Gap",
+    targetPropertyPriceLabel: "Target Property Price",
+    estimatedBudgetLabel: "Your Estimated Budget",
+    differenceLabel: "Difference",
   },
   fr: {
     dir: 'ltr',
@@ -1104,5 +1126,12 @@ export const translations: Record<Language, Translations> = {
     impactUnavailable: "Calcul indisponible pour les paramètres actuels.",
     errorAgeTooHigh: (max) => `L'âge ne peut pas dépasser ${max} ans (limite système)`,
     errorAgeTooLow: (min) => `L'âge doit être d'au moins ${min} ans`,
+    dealFeasibility: "Vérification de faisabilité",
+    statusGreen: "Excellente affaire",
+    statusOrange: "À la limite",
+    statusRed: "Écart élevé",
+    targetPropertyPriceLabel: "Prix du bien visé",
+    estimatedBudgetLabel: "Votre budget estimé",
+    differenceLabel: "Différence",
   }
 };

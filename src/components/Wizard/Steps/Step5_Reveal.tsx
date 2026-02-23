@@ -12,6 +12,7 @@ import { DevEmailPreview } from '@/components/DevTools/DevEmailPreview';
 import type { ReportEmailRequest } from '@/lib/devMirror';
 import { usePartner } from '@/contexts/PartnerContext';
 import { AmortizationTable } from '@/components/AmortizationTable';
+import { Badge } from '@/components/ui/badge';
 
 export function Step5({
     control,
@@ -34,6 +35,23 @@ export function Step5({
     const fullName = watch ? watch('fullName') : '';
     const firstName = fullName?.split(' ')[0] || '';
     const [showDossier, setShowDossier] = useState(false);
+
+    // Feasibility Logic
+    const targetPriceRaw = watch ? watch('targetPropertyPrice') : '';
+    const targetPropertyPrice = typeof targetPriceRaw === 'string'
+        ? parseFloat(targetPriceRaw.replace(/,/g, '')) || 0
+        : (typeof targetPriceRaw === 'number' ? targetPriceRaw : 0);
+    const hasTargetPrice = !!targetPropertyPrice && targetPropertyPrice > 0;
+    const maxBudget = results?.maxPropertyValue || 0;
+
+    const getFeasibility = () => {
+        if (!hasTargetPrice) return null;
+        const ratio = maxBudget / targetPropertyPrice;
+        if (ratio >= 1.0) return 'green';
+        if (ratio >= 0.90) return 'orange';
+        return 'red';
+    };
+    const feasibility = getFeasibility();
 
     // Dynamic Diagnosis Hook
     const getDiagnosisHook = () => {
@@ -335,6 +353,47 @@ export function Step5({
                     <p className="text-muted-foreground font-medium">
                         {t.successSubtitle}
                     </p>
+
+                    {/* Deal Feasibility Summary */}
+                    {hasTargetPrice && hasCounted && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="max-w-md mx-auto mt-6 p-5 rounded-2xl border border-slate-200/60 bg-white/40 backdrop-blur-sm shadow-sm"
+                        >
+                            <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    {t.dealFeasibility}
+                                </span>
+                                <Badge className={cn(
+                                    "font-bold px-3 py-0.5 rounded-full border-none",
+                                    feasibility === 'green' ? "bg-green-100 text-green-700 hover:bg-green-100" :
+                                        feasibility === 'orange' ? "bg-orange-100 text-orange-700 hover:bg-orange-100" :
+                                            "bg-red-100 text-red-700 hover:bg-red-100"
+                                )}>
+                                    {feasibility === 'green' ? t.statusGreen :
+                                        feasibility === 'orange' ? t.statusOrange :
+                                            t.statusRed}
+                                </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 text-start">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] text-muted-foreground uppercase tracking-tight">{t.targetPropertyPriceLabel}</p>
+                                    <p className="text-sm font-bold text-slate-700">₪ {formatNumber(targetPropertyPrice)}</p>
+                                </div>
+                                <div className="space-y-1 text-end">
+                                    <p className="text-[10px] text-muted-foreground uppercase tracking-tight">{t.differenceLabel}</p>
+                                    <p className={cn(
+                                        "text-sm font-bold",
+                                        maxBudget - targetPropertyPrice >= 0 ? "text-green-600" : "text-red-500"
+                                    )}>
+                                        {maxBudget - targetPropertyPrice >= 0 ? "+" : ""}
+                                        ₪ {formatNumber(maxBudget - targetPropertyPrice)}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
                 </div>
             </div>
 
