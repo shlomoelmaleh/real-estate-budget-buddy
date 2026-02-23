@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const ADMIN_EMAILS = ["shlomo.elmaleh@gmail.com"]; // Admin email from migration hint
+export const ADMIN_EMAILS: string[] = []; // Deprecated hardcoded emails
 
 /**
  * Check if the current user has the admin role via server-side RPC.

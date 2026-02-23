@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Partner } from "@/lib/partnerTypes";
@@ -109,6 +109,8 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     applyPartnerBrandColor(null);
   };
 
+  const isUrlBound = useRef(false);
+
   // Detect ?ref=slug (initial load is the primary use-case)
   useEffect(() => {
     let cancelled = false;
@@ -118,6 +120,10 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
       const refParam = sp.get("ref")?.trim();
       const idParam = sp.get("partnerId")?.trim();
       const param = refParam || idParam;
+
+      if (param) {
+        isUrlBound.current = true;
+      }
 
       setIsLoading(true);
 
@@ -209,6 +215,8 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
 
     const checkAndLoadOwnerPartner = async (userId: string | undefined) => {
+      if (isUrlBound.current) return;
+
       if (!userId) {
         if (!cancelled) setIsOwner(false);
         return;

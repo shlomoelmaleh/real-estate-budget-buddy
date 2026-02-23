@@ -166,8 +166,18 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                         .select()
                         .single();
 
-                    if (createError) throw createError;
-                    data = newData;
+                    if (createError) {
+                        console.warn("[ConfigurationPanel] Insert failed, attempting to fetch existing default:", createError);
+                        const { data: existingData, error: fetchError } = await supabase
+                            .from('partners')
+                            .select('*')
+                            .is('slug', null)
+                            .maybeSingle();
+                        if (fetchError || !existingData) throw createError;
+                        data = existingData;
+                    } else {
+                        data = newData;
+                    }
                 }
 
                 if (error) throw error;
@@ -227,7 +237,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
         }
 
         fetchConfig();
-    }, []);
+    }, [isAdminMode, t]);
 
     // Real-time Preview Effect
     useEffect(() => {

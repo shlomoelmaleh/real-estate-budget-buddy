@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import type { ActivityLogRow, Partner, SloganFontSize, SloganFontStyle } from "@/lib/partnerTypes";
+import type { ActivityLogRow, Partner, SloganFontSize, SloganFontStyle, SloganFontFamily } from "@/lib/partnerTypes";
 import { checkIsAdmin } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -43,7 +43,7 @@ async function adminMutate(body: any) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
     },
     body: JSON.stringify(body),
   });
@@ -74,6 +74,7 @@ export default function AdminPartners() {
     slogan: "",
     slogan_font_size: "sm" as SloganFontSize,
     slogan_font_style: "normal" as SloganFontStyle,
+    slogan_font_family: "system" as SloganFontFamily,
     is_active: true,
     // Config params
     max_dti_ratio: 0.33,
@@ -141,7 +142,7 @@ export default function AdminPartners() {
   const resetForm = () => {
     setEditing(null);
     setShowCreateDialog(false);
-    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", slogan_font_size: "sm", slogan_font_style: "normal", is_active: true, max_dti_ratio: 0.33, max_age: 80, max_loan_term_years: 30, rent_recognition_first_property: 0.0, rent_recognition_investment: 0.8, default_interest_rate: 5.0, lawyer_fee_percent: 1.0, broker_fee_percent: 2.0, vat_percent: 17.0, advisor_fee_fixed: 9000, other_fee_fixed: 3000, rental_yield_default: 3.0, rent_warning_high_multiplier: 1.5, rent_warning_low_multiplier: 0.7, enable_rent_validation: true, enable_what_if_calculator: true, show_amortization_table: true, max_amortization_months: 60 });
+    setForm({ name: "", slug: "", email: "", phone: "", whatsapp: "", brand_color: "", logo_url: "", slogan: "", slogan_font_size: "sm", slogan_font_style: "normal", slogan_font_family: "system", is_active: true, max_dti_ratio: 0.33, max_age: 80, max_loan_term_years: 30, rent_recognition_first_property: 0.0, rent_recognition_investment: 0.8, default_interest_rate: 5.0, lawyer_fee_percent: 1.0, broker_fee_percent: 2.0, vat_percent: 17.0, advisor_fee_fixed: 9000, other_fee_fixed: 3000, rental_yield_default: 3.0, rent_warning_high_multiplier: 1.5, rent_warning_low_multiplier: 0.7, enable_rent_validation: true, enable_what_if_calculator: true, show_amortization_table: true, max_amortization_months: 60 });
   };
 
   const generateSlug = (name: string) => {
@@ -166,6 +167,7 @@ export default function AdminPartners() {
       slogan: p.slogan || "",
       slogan_font_size: (p.slogan_font_size || "sm") as SloganFontSize,
       slogan_font_style: (p.slogan_font_style || "normal") as SloganFontStyle,
+      slogan_font_family: (p.slogan_font_family || "system") as SloganFontFamily,
       is_active: !!p.is_active,
       max_dti_ratio: p.max_dti_ratio ?? 0.33,
       max_age: p.max_age ?? 80,
@@ -189,8 +191,8 @@ export default function AdminPartners() {
   };
 
   const copyLink = async (slug: string | null) => {
-    const baseUrl = "https://dream-deal-planner-29.lovable.app/";
-    const url = slug ? `${baseUrl}?ref=${encodeURIComponent(slug)}` : baseUrl;
+    const baseUrl = window.location.origin;
+    const url = slug ? `${baseUrl}/?ref=${encodeURIComponent(slug)}` : baseUrl;
     await navigator.clipboard.writeText(url);
     toast.success("Copied");
   };
@@ -232,7 +234,7 @@ export default function AdminPartners() {
           slogan: form.slogan || null,
           slogan_font_size: form.slogan_font_size || "sm",
           slogan_font_style: form.slogan_font_style || "normal",
-          // slogan_font_family: data.slogan_font_family as SloganFontFamily, // This line was commented out or removed
+          slogan_font_family: form.slogan_font_family || "system",
           is_active: !!form.is_active,
           max_dti_ratio: form.max_dti_ratio,
           max_age: form.max_age,
@@ -437,7 +439,26 @@ export default function AdminPartners() {
                     />
                     <p className="text-xs text-muted-foreground">Optional text displayed under the logo in the header</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium">Slogan Font Family</label>
+                      <Select
+                        value={form.slogan_font_family}
+                        onValueChange={(v) => setForm((f) => ({ ...f, slogan_font_family: v as SloganFontFamily }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select font" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="system">System Default</SelectItem>
+                          <SelectItem value="assistant">Assistant</SelectItem>
+                          <SelectItem value="heebo">Heebo</SelectItem>
+                          <SelectItem value="frank-ruhl-libre">Frank Ruhl Libre</SelectItem>
+                          <SelectItem value="rubik">Rubik</SelectItem>
+                          <SelectItem value="inter">Inter</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="space-y-1">
                       <label className="text-xs font-medium">Slogan Font Size</label>
                       <Select
