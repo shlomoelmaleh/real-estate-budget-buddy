@@ -8,7 +8,7 @@ import type { SloganFontSize, SloganFontStyle, SloganFontFamily } from '@/lib/pa
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import { checkIsAdmin } from '@/lib/admin';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
