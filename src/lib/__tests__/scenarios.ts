@@ -667,7 +667,7 @@ export const SCENARIOS: Scenario[] = [
             interest: 5.0,
             isRented: true,
             rentalYield: 3.0,
-            rentRecognition: 50, // Test with 50% recognition
+            rentRecognition: 0, // Real-world setting: 0% recognition for first property
             budgetCap: null,
             isFirstProperty: true,
             isIsraeliTaxResident: true,
@@ -678,7 +678,7 @@ export const SCENARIOS: Scenario[] = [
             advisorFee: 9000,
             otherFee: 3000,
         },
-        config: { ...DEFAULT_CONFIG, rent_recognition_first_property: 0.5 },
+        config: { ...DEFAULT_CONFIG, rent_recognition_first_property: 0.0 },
     },
 
     // ── S21: Zero Broker/Lawyer Fees ──────────────────────────────────────────

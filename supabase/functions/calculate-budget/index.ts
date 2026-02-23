@@ -294,7 +294,7 @@ function solveMaximumBudget(
     // Rule: First property = config.rent_recognition_first_property. Investment property = config.rent_recognition_investment.
     const rentRecognitionRate = isFirstProperty
       ? config.rent_recognition_first_property
-      : config.rent_recognition_investment;
+      : (inputs.rentRecognition !== undefined && inputs.rentRecognition !== null ? inputs.rentRecognition / 100 : config.rent_recognition_investment);
     const bankRecognizedIncome = netIncome + (actualRent * rentRecognitionRate);
     const bankMaxPayment = bankRecognizedIncome * (ratio / 100);
 
