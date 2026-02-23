@@ -6,7 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
 import { FONT_FAMILY_OPTIONS, SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import logoEshel from '@/assets/logo-eshel.png';
+import logoEshel from '@/assets/logo-eshel.webp';
 
 function getSloganFontSizeClass(size: SloganFontSize | null | undefined): string {
     switch (size) {
