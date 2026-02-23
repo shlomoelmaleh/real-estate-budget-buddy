@@ -22,7 +22,10 @@ export function LoginRedirect() {
             // 2. Already on the partner settings page — nothing to do
             if (path === "/admin/settings") return;
 
-            // 3. Check if the user owns a partner record
+            // 3. Auto-link potentially orphaned partner records matching Auth ID via Email
+            await supabase.rpc('claim_partner_account');
+
+            // 4. Check if the user owns a partner record
             setIsChecking(true);
             try {
                 const { data: partner, error } = await supabase

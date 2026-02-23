@@ -32,10 +32,7 @@ const EmailRequestSchema = z.object({
     .min(1)
     .max(100)
     .regex(/^[\p{L}\p{N}\s\-'.,]+$/u, "Name contains invalid characters"),
-  recipientPhone: z
-    .string()
-    .max(30)
-    .regex(/^[+0-9\s\-()]*$/, "Phone contains invalid characters"),
+  recipientPhone: z.string().max(50),
   language: z.enum(["he", "en", "fr"]),
   inputs: z.object({
     equity: z.string().max(30),

@@ -400,6 +400,7 @@ export function Step5({
                                         type="email"
                                         {...field}
                                         hasError={!!errors.email}
+                                        required={true}
                                         className="bg-white w-full"
                                         placeholder="example@email.com"
                                     />
@@ -419,6 +420,7 @@ export function Step5({
                                         type="tel"
                                         {...field}
                                         hasError={!!errors.phone}
+                                        required={true}
                                         className="bg-white w-full"
                                         placeholder="050-0000000"
                                     />
