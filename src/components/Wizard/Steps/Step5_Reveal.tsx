@@ -354,6 +354,34 @@ export function Step5({
                         {t.successSubtitle}
                     </p>
 
+                    {hasCounted && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                        >
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowDossier(true);
+                                    setTimeout(() => {
+                                        document.getElementById('lead-capture-section')?.scrollIntoView({ behavior: 'smooth' });
+                                    }, 100);
+                                }}
+                                className="mt-4 border-primary/30 text-primary hover:bg-primary/5 rounded-full px-6 h-11 font-bold shadow-sm group"
+                            >
+                                {t.jumpToDossier}
+                                <motion.span
+                                    animate={{ y: [0, 4, 0] }}
+                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                    className="ms-2"
+                                >
+                                    ↓
+                                </motion.span>
+                            </Button>
+                        </motion.div>
+                    )}
+
                     {/* Deal Feasibility Summary */}
                     {hasTargetPrice && hasCounted && (
                         <motion.div
@@ -421,10 +449,12 @@ export function Step5({
             )}
 
             {/* Dossier Teaser - Animated Entry */}
-            <div className={cn(
-                "transition-all duration-1000 ease-out transform",
-                showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            )}>
+            <div
+                id="lead-capture-section"
+                className={cn(
+                    "transition-all duration-1000 ease-out transform",
+                    showDossier ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                )}>
                 <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/60 space-y-8 mt-8 shadow-sm relative overflow-hidden">
 
                     {/* Premium Header */}

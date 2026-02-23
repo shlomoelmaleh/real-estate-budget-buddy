@@ -193,6 +193,7 @@ export interface Translations {
   noteAge: string;
   whatIfText: string;
   expertCommitment: string;
+  jumpToDossier: string;
   // Partner Config Tabs
   tabBranding: string;
   tabCredit: string;
@@ -456,14 +457,14 @@ export const translations: Record<Language, Translations> = {
     revealComplete: "ניתוח המימון הושלם",
     // Dossier Strategy
     dossierTeaser: "תיק האסטרטגיה הפיננסית שלך מוכן",
-    unlockDossierBtn: "שלחו לי את התיק המלא (PDF)",
+    unlockDossierBtn: "שלחו לי את התיק המלא",
     hookIncome: "הכנו עבורך אסטרטגיית 'ייעול החזר' שתעזור לך למקסם את אישור הבנק למרות מגבלות ההכנסה.",
     hookEquity: "הכנו עבורך מפת עלויות מדויקת שתעזור לך לתכנן את תזרים המזומנים מול הוצאות המיסוי והסגירה.",
     hookLTV: "הכנו עבורך ניתוח רגולטורי שיסביר את מגבלות המימון של בנק ישראל עבור הפרופיל שלך.",
     hookAge: "הכנו עבורך תוכנית אופטימיזציה לפריסת המשכנתא בהתאם למגבלות הגיל.",
     hookDefault: "הכנו עבורך ניתוח בנקאי מקיף שיעזור לך להבין את פוטנציאל הרכישה האמיתי שלך.",
     dossierSubject: "תיק האסטרטגיה הפיננסית שלך - [Name]",
-    leadCaptureTitle: "הכנו עבורכם מפת דרכים אסטרטגית (PDF) הכוללת ניתוח בנקאי מלא. לאן לשלוח לכם אותה?",
+    leadCaptureTitle: "הכנו עבורכם מפת דרכים אסטרטגית הכוללת ניתוח בנקאי מלא. לאן לשלוח לכם אותה?",
     leadCaptureBtn: "שלחו לי את התיק המלא",
     // Strategic Moat (Phase 5)
     overviewTitle: "ניתוח העוצמה הפיננסית שלכם",
@@ -473,6 +474,7 @@ export const translations: Record<Language, Translations> = {
     noteAge: "תקופת ההלוואה מוגבלת בשל גיל, מה שמעלה את ההחזר החודשי. מומלץ לבחון מבנה הלוואה הממזער את ההשפעה.",
     whatIfText: "הידעתם? הגדלה של ההחזר החודשי ב-₪500 בלבד יכולה להגדיל את כוח הקנייה שלכם בכ-₪100,000.",
     expertCommitment: "התיק ייבדק בידי מומחה כדי לוודא תאימות לכללי בנק ישראל 2025.",
+    jumpToDossier: "כן, אני רוצה לקבל את התיק המלא 📥",
     tabBranding: "מיתוג",
     tabCredit: "אשראי",
     tabFees: "עמלות",
@@ -736,14 +738,14 @@ export const translations: Record<Language, Translations> = {
     revealComplete: "Financial Analysis Complete",
     // Dossier Strategy
     dossierTeaser: "Your Strategic Financial Dossier is Ready",
-    unlockDossierBtn: "Send My Full Dossier (PDF)",
+    unlockDossierBtn: "Send My Full Dossier",
     hookIncome: "We've prepared a 'Repayment Optimization' strategy to help you maximize bank approval despite income ceilings.",
     hookEquity: "We've prepared a detailed cash-flow roadmap to help you navigate acquisition costs and taxes.",
     hookLTV: "We've included a Regulatory Ceiling Analysis explaining the Bank of Israel's financing limits for your profile.",
     hookAge: "We've prepared a loan-term optimization plan to address age-based repayment restrictions.",
     hookDefault: "We've prepared a comprehensive banking analysis to help you understand your true purchasing power.",
     dossierSubject: "Your Strategic Financial Dossier - [Name]",
-    leadCaptureTitle: "We've prepared your personalized Strategic Roadmap (PDF) including full bank analysis. Where should we send your strategy?",
+    leadCaptureTitle: "We've prepared your personalized Strategic Roadmap including full bank analysis. Where should we send your strategy?",
     leadCaptureBtn: "Send My Full Dossier",
     // Strategic Moat (Phase 5)
     overviewTitle: "Your Financial Strength Analysis",
@@ -753,6 +755,7 @@ export const translations: Record<Language, Translations> = {
     noteAge: "The loan term is limited by age, increasing the monthly payment. We should structure the loan to minimize this impact.",
     whatIfText: "Did you know? Increasing your monthly payment by just ₪500 could grow your total budget by approximately ₪100,000.",
     expertCommitment: "✓ Validated against 2025 Israeli Bank Regulations | Expert review within 24h",
+    jumpToDossier: "Yes, I want to receive the complete report 📥",
     tabBranding: "Branding",
     tabCredit: "Credit",
     tabFees: "Fees",
@@ -1016,14 +1019,14 @@ export const translations: Record<Language, Translations> = {
     revealComplete: "Analyse de financement terminée",
     // Dossier Strategy
     dossierTeaser: "Votre Dossier Stratégique Financier est Prêt",
-    unlockDossierBtn: "Envoyer Mon Dossier Complet (PDF)",
+    unlockDossierBtn: "Envoyer Mon Dossier Complet",
     hookIncome: "Nous avons préparé une stratégie d'optimisation du remboursement pour maximiser l'accord bancaire.",
     hookEquity: "Nous avons préparé une feuille de route détaillée des flux de trésorerie pour gérer les coûts d'acquisition.",
     hookLTV: "Nous avons inclus une analyse des plafonds réglementaires expliquant les limites de financement de la Banque d'Israël.",
     hookAge: "Nous avons préparé un plan d'optimisation de la durée du prêt adapté aux restrictions liées à l'âge.",
     hookDefault: "Nous avons préparé une analyse bancaire complète pour vous aider à comprendre votre véritable pouvoir d'achat.",
     dossierSubject: "Votre Dossier Stratégique Financier - [Name]",
-    leadCaptureTitle: "Nous avons préparé votre Feuille de Route Stratégique (PDF) incluant une analyse bancaire complète. Où souhaitez-vous la recevoir ?",
+    leadCaptureTitle: "Nous avons préparé votre Feuille de Route Stratégique incluant une analyse bancaire complète. Où souhaitez-vous la recevoir ?",
     leadCaptureBtn: "Envoyer Mon Dossier Complet",
     // Strategic Moat (Phase 5)
     overviewTitle: "Analyse de votre force financière",
@@ -1033,6 +1036,7 @@ export const translations: Record<Language, Translations> = {
     noteAge: "La durée du prêt est limitée par l'âge, ce qui augmente la mensualité. Il faut structurer le prêt pour minimiser cet impact.",
     whatIfText: "Le saviez-vous ? Augmenter votre mensualité de seulement 500 ₪ peut augmenter votre budget total d'environ 100 000 ₪.",
     expertCommitment: "Ce dossier sera revu par un expert pour assurer sa conformité aux règles bancaires 2025.",
+    jumpToDossier: "Oui, je veux recevoir le rapport complet 📥",
     tabBranding: "Image de marque",
     tabCredit: "Crédit",
     tabFees: "Frais",

@@ -68,9 +68,9 @@ export function FormInput({
 
   return (
     <div className={cn("space-y-1.5", className)}>
-      <Label className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground leading-tight">
+      <Label className="flex items-start gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground leading-tight">
         {icon && <span className="w-3.5 h-3.5 text-primary/70">{icon}</span>}
-        <span className="truncate">{label}</span>
+        <span className="flex-1">{label}</span>
         {required && <span className="text-destructive">*</span>}
         {suffix && <span className="text-[10px] sm:text-xs text-muted-foreground/70 shrink-0">({suffix})</span>}
       </Label>
