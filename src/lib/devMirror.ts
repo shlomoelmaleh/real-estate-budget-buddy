@@ -1174,7 +1174,7 @@ function generateEmailHtml(
             <span>|</span>
             <span>${t.labelAge}: <strong style="color: #0f172a;">${breakdown.age}/10</strong></span>
             <span>|</span>
-            <span>${t.labelCash}: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></span>
+            <span>${t.labelCash}: <strong style="color: #0f172a;">${breakdown.liquidity}/5</strong></span>
           </div>
         </div>
         
@@ -1319,7 +1319,7 @@ function generateEmailHtml(
               <td style="padding: 0 4px;">${t.labelHealth}: <strong style="color: #0f172a;">${breakdown.health}/25</strong></td>
               <td style="padding: 0 4px;">${t.labelReady}: <strong style="color: #0f172a;">${breakdown.readiness}/25</strong></td>
               <td style="padding: 0 4px;">${t.labelAge}: <strong style="color: #0f172a;">${breakdown.age}/10</strong></td>
-              <td style="padding: 0 4px;">${t.labelCash}: <strong style="color: #0f172a;">${breakdown.liquidity}/15</strong></td>
+              <td style="padding: 0 4px;">${t.labelCash}: <strong style="color: #0f172a;">${breakdown.liquidity}/5</strong></td>
             </tr>
           </table>
         </div>
