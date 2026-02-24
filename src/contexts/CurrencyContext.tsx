@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import type { SupportedCurrency, ExchangeRates } from '@/lib/currencyUtils';
 import { CURRENCY_SYMBOLS, CURRENCY_CONFIG, PHASE1_CURRENCIES, fmt, fromILS, toILS, formatRateLabel } from '@/lib/currencyUtils';
 
@@ -83,7 +83,7 @@ export function CurrencyProvider({ children, defaultCurrency }: {
                     return;
                 }
 
-                setRates(data.value as ExchangeRates);
+                setRates(data.value as unknown as ExchangeRates);
             } catch (err) {
                 console.error('[CurrencyContext] Error loading rates:', err);
             } finally {
