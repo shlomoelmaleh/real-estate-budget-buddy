@@ -7,6 +7,7 @@
  */
 
 import { calculateLeadScore, calculateBonusPower, getLimitingFactorDescription } from "./leadScoring.ts";
+import { fmt, fmtFixedILS, SupportedCurrency, ExchangeRates, fromILS } from "../_shared/currencyUtils.ts";
 
 export interface ReportEmailRequest {
   recipientEmail: string;
@@ -58,6 +59,9 @@ export interface ReportEmailRequest {
     rentWarning?: 'high' | 'low' | null;
     estimatedMarketRent?: number;
   };
+  currency?: string;
+  exchangeRate?: number;
+  ratesDate?: string | null;
   amortizationSummary: {
     totalMonths: number;
     firstPayment: { principal: number; interest: number };
@@ -150,6 +154,18 @@ export function generateEmailHtml(
   const otherFeeValue = parseNumber(inputs.otherFee);
   const closingCostsTotal =
     results.purchaseTax + results.lawyerFeeTTC + results.brokerFeeTTC + advisorFeeValue + otherFeeValue;
+
+  const targetCurrency = (data.currency as SupportedCurrency) || 'ILS';
+  const displayValue = (val: number, isFixedILS = false) => {
+    if (targetCurrency === 'ILS') return `₪ ${formatNumber(val)}`;
+
+    // Admin receives emails with dual formatting handled manually below where needed.
+    // For general display in the main body (both client/admin):
+    if (isFixedILS) {
+      return fmtFixedILS(val, targetCurrency, { rates: { [targetCurrency]: data.exchangeRate || 1 }, fetchedAt: data.ratesDate || '', source: 'cache', nextRefreshAfter: '' }, language);
+    }
+    return fmt(val, targetCurrency);
+  };
 
   // Normalize DTI max allowed (could be 33 or 0.33)
   const dtiMaxAllowedRaw = parseFloat(inputs.ratio) || 0;
@@ -346,6 +362,7 @@ export function generateEmailHtml(
       labelAge: "גיל",
       labelCash: "מזומן",
       labelLimitingFactor: "גורם מגביל",
+      rateDisclaimer: "שער: {rate} ₪/{symbol} | עדכון: {date} | המחיר החוקי בישראל הוא בשקלים",
     },
     en: {
       subject: "Your Strategic Financial Dossier",
@@ -480,6 +497,7 @@ export function generateEmailHtml(
       labelAge: "Age",
       labelCash: "Cash",
       labelLimitingFactor: "Limiting Factor",
+      rateDisclaimer: "Rate: {rate} ILS/{symbol} | Updated: {date} | The legal price in Israel is in ILS",
     },
     fr: {
       subject: "Votre Dossier Stratégique Financier",
@@ -615,7 +633,8 @@ export function generateEmailHtml(
       labelAge: "Âge",
       labelCash: "Apport",
       labelLimitingFactor: "Facteur limitant",
-    },
+      rateDisclaimer: "Taux: {rate} ILS/{symbol} | Mis à jour: {date} | Le prix légal en Israël est en ILS",
+    }
   };
 
   const t = texts[language];
@@ -730,8 +749,8 @@ export function generateEmailHtml(
   const isNetBalancePositive = netMonthlyBalanceValue >= 0;
   const netBalanceColor = isNetBalancePositive ? "#10b981" : "#dc2626"; // Green or Red
   const netBalanceFormatted = isNetBalancePositive
-    ? `₪ ${formatNumber(netMonthlyBalanceValue)}`
-    : `-₪ ${formatNumber(Math.abs(netMonthlyBalanceValue))}`;
+    ? `${displayValue(netMonthlyBalanceValue)}`
+    : `-${displayValue(Math.abs(netMonthlyBalanceValue))}`;
 
   // Internal Analysis  // Lead Scoring (for internal use in Advisor Email)
   const { score, priorityLabel, priorityColor, actionSla, predictedTimeline, breakdown } = calculateLeadScore(
@@ -1196,8 +1215,8 @@ export function generateEmailHtml(
       <!-- SECTION 1: Hero - Maximum Purchasing Power -->
       <div class="section hero-section">
         <div class="section-title">💎 ${t.heroTitle}</div>
-        <div style="font-size: 13px; color: #047857; margin-bottom: 4px;">${t.maxPropertyLabel}</div>
-        <div class="hero-value">₪ ${formatNumber(results.maxPropertyValue)}</div>
+        <div class="hero-title">${t.maxPropertyLabel}</div>
+        <div class="hero-value">${displayValue(results.maxPropertyValue)}</div>
         <div class="hero-factor">
           <span class="hero-factor-label">${t.limitingFactorLabel}:</span> ${limitingFactor}
         </div>
@@ -1208,11 +1227,11 @@ export function generateEmailHtml(
         <div class="section-title">🏦 ${t.fundingTitle}</div>
         <div class="row">
           <span class="label">${t.loanAmount}</span>
-          <span class="value">₪ ${formatNumber(results.loanAmount)}</span>
+          <span class="value">${displayValue(results.loanAmount)}</span>
         </div>
         <div class="row">
           <span class="label">${t.equityOnProperty}</span>
-          <span class="value">₪ ${formatNumber(equityOnProperty)}</span>
+          <span class="value">${displayValue(equityOnProperty)}</span>
         </div>
         <div class="funding-note">💡 ${t.fundingNote}</div>
       </div>
@@ -1222,29 +1241,29 @@ export function generateEmailHtml(
         <div class="section-title">📑 ${t.transactionTitle}</div>
         <div class="row">
           <span class="label">${t.purchaseTax}</span>
-          <span class="value">₪ ${formatNumber(results.purchaseTax)}</span>
+          <span class="value">${displayValue(results.purchaseTax)}</span>
         </div>
         <div class="tax-disclaimer">${t.taxDisclaimer}</div>
         <div class="row">
           <span class="label">${t.lawyerLabel}</span>
-          <span class="value">₪ ${formatNumber(results.lawyerFeeTTC)} ${t.ttc}</span>
+          <span class="value">${displayValue(results.lawyerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
           <span class="label">${t.brokerLabel}</span>
-          <span class="value">₪ ${formatNumber(results.brokerFeeTTC)} ${t.ttc}</span>
+          <span class="value">${displayValue(results.brokerFeeTTC)} ${t.ttc}</span>
         </div>
         <div class="row">
           <span class="label">${t.advisorFeeLabel}</span>
-          <span class="value">₪ ${inputs.advisorFee || "0"} ${t.ttc}</span>
+          <span class="value">${displayValue(advisorFeeValue, true)} ${t.ttc}</span>
         </div>
         <div class="advisor-disclaimer">${t.advisorFeeDisclaimer}</div>
         <div class="row">
           <span class="label">${t.other}</span>
-          <span class="value">₪ ${inputs.otherFee || "0"}</span>
+          <span class="value">${displayValue(otherFeeValue, true)}</span>
         </div>
         <div class="row total-row">
           <span class="label">${t.transactionTotal}</span>
-          <span class="value">₪ ${formatNumber(closingCostsTotal)}</span>
+          <span class="value">${displayValue(closingCostsTotal)}</span>
         </div>
       </div>
 
@@ -1258,7 +1277,7 @@ export function generateEmailHtml(
         </div>
         <div class="row">
           <span class="label">${t.netCashFlow}</span>
-          <span class="value" style="color: ${netCashFlow < 0 ? '#dc2626' : '#0f172a'}; font-weight: 700;">${netCashFlow < 0 ? `-₪ ${formatNumber(Math.abs(netCashFlow))}` : `₪ ${formatNumber(netCashFlow)}`}</span>
+          <span class="value" style="color: ${netCashFlow < 0 ? '#dc2626' : '#0f172a'}; font-weight: 700;">${netCashFlow < 0 ? `-${displayValue(Math.abs(netCashFlow))}` : `${displayValue(netCashFlow)}`}</span>
         </div>
         <div class="row">
           <span class="label">${t.cashOnCash}</span>
@@ -1450,7 +1469,7 @@ export function generateEmailHtml(
         <!-- RENT WARNING - Advisor Alert -->
         <div style="background: #fffbeb; border: 3px solid #f59e0b; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
           <div style="font-size: 14px; font-weight: 800; color: #dc2626; margin-bottom: 6px;">⚠️ ${language === 'he' ? 'שימו לב: שכירות הוזנה ידנית' : language === 'fr' ? 'Attention : Loyer saisi manuellement' : 'Warning: Rent Entered Manually'}</div>
-          <div style="font-size: 13px; color: #92400e; font-weight: 600;">${language === 'he' ? 'הלקוח הזין סכום שכירות צפוי באופן ידני (₪' + formatNumber(results.rentIncome) + '). יש לאמת מול חוזה שכירות בפועל.' : language === 'fr' ? 'Le client a saisi un loyer manuellement (₪' + formatNumber(results.rentIncome) + '). À vérifier avec le bail réel.' : 'The client entered an expected rent manually (₪' + formatNumber(results.rentIncome) + '). Please verify against an actual lease agreement.'}</div>
+          <div style="font-size: 13px; color: #92400e; font-weight: 600;">${language === 'he' ? 'הלקוח הזין סכום שכירות צפוי באופן ידני (' + displayValue(results.rentIncome) + '). יש לאמת מול חוזה שכירות בפועל.' : language === 'fr' ? 'Le client a saisi un loyer manuellement (' + displayValue(results.rentIncome) + '). À vérifier avec le bail réel.' : 'The client entered an expected rent manually (' + displayValue(results.rentIncome) + '). Please verify against an actual lease agreement.'}</div>
         </div>
         ` : ''}
 
@@ -1463,17 +1482,17 @@ export function generateEmailHtml(
           </div>
           <div class="row">
             <span class="label">${t.monthlyPaymentLabel}</span>
-            <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
+            <span class="value">${displayValue(results.monthlyPayment)}</span>
           </div>
           <div class="row">
             <span class="label">${t.totalInterestLabel}</span>
-            <span class="value">₪ ${formatNumber(results.totalInterest)}</span>
+            <span class="value">${displayValue(results.totalInterest)}</span>
           </div>
           ${results.loanAmount > 0 && results.totalInterest >= 0
       ? `
           <div class="row" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; padding: 12px !important; margin-top: 8px;">
             <span class="label" style="font-weight: 600; color: #0369a1;">${t.totalRepaidLabel}</span>
-            <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">₪ ${formatNumber(results.loanAmount + results.totalInterest)}</span>
+            <span class="value" style="font-weight: 700; color: #0284c7; font-size: 16px;">${displayValue(results.loanAmount + results.totalInterest)}</span>
           </div>
           `
       : ""
@@ -1484,17 +1503,17 @@ export function generateEmailHtml(
             <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
               <div style="font-size: 11px; color: #64748b;">${t.firstPaymentLabel}</div>
               <div style="font-size: 12px; margin-top: 4px;">
-                <span style="color: #10b981; font-weight: 600;">${t.principal}: ₪${formatNumber(amortizationSummary.firstPayment.principal)}</span>
+                <span style="color: #10b981; font-weight: 600;">${t.principal}: ${displayValue(amortizationSummary.firstPayment.principal)}</span>
                 <span style="color: #64748b; margin: 0 4px;">|</span>
-                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ₪${formatNumber(amortizationSummary.firstPayment.interest)}</span>
+                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ${displayValue(amortizationSummary.firstPayment.interest)}</span>
               </div>
             </div>
             <div style="flex: 1; min-width: 140px; background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0;">
               <div style="font-size: 11px; color: #64748b;">${t.lastPaymentLabel}</div>
               <div style="font-size: 12px; margin-top: 4px;">
-                <span style="color: #10b981; font-weight: 600;">${t.principal}: ₪${formatNumber(amortizationSummary.lastPayment.principal)}</span>
+                <span style="color: #10b981; font-weight: 600;">${t.principal}: ${displayValue(amortizationSummary.lastPayment.principal)}</span>
                 <span style="color: #64748b; margin: 0 4px;">|</span>
-                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ₪${formatNumber(amortizationSummary.lastPayment.interest)}</span>
+                <span style="color: #f59e0b; font-weight: 600;">${t.interestLabel}: ${displayValue(amortizationSummary.lastPayment.interest)}</span>
               </div>
             </div>
           </div>
@@ -1529,11 +1548,11 @@ export function generateEmailHtml(
           </div>
           <div class="assumption-item">
             <div class="a-label">${t.netIncome}</div>
-            <div class="a-value">₪ ${inputs.netIncome}</div>
+            <div class="a-value">${displayValue(parseNumber(inputs.netIncome))}</div>
           </div>
           <div class="assumption-item">
             <div class="a-label">${t.initialEquity}</div>
-            <div class="a-value">₪ ${inputs.equity}</div>
+            <div class="a-value">${displayValue(parseNumber(inputs.equity))}</div>
           </div>
           <div class="assumption-item">
             <div class="a-label">${t.interestRate}</div>
@@ -1546,7 +1565,7 @@ export function generateEmailHtml(
           ${inputs.isRented ? `
           <div class="assumption-item" style="${hasManualRent ? "background: #fffbf0; border-color: #fcd34d;" : ""}">
             <div class="a-label">${rentLabel}</div>
-            <div class="a-value">₪ ${formatNumber(results.rentIncome)}</div>
+            <div class="a-value">${displayValue(results.rentIncome)}</div>
           </div>
           ` : ""}
         </div>
@@ -1579,6 +1598,11 @@ export function generateEmailHtml(
       </div>
 
       <div class="footer">
+        ${targetCurrency !== 'ILS' && data.exchangeRate && data.ratesDate ? `
+        <p style="font-weight: 700; color: #b45309; margin-bottom: 8px;">
+          ${(t as any).rateDisclaimer.replace('{rate}', data.exchangeRate.toFixed(2)).replace('{symbol}', targetCurrency === 'USD' ? '$' : targetCurrency === 'EUR' ? '€' : targetCurrency === 'GBP' ? '£' : targetCurrency).replace('{date}', new Date(data.ratesDate).toLocaleDateString())}
+        </p>
+        ` : ''}
         <p>${t.footer}</p>
         <p>© ${new Date().getFullYear()}</p>
       </div>

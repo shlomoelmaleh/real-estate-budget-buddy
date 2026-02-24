@@ -15,6 +15,7 @@ interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'on
   required?: boolean;
   hasError?: boolean;
   error?: string;
+  helperText?: ReactNode;
 }
 
 export function FormInput({
@@ -30,6 +31,7 @@ export function FormInput({
   required = false,
   hasError = false,
   error,
+  helperText,
   ...props
 }: FormInputProps) {
   const [displayValue, setDisplayValue] = useState(value);
@@ -103,11 +105,18 @@ export function FormInput({
           )}
         />
       </div>
-      {error && (
-        <p className="text-[10px] sm:text-xs font-semibold text-destructive animate-in fade-in slide-in-from-top-1 duration-200">
-          {error}
-        </p>
-      )}
+      <div className="flex justify-between items-start mt-1">
+        {error ? (
+          <p className="text-[10px] sm:text-xs font-semibold text-destructive animate-in fade-in slide-in-from-top-1 duration-200">
+            {error}
+          </p>
+        ) : <div />}
+        {helperText && !error && (
+          <p className="text-[10px] sm:text-xs text-muted-foreground/80 font-medium italic animate-in fade-in slide-in-from-top-1 duration-200 text-right">
+            {helperText}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

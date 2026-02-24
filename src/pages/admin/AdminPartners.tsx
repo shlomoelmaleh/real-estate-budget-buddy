@@ -76,6 +76,7 @@ export default function AdminPartners() {
     slogan_font_style: "normal" as SloganFontStyle,
     slogan_font_family: "system" as SloganFontFamily,
     is_active: true,
+    default_currency: "ILS" as "ILS" | "USD" | "EUR" | "GBP",
     // Config params
     max_dti_ratio: 0.33,
     max_age: 80,
@@ -152,6 +153,7 @@ export default function AdminPartners() {
       slogan_font_style: "normal",
       slogan_font_family: "system",
       is_active: true,
+      default_currency: "ILS",
       max_dti_ratio: 0.33,
       max_age: 80,
       max_loan_term_years: 30,
@@ -197,6 +199,7 @@ export default function AdminPartners() {
       slogan_font_style: (p.slogan_font_style || "normal") as SloganFontStyle,
       slogan_font_family: (p.slogan_font_family || "system") as SloganFontFamily,
       is_active: !!p.is_active,
+      default_currency: p.default_currency || "ILS",
       max_dti_ratio: p.max_dti_ratio ?? 0.33,
       max_age: p.max_age ?? 80,
       max_loan_term_years: p.max_loan_term_years ?? 30,
@@ -264,6 +267,7 @@ export default function AdminPartners() {
           slogan_font_style: form.slogan_font_style || "normal",
           slogan_font_family: form.slogan_font_family || "system",
           is_active: !!form.is_active,
+          default_currency: form.default_currency || "ILS",
           max_dti_ratio: form.max_dti_ratio,
           max_age: form.max_age,
           max_loan_term_years: form.max_loan_term_years,
@@ -545,6 +549,25 @@ export default function AdminPartners() {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Default Currency</label>
+                    <Select
+                      value={form.default_currency}
+                      onValueChange={(v) => setForm((f) => ({ ...f, default_currency: v as any }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ILS">ILS (₪) - Israeli New Shekel</SelectItem>
+                        <SelectItem value="USD">USD ($) - US Dollar</SelectItem>
+                        <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
+                        <SelectItem value="GBP">GBP (£) - British Pound</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Default currency for this partner's calculator</p>
                   </div>
 
                   {/* ===== Configuration Parameters ===== */}

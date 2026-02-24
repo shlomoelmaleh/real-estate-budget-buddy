@@ -748,4 +748,128 @@ export const SCENARIOS: Scenario[] = [
         },
         config: { ...DEFAULT_CONFIG, max_loan_term_years: 30 }, // Term will likely be 15 years (80-65)
     },
+
+    // ── S23: USD Emulation (odd post-conversion numbers) ──────────────────────
+    {
+        id: 'S23_USD_BASIC',
+        description: 'Simulates $1,000,000 equity and $10,000 income converted to ILS',
+        branches: [
+            'post-conversion ILS inputs testing float/rounding stability',
+        ],
+        inputs: {
+            equity: 3_680_000,   // ~ $1M
+            ltv: 75,
+            netIncome: 36_800,   // ~ $10k
+            ratio: 33,
+            age: 30,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S24: EUR Emulation ───────────────────────────────────────────────────
+    {
+        id: 'S24_EUR_BASIC',
+        description: 'Simulates €500,000 equity and €5,000 income converted to ILS',
+        branches: [
+            'post-conversion ILS inputs testing float/rounding stability',
+        ],
+        inputs: {
+            equity: 1_950_000,   // ~ €500k
+            ltv: 75,
+            netIncome: 19_500,   // ~ €5k
+            ratio: 33,
+            age: 30,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S25: GBP Emulation ───────────────────────────────────────────────────
+    {
+        id: 'S25_GBP_BASIC',
+        description: 'Simulates £800,000 equity and £8,000 income converted to ILS',
+        branches: [
+            'post-conversion ILS inputs testing float/rounding stability',
+        ],
+        inputs: {
+            equity: 3_720_000,   // ~ £800k
+            ltv: 75,
+            netIncome: 37_200,   // ~ £8k
+            ratio: 33,
+            age: 30,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S26: Rounded edge case ────────────────────────────────────────────────
+    {
+        id: 'S26_ROUNDED',
+        description: 'Testing odd/rounded numbers causing exact overlaps in logic',
+        branches: [
+            'LTV vs Payment exactly overlapping or decimal rounding edge cases',
+        ],
+        inputs: {
+            equity: 1_234_567,
+            ltv: 75,
+            netIncome: 12_345,
+            ratio: 33.33,
+            age: 33,
+            maxAge: 80,
+            interest: 5.5,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    }
 ];

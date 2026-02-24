@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import logoEshel from '@/assets/logo-eshel-sm.webp';
 
 // New Tab Components
@@ -25,6 +26,7 @@ import { ExtendedConfig, toDisplayPercent, toDbDecimal } from './types';
 
 export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: boolean }) {
     const { t } = useLanguage();
+    const { display } = useCurrency();
     const navigate = useNavigate();
     const [config, setConfig] = useState<ExtendedConfig | null>(null);
     const [originalConfig, setOriginalConfig] = useState<ExtendedConfig | null>(null);
@@ -478,11 +480,11 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                                 <div className="space-y-4">
                                     <div className="p-4 bg-white rounded-lg border shadow-sm">
                                         <p className="text-sm text-muted-foreground">{t.impactMaxProperty}</p>
-                                        <p className="text-2xl font-bold text-primary">₪{formatNumber(previewStats.maxPropertyValue)}</p>
+                                        <p className="text-2xl font-bold text-primary">{display(previewStats.maxPropertyValue)}</p>
                                     </div>
                                     <div className="p-4 bg-white rounded-lg border shadow-sm">
                                         <p className="text-sm text-muted-foreground">{t.impactMonthlyPayment}</p>
-                                        <p className="text-xl font-bold">₪{formatNumber(previewStats.monthlyPayment)}</p>
+                                        <p className="text-xl font-bold">{display(previewStats.monthlyPayment)}</p>
                                         <p className="text-xs text-muted-foreground">DTI: {toDisplayPercent(config.max_dti_ratio)}% of ₪20k income</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">

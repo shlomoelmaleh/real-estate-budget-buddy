@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface ResultRowProps {
   label: string;
@@ -8,7 +9,9 @@ interface ResultRowProps {
   highlight?: boolean;
 }
 
-function ResultRow({ label, value, suffix = '₪', highlight = false }: ResultRowProps) {
+function ResultRow({ label, value, suffix, highlight = false }: ResultRowProps) {
+  const { symbol } = useCurrency();
+  const displaySuffix = suffix !== undefined ? suffix : symbol;
   return (
     <div className={cn(
       "flex justify-between items-center py-2.5 border-b border-dashed border-border/40 last:border-b-0",
@@ -22,7 +25,7 @@ function ResultRow({ label, value, suffix = '₪', highlight = false }: ResultRo
         "font-semibold text-base bg-card px-4 py-1.5 rounded-lg min-w-[130px] text-center shadow-soft border border-border/30",
         highlight && "bg-accent text-accent-foreground border-accent"
       )}>
-        {value} {suffix}
+        {value} {displaySuffix}
       </span>
     </div>
   );

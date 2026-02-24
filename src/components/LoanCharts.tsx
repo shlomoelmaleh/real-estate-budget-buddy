@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from 'recharts';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { AmortizationRow, formatNumber } from '@/lib/calculator';
 import { TrendingDown, PieChart } from 'lucide-react';
 
@@ -11,19 +12,20 @@ interface LoanChartsProps {
 
 export function LoanCharts({ amortization, loanAmount }: LoanChartsProps) {
   const { t } = useLanguage();
+  const { symbol } = useCurrency();
 
   // Aggregate data by year for cleaner visualization
   const yearlyData = useMemo(() => {
     const years: { year: number; balance: number; interestPaid: number; principalPaid: number }[] = [];
-    
+
     let cumulativeInterest = 0;
     let cumulativePrincipal = 0;
-    
+
     for (let i = 0; i < amortization.length; i++) {
       const row = amortization[i];
       cumulativeInterest += row.interest;
       cumulativePrincipal += row.principal;
-      
+
       // Record at end of each year (month 12, 24, 36, etc.)
       if ((i + 1) % 12 === 0 || i === amortization.length - 1) {
         const year = Math.ceil((i + 1) / 12);
@@ -35,33 +37,33 @@ export function LoanCharts({ amortization, loanAmount }: LoanChartsProps) {
         });
       }
     }
-    
+
     return years;
   }, [amortization]);
 
   // Payment breakdown by year
   const paymentBreakdown = useMemo(() => {
     const breakdown: { year: number; interest: number; principal: number }[] = [];
-    
+
     for (let yearIndex = 0; yearIndex < Math.ceil(amortization.length / 12); yearIndex++) {
       const startMonth = yearIndex * 12;
       const endMonth = Math.min(startMonth + 12, amortization.length);
-      
+
       let yearlyInterest = 0;
       let yearlyPrincipal = 0;
-      
+
       for (let i = startMonth; i < endMonth; i++) {
         yearlyInterest += amortization[i].interest;
         yearlyPrincipal += amortization[i].principal;
       }
-      
+
       breakdown.push({
         year: yearIndex + 1,
         interest: yearlyInterest,
         principal: yearlyPrincipal,
       });
     }
-    
+
     return breakdown;
   }, [amortization]);
 
@@ -74,7 +76,7 @@ export function LoanCharts({ amortization, loanAmount }: LoanChartsProps) {
           <p className="font-semibold mb-2">{t.chartYear} {label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }}>
-              {entry.name}: ₪{formatNumber(entry.value)}
+              {entry.name}: {symbol}{formatNumber(entry.value)}
             </p>
           ))}
         </div>
@@ -97,32 +99,32 @@ export function LoanCharts({ amortization, loanAmount }: LoanChartsProps) {
             <AreaChart data={yearlyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(215, 70%, 50%)" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="hsl(215, 70%, 50%)" stopOpacity={0.1}/>
+                  <stop offset="5%" stopColor="hsl(215, 70%, 50%)" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="hsl(215, 70%, 50%)" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-              <XAxis 
-                dataKey="year" 
-                className="text-xs" 
+              <XAxis
+                dataKey="year"
+                className="text-xs"
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
                 label={{ value: t.chartYears, position: 'insideBottom', offset: -5, fill: 'hsl(var(--muted-foreground))' }}
               />
-              <YAxis 
-                className="text-xs" 
+              <YAxis
+                className="text-xs"
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                tickFormatter={(value) => `₪${(value / 1000).toFixed(0)}K`}
+                tickFormatter={(value) => `${symbol}${(value / 1000).toFixed(0)}K`}
                 domain={[0, 'dataMax']}
                 tickCount={5}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Area 
-                type="monotone" 
-                dataKey="balance" 
+              <Area
+                type="monotone"
+                dataKey="balance"
                 name={t.chartBalance}
-                stroke="hsl(215, 70%, 50%)" 
-                fillOpacity={1} 
-                fill="url(#colorBalance)" 
+                stroke="hsl(215, 70%, 50%)"
+                fillOpacity={1}
+                fill="url(#colorBalance)"
                 strokeWidth={2}
               />
             </AreaChart>
@@ -141,36 +143,36 @@ export function LoanCharts({ amortization, loanAmount }: LoanChartsProps) {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={paymentBreakdown} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
-              <XAxis 
-                dataKey="year" 
-                className="text-xs" 
+              <XAxis
+                dataKey="year"
+                className="text-xs"
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
                 label={{ value: t.chartYears, position: 'insideBottom', offset: -5, fill: 'hsl(var(--muted-foreground))' }}
               />
-              <YAxis 
-                className="text-xs" 
+              <YAxis
+                className="text-xs"
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                tickFormatter={(value) => `₪${(value / 1000).toFixed(0)}K`}
+                tickFormatter={(value) => `${symbol}${(value / 1000).toFixed(0)}K`}
                 domain={[0, 'dataMax']}
                 tickCount={5}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend 
+              <Legend
                 wrapperStyle={{ paddingTop: '20px' }}
                 formatter={(value) => <span className="text-sm">{value}</span>}
               />
-              <Bar 
-                dataKey="principal" 
+              <Bar
+                dataKey="principal"
                 name={t.chartPrincipal}
-                stackId="a" 
-                fill="hsl(160, 45%, 45%)" 
+                stackId="a"
+                fill="hsl(160, 45%, 45%)"
                 radius={[0, 0, 0, 0]}
               />
-              <Bar 
-                dataKey="interest" 
+              <Bar
+                dataKey="interest"
                 name={t.chartInterest}
-                stackId="a" 
-                fill="hsl(36, 70%, 50%)" 
+                stackId="a"
+                fill="hsl(36, 70%, 50%)"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>

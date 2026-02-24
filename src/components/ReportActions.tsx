@@ -3,6 +3,7 @@ import { Download, Mail, Printer, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { CalculatorResults, AmortizationRow, formatNumber } from '@/lib/calculator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -41,6 +42,7 @@ interface ReportActionsProps {
 export function ReportActions({ results, amortization, clientName, clientPhone, clientEmail, inputs }: ReportActionsProps) {
   const { t, language } = useLanguage();
   const { partner, binding } = usePartner();
+  const { currency, rates } = useCurrency();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
@@ -205,6 +207,9 @@ export function ReportActions({ results, amortization, clientName, clientPhone, 
           // If a referral link is present, we may have a binding before the partner
           // record finishes loading; send partnerId from binding as a fallback.
           partnerId: partner?.id ?? binding?.partnerId ?? null,
+          currency,
+          exchangeRate: rates?.rates[currency],
+          ratesDate: rates?.fetchedAt,
         },
       });
 

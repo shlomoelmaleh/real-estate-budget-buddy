@@ -29,6 +29,7 @@ import { calculateLeadScore, getLimitingFactorDescription } from "./leadScoring.
 import { generateEmailHtml, toBase64, type ReportEmailRequest } from "./emailTemplate.ts";
 import { calculateMaxBudget, type CalculatorInputs } from "../_shared/calculatorEngine.ts";
 import { loadPartnerConfig, loadSystemTaxBrackets } from "../_shared/configLoader.ts";
+import { toILS, fromILS, SupportedCurrency, ExchangeRates } from "../_shared/currencyUtils.ts";
 
 type PartnerContactOverride = {
   name?: string | null;
@@ -128,6 +129,9 @@ const EmailRequestSchema = z.object({
   partnerEmail: z.string().email().nullable().optional(),
   partnerName: z.string().max(100).nullable().optional(),
   buildSha: z.string().max(40).nullable().optional(),
+  currency: z.string().optional(),
+  exchangeRate: z.number().positive().optional(),
+  ratesDate: z.string().nullable().optional(),
 });
 
 // Atomic rate limiting helper using database function to prevent race conditions
@@ -307,9 +311,41 @@ const handler = async (req: Request): Promise<Response> => {
       otherFee: parseFloat(data.inputs.otherFee || "0")
     };
 
-    const secureResults = calculateMaxBudget(parsedInputs, partnerConfig, systemBrackets);
+    const inputCurrency = (data.currency as SupportedCurrency) || "ILS";
 
-    if (secureResults) {
+    // Convert inputs to ILS if necessary for secure engine calculation
+    let engineInputs = { ...parsedInputs };
+    if (inputCurrency !== 'ILS' && data.exchangeRate) {
+      const pseudoRates = { rates: { [inputCurrency]: data.exchangeRate }, fetchedAt: data.ratesDate || '', source: 'cache', nextRefreshAfter: '' } as ExchangeRates;
+      engineInputs.equity = toILS(parsedInputs.equity, inputCurrency, pseudoRates);
+      engineInputs.netIncome = toILS(parsedInputs.netIncome, inputCurrency, pseudoRates);
+      if (parsedInputs.budgetCap !== null) engineInputs.budgetCap = toILS(parsedInputs.budgetCap, inputCurrency, pseudoRates);
+      if (parsedInputs.expectedRent !== null) engineInputs.expectedRent = toILS(parsedInputs.expectedRent, inputCurrency, pseudoRates);
+    }
+
+    const secureResultsILS = calculateMaxBudget(engineInputs, partnerConfig, systemBrackets);
+
+    if (secureResultsILS) {
+      // Convert results back to chosen currency before overriding client data
+      const secureResults = { ...secureResultsILS };
+      if (inputCurrency !== 'ILS' && data.exchangeRate) {
+        const pseudoRates = { rates: { [inputCurrency]: data.exchangeRate }, fetchedAt: data.ratesDate || '', source: 'cache', nextRefreshAfter: '' } as ExchangeRates;
+        secureResults.maxPropertyValue = fromILS(secureResultsILS.maxPropertyValue, inputCurrency, pseudoRates);
+        secureResults.loanAmount = fromILS(secureResultsILS.loanAmount, inputCurrency, pseudoRates);
+        secureResults.monthlyPayment = fromILS(secureResultsILS.monthlyPayment, inputCurrency, pseudoRates);
+        secureResults.rentIncome = fromILS(secureResultsILS.rentIncome, inputCurrency, pseudoRates);
+        secureResults.netPayment = fromILS(secureResultsILS.netPayment, inputCurrency, pseudoRates);
+        secureResults.closingCosts = fromILS(secureResultsILS.closingCosts, inputCurrency, pseudoRates);
+        secureResults.totalInterest = fromILS(secureResultsILS.totalInterest, inputCurrency, pseudoRates);
+        secureResults.totalCost = fromILS(secureResultsILS.totalCost, inputCurrency, pseudoRates);
+        secureResults.purchaseTax = fromILS(secureResultsILS.purchaseTax, inputCurrency, pseudoRates);
+        secureResults.equityUsed = fromILS(secureResultsILS.equityUsed, inputCurrency, pseudoRates);
+        secureResults.equityRemaining = fromILS(secureResultsILS.equityRemaining, inputCurrency, pseudoRates);
+        secureResults.lawyerFeeTTC = fromILS(secureResultsILS.lawyerFeeTTC, inputCurrency, pseudoRates);
+        secureResults.brokerFeeTTC = fromILS(secureResultsILS.brokerFeeTTC, inputCurrency, pseudoRates);
+        if (secureResults.estimatedMarketRent) secureResults.estimatedMarketRent = fromILS(secureResults.estimatedMarketRent, inputCurrency, pseudoRates);
+      }
+
       // Override client payload with trusted backend calculated values
       const incomeNet = parsedInputs.netIncome;
       // Re-calculate derived shekelRatio if needed

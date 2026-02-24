@@ -11,6 +11,7 @@ import { formatNumber } from '@/lib/calculator';
 import { DevEmailPreview } from '@/components/DevTools/DevEmailPreview';
 import type { ReportEmailRequest } from '@/lib/devMirror';
 import { usePartner } from '@/contexts/PartnerContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { AmortizationTable } from '@/components/AmortizationTable';
 import { Badge } from '@/components/ui/badge';
 
@@ -28,6 +29,7 @@ export function Step5({
     language = 'he',
 }: StepRevealProps) {
     const { config, partner } = usePartner();
+    const { display } = useCurrency();
 
     const [displayValue, setDisplayValue] = useState(0);
     const [hasCounted, setHasCounted] = useState(false);
@@ -334,12 +336,12 @@ export function Step5({
                                 className={cn(
                                     "font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-md block leading-tight break-all",
                                     // Responsive scaling: smaller on mobile for large numbers
-                                    formatNumber(displayValue).length > 8
+                                    display(displayValue).length > 8
                                         ? "text-3xl sm:text-5xl md:text-6xl" // Long numbers (e.g. ₪ 10,000,000)
                                         : "text-4xl sm:text-5xl md:text-6xl" // Standard numbers
                                 )}
                             >
-                                ₪ {formatNumber(displayValue)}
+                                {display(displayValue)}
                             </motion.span>
                         </AnimatePresence>
                     </div>
@@ -412,7 +414,7 @@ export function Step5({
                             <div className="grid grid-cols-2 gap-4 text-start">
                                 <div className="space-y-1">
                                     <p className="text-[10px] text-muted-foreground uppercase tracking-tight">{t.targetPropertyPriceLabel}</p>
-                                    <p className="text-sm font-bold text-slate-700">₪ {formatNumber(targetPropertyPrice)}</p>
+                                    <p className="text-sm font-bold text-slate-700">{display(targetPropertyPrice)}</p>
                                 </div>
                                 <div className="space-y-1 text-end">
                                     <p className="text-[10px] text-muted-foreground uppercase tracking-tight">{t.differenceLabel}</p>
@@ -421,7 +423,7 @@ export function Step5({
                                         maxBudget - targetPropertyPrice >= 0 ? "text-green-600" : "text-red-500"
                                     )}>
                                         {maxBudget - targetPropertyPrice >= 0 ? "+" : ""}
-                                        ₪ {formatNumber(maxBudget - targetPropertyPrice)}
+                                        {display(maxBudget - targetPropertyPrice)}
                                     </p>
                                 </div>
                             </div>

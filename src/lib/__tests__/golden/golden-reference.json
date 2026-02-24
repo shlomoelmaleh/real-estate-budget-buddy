@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-02-24T19:16:28.909Z",
-  "totalScenarios": 22,
+  "generatedAt": "2026-02-24T21:22:53.076Z",
+  "totalScenarios": 26,
   "note": "For each scenario, verify INPUTS (all 3 categories) against OUTPUTS using an external tool. When satisfied, run: npm run test:approve",
   "scenarios": [
     {
@@ -4241,6 +4241,254 @@
         "brokerFeeTTC": 103535.38513183594,
         "limitingFactor": "AGE_LIMIT",
         "estimatedMarketRent": 0,
+        "rentWarning": null
+      }
+    },
+    {
+      "id": "S23_USD_BASIC",
+      "description": "Simulates $1,000,000 equity and $10,000 income converted to ILS",
+      "branches": [
+        "post-conversion ILS inputs testing float/rounding stability"
+      ],
+      "INPUTS": {
+        "CATEGORY_1_USER": {
+          "age": 30,
+          "targetPropertyPrice_NIS": null,
+          "equity_NIS": 3680000,
+          "netMonthlyIncome_NIS": 36800,
+          "isFirstProperty": true,
+          "isIsraeliCitizen": true,
+          "isIsraeliTaxResident": true,
+          "isRented": false,
+          "expectedRent_NIS_per_month": null,
+          "budgetCap_NIS_per_month": null
+        },
+        "CATEGORY_2_PARTNER": {
+          "maxDTIRatio_pct": 33,
+          "maxApplicantAge": 80,
+          "maxLoanTermYears": 30,
+          "rentRecognition_investment_pct": 80,
+          "defaultInterestRate_pct": 5,
+          "lawyerFee_pct": 1,
+          "brokerFee_pct": 2,
+          "advisorFeeFixed_NIS": 9000,
+          "otherFeeFixed_NIS": 3000,
+          "defaultRentalYield_pct": 3
+        },
+        "CATEGORY_3_SYSTEM": {
+          "maxLTV_pct": 75,
+          "vat_pct": 18,
+          "rentRecognition_firstProperty_pct": 0,
+          "enableRentValidation": true,
+          "rentWarningHighMultiplier": 1.5,
+          "rentWarningLowMultiplier": 0.7
+        }
+      },
+      "OUTPUTS": {
+        "maxPropertyValue": 5559924.31640625,
+        "loanAmount": 2262203.957407538,
+        "actualLTV": 40.68767538313815,
+        "monthlyPayment": 12144,
+        "rentIncome": 0,
+        "netPayment": 12144,
+        "closingCosts": 382355.86162109376,
+        "totalInterest": 2109636.042592462,
+        "totalCost": 4371840,
+        "loanTermYears": 30,
+        "purchaseTax": 173534.5408203125,
+        "taxProfile": "SINGLE_HOME",
+        "equityUsed": 3680076.220619806,
+        "equityRemaining": -76.22061980608851,
+        "lawyerFeeTTC": 65607.10693359375,
+        "brokerFeeTTC": 131214.2138671875,
+        "limitingFactor": "INCOME_LIMIT",
+        "estimatedMarketRent": 13899.810791015625,
+        "rentWarning": null
+      }
+    },
+    {
+      "id": "S24_EUR_BASIC",
+      "description": "Simulates €500,000 equity and €5,000 income converted to ILS",
+      "branches": [
+        "post-conversion ILS inputs testing float/rounding stability"
+      ],
+      "INPUTS": {
+        "CATEGORY_1_USER": {
+          "age": 30,
+          "targetPropertyPrice_NIS": null,
+          "equity_NIS": 1950000,
+          "netMonthlyIncome_NIS": 19500,
+          "isFirstProperty": true,
+          "isIsraeliCitizen": true,
+          "isIsraeliTaxResident": true,
+          "isRented": false,
+          "expectedRent_NIS_per_month": null,
+          "budgetCap_NIS_per_month": null
+        },
+        "CATEGORY_2_PARTNER": {
+          "maxDTIRatio_pct": 33,
+          "maxApplicantAge": 80,
+          "maxLoanTermYears": 30,
+          "rentRecognition_investment_pct": 80,
+          "defaultInterestRate_pct": 5,
+          "lawyerFee_pct": 1,
+          "brokerFee_pct": 2,
+          "advisorFeeFixed_NIS": 9000,
+          "otherFeeFixed_NIS": 3000,
+          "defaultRentalYield_pct": 3
+        },
+        "CATEGORY_3_SYSTEM": {
+          "maxLTV_pct": 75,
+          "vat_pct": 18,
+          "rentRecognition_firstProperty_pct": 0,
+          "enableRentValidation": true,
+          "rentWarningHighMultiplier": 1.5,
+          "rentWarningLowMultiplier": 0.7
+        }
+      },
+      "OUTPUTS": {
+        "maxPropertyValue": 2986249.9237060547,
+        "loanAmount": 1198722.2056914943,
+        "actualLTV": 40.14138924460256,
+        "monthlyPayment": 6435,
+        "rentIncome": 0,
+        "netPayment": 6435,
+        "closingCosts": 162564.06848449708,
+        "totalInterest": 1117877.7943085057,
+        "totalCost": 2316600,
+        "loanTermYears": 30,
+        "purchaseTax": 44850.82118530273,
+        "taxProfile": "SINGLE_HOME",
+        "equityUsed": 1950091.7864990577,
+        "equityRemaining": -91.7864990576636,
+        "lawyerFeeTTC": 35237.749099731445,
+        "brokerFeeTTC": 70475.49819946289,
+        "limitingFactor": "INCOME_LIMIT",
+        "estimatedMarketRent": 7465.624809265137,
+        "rentWarning": null
+      }
+    },
+    {
+      "id": "S25_GBP_BASIC",
+      "description": "Simulates £800,000 equity and £8,000 income converted to ILS",
+      "branches": [
+        "post-conversion ILS inputs testing float/rounding stability"
+      ],
+      "INPUTS": {
+        "CATEGORY_1_USER": {
+          "age": 30,
+          "targetPropertyPrice_NIS": null,
+          "equity_NIS": 3720000,
+          "netMonthlyIncome_NIS": 37200,
+          "isFirstProperty": true,
+          "isIsraeliCitizen": true,
+          "isIsraeliTaxResident": true,
+          "isRented": false,
+          "expectedRent_NIS_per_month": null,
+          "budgetCap_NIS_per_month": null
+        },
+        "CATEGORY_2_PARTNER": {
+          "maxDTIRatio_pct": 33,
+          "maxApplicantAge": 80,
+          "maxLoanTermYears": 30,
+          "rentRecognition_investment_pct": 80,
+          "defaultInterestRate_pct": 5,
+          "lawyerFee_pct": 1,
+          "brokerFee_pct": 2,
+          "advisorFeeFixed_NIS": 9000,
+          "otherFeeFixed_NIS": 3000,
+          "defaultRentalYield_pct": 3
+        },
+        "CATEGORY_3_SYSTEM": {
+          "maxLTV_pct": 75,
+          "vat_pct": 18,
+          "rentRecognition_firstProperty_pct": 0,
+          "enableRentValidation": true,
+          "rentWarningHighMultiplier": 1.5,
+          "rentWarningLowMultiplier": 0.7
+        }
+      },
+      "OUTPUTS": {
+        "maxPropertyValue": 5619435.882568359,
+        "loanAmount": 2286793.13085762,
+        "actualLTV": 40.69435400003964,
+        "monthlyPayment": 12276.000000000002,
+        "rentIncome": 0,
+        "netPayment": 12276.000000000002,
+        "closingCosts": 387438.1493713379,
+        "totalInterest": 2132566.869142381,
+        "totalCost": 4419360.000000001,
+        "loanTermYears": 30,
+        "purchaseTax": 176510.11912841798,
+        "taxProfile": "SINGLE_HOME",
+        "equityUsed": 3720080.9010820775,
+        "equityRemaining": -80.90108207752928,
+        "lawyerFeeTTC": 66309.34341430664,
+        "brokerFeeTTC": 132618.68682861328,
+        "limitingFactor": "INCOME_LIMIT",
+        "estimatedMarketRent": 14048.589706420898,
+        "rentWarning": null
+      }
+    },
+    {
+      "id": "S26_ROUNDED",
+      "description": "Testing odd/rounded numbers causing exact overlaps in logic",
+      "branches": [
+        "LTV vs Payment exactly overlapping or decimal rounding edge cases"
+      ],
+      "INPUTS": {
+        "CATEGORY_1_USER": {
+          "age": 33,
+          "targetPropertyPrice_NIS": null,
+          "equity_NIS": 1234567,
+          "netMonthlyIncome_NIS": 12345,
+          "isFirstProperty": true,
+          "isIsraeliCitizen": true,
+          "isIsraeliTaxResident": true,
+          "isRented": false,
+          "expectedRent_NIS_per_month": null,
+          "budgetCap_NIS_per_month": null
+        },
+        "CATEGORY_2_PARTNER": {
+          "maxDTIRatio_pct": 33.33,
+          "maxApplicantAge": 80,
+          "maxLoanTermYears": 30,
+          "rentRecognition_investment_pct": 80,
+          "defaultInterestRate_pct": 5.5,
+          "lawyerFee_pct": 1,
+          "brokerFee_pct": 2,
+          "advisorFeeFixed_NIS": 9000,
+          "otherFeeFixed_NIS": 3000,
+          "defaultRentalYield_pct": 3
+        },
+        "CATEGORY_3_SYSTEM": {
+          "maxLTV_pct": 75,
+          "vat_pct": 18,
+          "rentRecognition_firstProperty_pct": 0,
+          "enableRentValidation": true,
+          "rentWarningHighMultiplier": 1.5,
+          "rentWarningLowMultiplier": 0.7
+        }
+      },
+      "OUTPUTS": {
+        "maxPropertyValue": 1880691.4740753174,
+        "loanAmount": 724668.5811522785,
+        "actualLTV": 38.53202883841314,
+        "monthlyPayment": 4114.5885,
+        "rentIncome": 0,
+        "netPayment": 4114.5885,
+        "closingCosts": 78576.47818226623,
+        "totalInterest": 756583.2788477214,
+        "totalCost": 1481251.8599999999,
+        "loanTermYears": 30,
+        "purchaseTax": 0,
+        "taxProfile": "SINGLE_HOME",
+        "equityUsed": 1234599.3711053052,
+        "equityRemaining": -32.371105305152014,
+        "lawyerFeeTTC": 22192.159394088743,
+        "brokerFeeTTC": 44384.31878817749,
+        "limitingFactor": "INCOME_LIMIT",
+        "estimatedMarketRent": 4701.728685188294,
         "rentWarning": null
       }
     }

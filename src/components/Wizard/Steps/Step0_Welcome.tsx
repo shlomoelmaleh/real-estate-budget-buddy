@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
 import { FONT_FAMILY_OPTIONS, SloganFontSize, SloganFontStyle } from '@/lib/partnerTypes';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { CurrencySwitcher } from '@/components/CurrencySwitcher';
 import logoEshel from '@/assets/logo-eshel-sm.webp';
 
 function getSloganFontSizeClass(size: SloganFontSize | null | undefined): string {
@@ -40,8 +41,9 @@ export function Step0({ onNext }: { onNext: () => void }) {
             {/* Language Switcher - Absolutely Centered on Entire Screen */}
             {/* Force LTR direction for the container, but use flex-row-reverse to keep Language on Right and Button on Left (Hebrew style) */}
             <div className="absolute top-0 left-0 right-0 flex justify-center z-30 pt-4 gap-4" style={{ direction: 'rtl' }}>
-                <div className="scale-90 md:scale-100">
+                <div className="scale-90 md:scale-100 flex flex-col gap-2">
                     <LanguageSwitcher />
+                    <CurrencySwitcher />
                 </div>
                 {isAdmin ? (
                     <Button

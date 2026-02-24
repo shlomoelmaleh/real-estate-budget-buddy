@@ -3,6 +3,7 @@ import { UseFormGetValues, UseFormTrigger, UseFormSetValue } from 'react-hook-fo
 import { CalculatorFormValues } from '@/components/budget/types';
 import { CalculatorResults, parseFormattedNumber, AmortizationRow } from '@/lib/calculator';
 import { usePartner } from '@/contexts/PartnerContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { analyticsQueue } from '@/lib/analyticsQueue';
 import { toast } from 'sonner';
 
@@ -26,6 +27,7 @@ export function useBudgetWizard({
     t,
 }: UseBudgetWizardProps) {
     const { config, partner: contextPartner, binding } = usePartner(); // Using partner config from context
+    const { currency, rates } = useCurrency();
     // --- STATE MANAGEMENT ---
     const [step, setStep] = useState(0);
     const [sessionId] = useState(() => {
@@ -230,6 +232,7 @@ export function useBudgetWizard({
                         ...inputs,
                         partnerId: partner?.id ?? binding?.partnerId ?? null,
                         config: config || null,
+                        currency,
                     }),
                 }
             );
@@ -375,6 +378,9 @@ export function useBudgetWizard({
                     partnerId: partner?.id ?? binding?.partnerId ?? null,
                     partnerEmail: partner?.email || null,
                     partnerName: partner?.name || null,
+                    currency,
+                    exchangeRate: rates?.rates[currency],
+                    ratesDate: rates?.fetchedAt,
                 },
             });
 

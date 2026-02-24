@@ -55,6 +55,13 @@ export interface Translations {
   percent: string;
   fixed: string;
   downloadCSV: string;
+  // Currency Switcher
+  currencyILS: string;
+  currencyUSD: string;
+  currencyEUR: string;
+  currencyGBP: string;
+  rateBadge: string;
+  rateError: string;
   // Charts
   chartBalanceTitle: string;
   chartBalanceDesc: string;
@@ -350,6 +357,12 @@ export const translations: Record<Language, Translations> = {
     percent: "%",
     fixed: "₪",
     downloadCSV: "הורד CSV",
+    currencyILS: "₪ ש״ח",
+    currencyUSD: "$ דולר",
+    currencyEUR: "€ אירו",
+    currencyGBP: "£ פאונד",
+    rateBadge: "שער:",
+    rateError: "שגיאה בטעינת שערי חליפין",
     chartBalanceTitle: "יתרת קרן לאורך זמן",
     chartBalanceDesc: "גרף המראה כיצד החוב יורד עם כל תשלום חודשי",
     chartPaymentTitle: "פירוט תשלומים שנתי",
@@ -631,6 +644,12 @@ export const translations: Record<Language, Translations> = {
     percent: "%",
     fixed: "₪",
     downloadCSV: "Download CSV",
+    currencyILS: "ILS ₪",
+    currencyUSD: "USD $",
+    currencyEUR: "EUR €",
+    currencyGBP: "GBP £",
+    rateBadge: "Rate:",
+    rateError: "Error loading exchange rates",
     chartBalanceTitle: "Loan Balance Over Time",
     chartBalanceDesc: "See how your debt decreases with each monthly payment",
     chartPaymentTitle: "Annual Payment Breakdown",
@@ -912,6 +931,12 @@ export const translations: Record<Language, Translations> = {
     percent: "%",
     fixed: "₪",
     downloadCSV: "Télécharger CSV",
+    currencyILS: "ILS ₪",
+    currencyUSD: "USD $",
+    currencyEUR: "EUR €",
+    currencyGBP: "GBP £",
+    rateBadge: "Taux:",
+    rateError: "Erreur de chargement des taux de change",
     chartBalanceTitle: "Solde du Prêt dans le Temps",
     chartBalanceDesc: "Voyez comment votre dette diminue avec chaque mensualité",
     chartPaymentTitle: "Répartition Annuelle des Paiements",

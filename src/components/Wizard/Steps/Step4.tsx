@@ -1,13 +1,24 @@
-import { Controller } from 'react-hook-form';
+import { Controller, useWatch } from 'react-hook-form';
 import { Building2, CircleDollarSign, Target } from 'lucide-react';
 import { FormInput } from '@/components/FormInput';
 import { StepProps } from '../types';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { fmt } from '@/lib/currencyUtils';
 
 export function Step4({ control, errors, t, watch, setValue }: StepProps) {
+    const { symbol, currency, parseInput } = useCurrency();
     const isRented = watch ? watch('isRented') : false;
+
+    const expectedRentInput = useWatch({ control, name: 'expectedRent' });
+    const rawRent = parseFloat(expectedRentInput?.toString().replace(/,/g, '') || '0');
+    const ilsRent = rawRent > 0 && currency !== 'ILS' ? parseInput(rawRent) : null;
+
+    const budgetCapInput = useWatch({ control, name: 'budgetCap' });
+    const rawBudget = parseFloat(budgetCapInput?.toString().replace(/,/g, '') || '0');
+    const ilsBudget = rawBudget > 0 && currency !== 'ILS' ? parseInput(rawBudget) : null;
 
     return (
         <div className="space-y-6 animate-in slide-in-from-right duration-500">
@@ -52,13 +63,14 @@ export function Step4({ control, errors, t, watch, setValue }: StepProps) {
                             control={control}
                             render={({ field }) => (
                                 <FormInput
-                                    label={`${t.expectedRent} (₪)`}
-                                    currencySymbol={t.currencySymbol}
+                                    label={`${t.expectedRent} ${currency === 'ILS' ? '' : `(${currency})`}`.trim()}
+                                    currencySymbol={symbol}
                                     icon={<Building2 className="w-4 h-4" />}
                                     {...field}
                                     formatNumber={true}
                                     hasError={!!errors.expectedRent}
                                     className="bg-white"
+                                    helperText={ilsRent ? `≈ ${fmt(ilsRent, 'ILS')}` : undefined}
                                 />
                             )}
                         />
@@ -72,13 +84,14 @@ export function Step4({ control, errors, t, watch, setValue }: StepProps) {
                 control={control}
                 render={({ field }) => (
                     <FormInput
-                        label={`${t.budgetCap} (₪)`}
+                        label={`${t.budgetCap} ${currency === 'ILS' ? '' : `(${currency})`}`.trim()}
                         suffix={t.optional}
-                        currencySymbol={t.currencySymbol}
+                        currencySymbol={symbol}
                         icon={<CircleDollarSign className="w-4 h-4" />}
                         {...field}
                         formatNumber={true}
                         className="bg-white/50"
+                        helperText={ilsBudget ? `≈ ${fmt(ilsBudget, 'ILS')}` : undefined}
                     />
                 )}
             />

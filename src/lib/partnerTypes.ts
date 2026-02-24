@@ -43,6 +43,7 @@ export type Partner = {
   slogan_font_style: SloganFontStyle | null;
   slogan_font_family: SloganFontFamily | null;
   is_active: boolean;
+  default_currency: "ILS" | "USD" | "EUR" | "GBP";
   created_at: string;
 };
 

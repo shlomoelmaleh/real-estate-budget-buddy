@@ -12,6 +12,7 @@ import {
   type TaxProfile,
 } from "../_shared/calculatorEngine.ts";
 import { loadPartnerConfig, loadSystemTaxBrackets } from "../_shared/configLoader.ts";
+import { toILS, fromILS, SupportedCurrency, ExchangeRates } from "../_shared/currencyUtils.ts";
 
 // CORS headers - allow all origins for this public calculator
 const corsHeaders = {
@@ -67,6 +68,7 @@ const CalculatorInputSchema = z.object({
   otherFee: z.number().nonnegative().max(1e6),
   partnerId: z.string().uuid().nullable().optional(),
   config: z.any().optional(),
+  currency: z.string().optional(),
 });
 
 type CalculatorInputs = z.infer<typeof CalculatorInputSchema>;
@@ -170,16 +172,33 @@ const handler = async (req: Request): Promise<Response> => {
     const partnerId = inputs.partnerId;
     const inputConfig = inputs.config;
 
-    // Load partner configuration and system tax brackets in parallel
-    const [config, systemBrackets] = await Promise.all([
+    // Load partner configuration, system tax brackets, and exchange rates in parallel
+    const [config, systemBrackets, ratesData] = await Promise.all([
       inputConfig || loadPartnerConfig(supabaseAdmin, partnerId || null),
-      loadSystemTaxBrackets(supabaseAdmin)
+      loadSystemTaxBrackets(supabaseAdmin),
+      supabaseAdmin.from('system_settings').select('value, updated_at').eq('key', 'exchange_rates').single()
     ]);
 
-    // Perform calculation using the canonical shared engine with dynamic tax brackets
-    const results = calculateMaxBudget(inputs, config, systemBrackets);
+    const rates: ExchangeRates | null = ratesData.data?.value || null;
+    const ratesDate = ratesData.data?.updated_at || null;
+    const inputCurrency = (inputs.currency as SupportedCurrency) || 'ILS';
 
-    if (!results) {
+    // Convert inputs to ILS if necessary
+    let processInputs = { ...inputs };
+    let currentRate = 1;
+
+    if (inputCurrency !== 'ILS' && rates) {
+      currentRate = rates.rates[inputCurrency] || 1;
+      processInputs.equity = toILS(inputs.equity, inputCurrency, rates);
+      processInputs.netIncome = toILS(inputs.netIncome, inputCurrency, rates);
+      if (inputs.budgetCap) processInputs.budgetCap = toILS(inputs.budgetCap, inputCurrency, rates);
+      if (inputs.expectedRent) processInputs.expectedRent = toILS(inputs.expectedRent, inputCurrency, rates);
+    }
+
+    // Perform calculation using the canonical shared engine with dynamic tax brackets (always in ILS)
+    const ilsResults = calculateMaxBudget(processInputs, config, systemBrackets);
+
+    if (!ilsResults) {
       return new Response(
         JSON.stringify({
           error: "Could not calculate budget. Please check your input values.",
@@ -190,6 +209,35 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { "Content-Type": "application/json", ...corsHeaders },
         }
       );
+    }
+
+    // Convert results back to the requested currency
+    const results = { ...ilsResults };
+    if (inputCurrency !== 'ILS' && rates) {
+      results.maxPropertyValue = fromILS(ilsResults.maxPropertyValue, inputCurrency, rates);
+      results.loanAmount = fromILS(ilsResults.loanAmount, inputCurrency, rates);
+      results.monthlyPayment = fromILS(ilsResults.monthlyPayment, inputCurrency, rates);
+      results.rentIncome = fromILS(ilsResults.rentIncome, inputCurrency, rates);
+      results.netPayment = fromILS(ilsResults.netPayment, inputCurrency, rates);
+      results.closingCosts = fromILS(ilsResults.closingCosts, inputCurrency, rates);
+      results.totalInterest = fromILS(ilsResults.totalInterest, inputCurrency, rates);
+      results.totalCost = fromILS(ilsResults.totalCost, inputCurrency, rates);
+      results.purchaseTax = fromILS(ilsResults.purchaseTax, inputCurrency, rates);
+      results.equityUsed = fromILS(ilsResults.equityUsed, inputCurrency, rates);
+      results.equityRemaining = fromILS(ilsResults.equityRemaining, inputCurrency, rates);
+      results.lawyerFeeTTC = fromILS(ilsResults.lawyerFeeTTC, inputCurrency, rates);
+      results.brokerFeeTTC = fromILS(ilsResults.brokerFeeTTC, inputCurrency, rates);
+      if (results.estimatedMarketRent) results.estimatedMarketRent = fromILS(results.estimatedMarketRent, inputCurrency, rates);
+
+      if (results.amortizationTable) {
+        results.amortizationTable = results.amortizationTable.map(row => ({
+          ...row,
+          payment: fromILS(row.payment, inputCurrency, rates),
+          interest: fromILS(row.interest, inputCurrency, rates),
+          principal: fromILS(row.principal, inputCurrency, rates),
+          closing: fromILS(row.closing, inputCurrency, rates),
+        }));
+      }
     }
 
     // Generate amortization table (already included by calculateMaxBudget if enabled)
@@ -204,7 +252,10 @@ const handler = async (req: Request): Promise<Response> => {
         amortization,
         config: {
           enable_what_if_calculator: config.enable_what_if_calculator,
-        }
+        },
+        currency: inputCurrency,
+        exchangeRate: currentRate,
+        ratesDate: ratesDate
       }),
       {
         status: 200,
