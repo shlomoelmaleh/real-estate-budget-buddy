@@ -1600,7 +1600,7 @@ export function generateEmailHtml(
       <div class="footer">
         ${targetCurrency !== 'ILS' && data.exchangeRate && data.ratesDate ? `
         <p style="font-weight: 700; color: #b45309; margin-bottom: 8px;">
-          ${(t as any).rateDisclaimer.replace('{rate}', data.exchangeRate.toFixed(2)).replace('{symbol}', targetCurrency === 'USD' ? '$' : targetCurrency === 'EUR' ? '€' : targetCurrency === 'GBP' ? '£' : targetCurrency).replace('{date}', new Date(data.ratesDate).toLocaleDateString())}
+          ${(t as any).rateDisclaimer.replace('{rate}', data.exchangeRate.toFixed(4)).replace('{symbol}', targetCurrency === 'USD' ? '$' : targetCurrency === 'EUR' ? '€' : targetCurrency === 'GBP' ? '£' : targetCurrency).replace('{date}', new Date(data.ratesDate).toLocaleDateString())}
         </p>
         ` : ''}
         <p>${t.footer}</p>

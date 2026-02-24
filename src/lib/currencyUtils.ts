@@ -124,7 +124,7 @@ export function formatRateLabel(
     const symbol = CURRENCY_SYMBOLS[currency];
     const date = new Date(fetchedAt);
     const dateStr = `${date.getDate()}.${date.getMonth() + 1}.${String(date.getFullYear()).slice(2)}`;
-    const rateStr = rate.toFixed(2);
+    const rateStr = rate.toFixed(4);
 
     if (lang === 'he') return `שער: ${rateStr} ₪/${symbol} | עדכון: ${dateStr}`;
     if (lang === 'fr') return `Taux: ${rateStr} ILS/${symbol} | Mis à jour: ${dateStr}`;
