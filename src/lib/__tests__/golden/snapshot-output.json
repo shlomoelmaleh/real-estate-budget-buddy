@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-23T20:08:34.092Z",
+  "generatedAt": "2026-02-24T19:16:28.909Z",
   "totalScenarios": 22,
   "note": "For each scenario, verify INPUTS (all 3 categories) against OUTPUTS using an external tool. When satisfied, run: npm run test:approve",
   "scenarios": [
@@ -64,7 +64,7 @@
         "equityRemaining": -62.87833775440231,
         "lawyerFeeTTC": 60352.87857055664,
         "brokerFeeTTC": 120705.75714111328,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 12786.626815795898,
         "rentWarning": null
       }
@@ -128,7 +128,7 @@
         "equityRemaining": -75.23795920377597,
         "lawyerFeeTTC": 18172.821044921875,
         "brokerFeeTTC": 36345.64208984375,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 3850.1739501953125,
         "rentWarning": null
       }
@@ -191,7 +191,7 @@
         "equityRemaining": -20.96006426285021,
         "lawyerFeeTTC": 20713.018798828125,
         "brokerFeeTTC": 41426.03759765625,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 4388.3514404296875,
         "rentWarning": null
       }
@@ -255,7 +255,7 @@
         "equityRemaining": -58.6395263671875,
         "lawyerFeeTTC": 38120.07141113281,
         "brokerFeeTTC": 76240.14282226562,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "LTV_LIMIT",
         "estimatedMarketRent": 8076.286315917969,
         "rentWarning": null
       }
@@ -317,7 +317,7 @@
         "equityRemaining": -66.44439697265625,
         "lawyerFeeTTC": 47707.481384277344,
         "brokerFeeTTC": 95414.96276855469,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "LTV_LIMIT",
         "estimatedMarketRent": 10107.51724243164,
         "rentWarning": null
       }
@@ -380,7 +380,7 @@
         "equityRemaining": -88.64809570275247,
         "lawyerFeeTTC": 170321.80786132812,
         "brokerFeeTTC": 340643.61572265625,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "LTV_LIMIT",
         "estimatedMarketRent": 36085.12878417969,
         "rentWarning": null
       }
@@ -442,7 +442,7 @@
         "equityRemaining": -97.209428537637,
         "lawyerFeeTTC": 113895.22552490234,
         "brokerFeeTTC": 227790.4510498047,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 24130.34439086914,
         "rentWarning": null
       }
@@ -505,7 +505,7 @@
         "equityRemaining": -43.06380229676142,
         "lawyerFeeTTC": 49821.76208496094,
         "brokerFeeTTC": 99643.52416992188,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 10555.458068847656,
         "rentWarning": null
       }
@@ -568,7 +568,7 @@
         "equityRemaining": -98.7612005919218,
         "lawyerFeeTTC": 53800.048828125,
         "brokerFeeTTC": 107600.09765625,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 11398.3154296875,
         "rentWarning": null
       }
@@ -630,7 +630,7 @@
         "equityRemaining": -71.34104506345466,
         "lawyerFeeTTC": 44010.7536315918,
         "brokerFeeTTC": 88021.5072631836,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 9324.312210083008,
         "rentWarning": null
       }
@@ -693,7 +693,7 @@
         "equityRemaining": -74.249267578125,
         "lawyerFeeTTC": 57294.891357421875,
         "brokerFeeTTC": 114589.78271484375,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "LTV_LIMIT",
         "estimatedMarketRent": 12138.748168945312,
         "rentWarning": "high"
       }
@@ -756,7 +756,7 @@
         "equityRemaining": -41.146031530573964,
         "lawyerFeeTTC": 45137.88986206055,
         "brokerFeeTTC": 90275.7797241211,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 9563.112258911133,
         "rentWarning": "low"
       }
@@ -818,7 +818,7 @@
         "equityRemaining": -74.249267578125,
         "lawyerFeeTTC": 57294.891357421875,
         "brokerFeeTTC": 114589.78271484375,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "LTV_LIMIT",
         "estimatedMarketRent": 12138.748168945312,
         "rentWarning": null
       }
@@ -922,7 +922,7 @@
         "equityRemaining": -60.29961834754795,
         "lawyerFeeTTC": 78054.63409423828,
         "brokerFeeTTC": 156109.26818847656,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 16536.998748779297,
         "rentWarning": null
       }
@@ -985,7 +985,7 @@
         "equityRemaining": -62.87833775440231,
         "lawyerFeeTTC": 60352.87857055664,
         "brokerFeeTTC": 120705.75714111328,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 12786.626815795898,
         "rentWarning": null,
         "amortizationTable": [
@@ -3929,7 +3929,7 @@
         "equityRemaining": -47.91102121118456,
         "lawyerFeeTTC": 118401.96990966797,
         "brokerFeeTTC": 236803.93981933594,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 0,
         "rentWarning": null
       }
@@ -3991,7 +3991,7 @@
         "equityRemaining": -88.38616576045752,
         "lawyerFeeTTC": 499184.1435432434,
         "brokerFeeTTC": 998368.2870864868,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 0,
         "rentWarning": null
       }
@@ -4053,7 +4053,7 @@
         "equityRemaining": -33.85686428193003,
         "lawyerFeeTTC": 148164.39819335938,
         "brokerFeeTTC": 296328.79638671875,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 0,
         "rentWarning": null
       }
@@ -4115,7 +4115,7 @@
         "equityRemaining": -63.478179497411475,
         "lawyerFeeTTC": 36115.17333984375,
         "brokerFeeTTC": 72230.3466796875,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 7651.519775390625,
         "rentWarning": null
       }
@@ -4177,7 +4177,7 @@
         "equityRemaining": -65.52620479278266,
         "lawyerFeeTTC": 0,
         "brokerFeeTTC": 0,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "INCOME_LIMIT",
         "estimatedMarketRent": 0,
         "rentWarning": null
       }
@@ -4239,7 +4239,7 @@
         "equityRemaining": -79.41882652323693,
         "lawyerFeeTTC": 51767.69256591797,
         "brokerFeeTTC": 103535.38513183594,
-        "limitingFactor": "EQUITY_LIMIT",
+        "limitingFactor": "AGE_LIMIT",
         "estimatedMarketRent": 0,
         "rentWarning": null
       }

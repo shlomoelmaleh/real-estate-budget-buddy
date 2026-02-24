@@ -220,20 +220,20 @@ export function solveMaximumBudget(
 
             // Dynamic limiting factor
             const equityUsed = price + closingCosts - loan;
-            const hasExcessEquity = equity - equityUsed >= 1000;
             let limitingFactor: CalculatorResults['limitingFactor'];
-            if (hasExcessEquity) {
-                if (maxLoanByPayment < maxLoanByLTV) {
-                    limitingFactor = 'INCOME_LIMIT';
-                    if (maxLoanTermMonths < 360 && age > 45) {
-                        limitingFactor = 'AGE_LIMIT';
-                    }
+            if (maxLoanByPayment < maxLoanByLTV) {
+                // Income limits the loan size — check if age is the root cause
+                if (maxLoanTermMonths < 360 && age > 45) {
+                    limitingFactor = 'AGE_LIMIT';
                 } else {
-                    limitingFactor = 'LTV_LIMIT';
+                    limitingFactor = 'INCOME_LIMIT';
                 }
             } else {
-                limitingFactor = 'EQUITY_LIMIT';
+                // LTV regulation limits the loan size
+                limitingFactor = 'LTV_LIMIT';
             }
+            // Note: EQUITY_LIMIT is not used for max-budget calculation.
+            // The binary search always exhausts equity by design.
 
             // Rent validation
             const estimatedMarketRent = (price * (rentalYield / 100)) / 12;

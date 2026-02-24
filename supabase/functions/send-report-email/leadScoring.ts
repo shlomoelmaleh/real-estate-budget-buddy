@@ -1,124 +1,16 @@
 /**
  * LEAD SCORING MODULE
  * ===================
- * Extracted from send-report-email/index.ts for maintainability.
- * Contains: calculateLeadScore, calculateBonusPower, getLimitingFactorDescription
+ * Re-exports calculateLeadScore from the shared module and provides
+ * additional helpers used only by the email template.
+ *
+ * calculateLeadScore logic lives in: ../_shared/leadScoring.ts
+ * DO NOT create a local copy — import from the shared module.
  */
 
-export interface LeadInputs {
-    netIncome: string;
-    equity: string;
-    age: string;
-    [key: string]: unknown;
-}
-
-export interface LeadResults {
-    maxPropertyValue: number;
-    monthlyPayment: number;
-    equityRemaining: number;
-    [key: string]: unknown;
-}
-
-export interface LeadScoreResult {
-    score: number;
-    priorityLabel: string;
-    priorityColor: string;
-    actionSla: string;
-    predictedTimeline: string;
-    breakdown: {
-        budget: number;
-        health: number;
-        readiness: number;
-        age: number;
-        liquidity: number;
-    };
-}
-
-// Elite 5-Tier Scoring System
-export function calculateLeadScore(
-    inputs: LeadInputs,
-    results: LeadResults,
-    lang: 'he' | 'en' | 'fr' = 'en'
-): LeadScoreResult {
-    let budgetScore = 0;
-    let healthScore = 0;
-    let readinessScore = 0;
-    let ageScore = 0;
-    let liquidityScore = 0;
-
-    const maxBudget = results.maxPropertyValue;
-    const netIncome = parseFloat(inputs.netIncome.replace(/,/g, '')) || 0;
-    const monthlyPayment = results.monthlyPayment;
-    const equityRemaining = results.equityRemaining;
-    const equityInitial = parseFloat(inputs.equity.replace(/,/g, '')) || 0;
-    const age = parseFloat(inputs.age) || 40;
-
-    // 1. Budget Size (Max 35 pts)
-    if (maxBudget > 5000000) budgetScore = 35;
-    else if (maxBudget > 3000000) budgetScore = 25;
-    else if (maxBudget > 1500000) budgetScore = 15;
-
-    // 2. Financial Health (Max 25 pts) - DTI = (monthlyPayment / netIncome) * 100
-    const dti = netIncome > 0 ? (monthlyPayment / netIncome) * 100 : 100;
-    if (dti < 30) healthScore = 25;
-    else if (dti <= 35) healthScore = 15;
-
-    // 3. Readiness (Max 25 pts)
-    if (equityInitial >= 400000) readinessScore = 25;
-    else if (equityInitial >= 200000) readinessScore = 15;
-
-    // 4. Age Factor (Max 10 pts)
-    if (age < 35) ageScore = 10;
-
-    // 5. Liquidity Bonus (Max 15 pts)
-    if (equityRemaining > 200000) liquidityScore = 15;
-
-    // Total Score
-    const score = Math.min(100, budgetScore + healthScore + readinessScore + ageScore + liquidityScore);
-
-    // Determine Tier & Action
-    let priorityLabel = lang === 'he' ? '❄️ קר' : lang === 'fr' ? '❄️ FROID' : '❄️ COLD';
-    let priorityColor = '#94a3b8'; // Slate
-    let actionSla = lang === 'he' ? 'הוספה לניוזלטר ארוך טווח.' : lang === 'fr' ? 'Ajouter à la newsletter.' : "Add to long-term newsletter.";
-    let predictedTimeline = lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Planification)' : '3-6 months (Planning phase)';
-
-    if (score >= 85) {
-        priorityLabel = lang === 'he' ? '💎 פלטינום' : lang === 'fr' ? '💎 PLATINE' : '💎 PLATINUM';
-        priorityColor = '#7c3aed'; // Violet/Purple
-        actionSla = lang === 'he' ? 'להתקשר תוך שעה אחת.' : lang === 'fr' ? 'Appeler d\'ici 1 heure.' : "Call within 1 hour.";
-        predictedTimeline = lang === 'he' ? '1-2 שבועות (מוכנים לתנועה)' : lang === 'fr' ? '1-2 semaines (Prêt)' : '1-2 weeks (Ready to move)';
-    } else if (score >= 70) {
-        priorityLabel = lang === 'he' ? '🔥 חם' : lang === 'fr' ? '🔥 CHAUD' : '🔥 HOT';
-        priorityColor = '#ef4444'; // Red
-        actionSla = lang === 'he' ? 'להתקשר תוך 4 שעות.' : lang === 'fr' ? 'Appeler d\'ici 4 heures.' : "Call within 4 hours.";
-        predictedTimeline = lang === 'he' ? '1-2 חודשים (חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Recherche active)' : '1-2 months (Active search)';
-    } else if (score >= 50) {
-        priorityLabel = lang === 'he' ? '☀️ חמים' : lang === 'fr' ? '☀️ CHALEUREUX' : '☀️ WARM';
-        priorityColor = '#f59e0b'; // Amber
-        actionSla = lang === 'he' ? 'להתקשר תוך 24 שעות.' : lang === 'fr' ? 'Appeler d\'ici 24 heures.' : "Call within 24 hours.";
-        predictedTimeline = lang === 'he' ? '1-2 חודשים (חיפוש פעיל)' : lang === 'fr' ? '1-2 mois (Recherche active)' : '1-2 months (Active search)';
-    } else if (score >= 30) {
-        priorityLabel = lang === 'he' ? '🌤️ קריר' : lang === 'fr' ? '🌤️ FRAIS' : '🌤️ COOL';
-        priorityColor = '#3b82f6'; // Blue
-        actionSla = lang === 'he' ? 'מעקב במייל.' : lang === 'fr' ? 'Suivi par e-mail.' : "Email follow-up.";
-        predictedTimeline = lang === 'he' ? '3-6 חודשים (שלב תכנון)' : lang === 'fr' ? '3-6 mois (Planification)' : '3-6 months (Planning phase)';
-    }
-
-    return {
-        score,
-        priorityLabel,
-        priorityColor,
-        actionSla,
-        predictedTimeline,
-        breakdown: {
-            budget: budgetScore,
-            health: healthScore,
-            readiness: readinessScore,
-            age: ageScore,
-            liquidity: liquidityScore
-        }
-    };
-}
+// Re-export the canonical lead scoring function
+export { calculateLeadScore } from "../_shared/leadScoring.ts";
+export type { LeadScoreInputs, LeadScoreResults, LeadScoreOutput } from "../_shared/leadScoring.ts";
 
 export function calculateBonusPower(
     monthlyPayment: number,
