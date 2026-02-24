@@ -157,6 +157,7 @@ export type Database = {
           config_updated_at: string | null
           config_updated_by: string | null
           created_at: string
+          default_currency: string
           default_interest_rate: number | null
           email: string | null
           enable_rent_validation: boolean | null
@@ -194,6 +195,7 @@ export type Database = {
           config_updated_at?: string | null
           config_updated_by?: string | null
           created_at?: string
+          default_currency?: string
           default_interest_rate?: number | null
           email?: string | null
           enable_rent_validation?: boolean | null
@@ -231,6 +233,7 @@ export type Database = {
           config_updated_at?: string | null
           config_updated_by?: string | null
           created_at?: string
+          default_currency?: string
           default_interest_rate?: number | null
           email?: string | null
           enable_rent_validation?: boolean | null
