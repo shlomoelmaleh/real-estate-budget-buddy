@@ -390,6 +390,8 @@ export type Database = {
           advisor_fee_fixed: number | null
           brand_color: string | null
           broker_fee_percent: number | null
+          created_at: string | null
+          default_currency: string | null
           default_interest_rate: number | null
           email: string | null
           enable_rent_validation: boolean | null
@@ -404,7 +406,6 @@ export type Database = {
           max_loan_term_years: number | null
           name: string | null
           other_fee_fixed: number | null
-          owner_user_id: string | null
           phone: string | null
           rent_recognition_first_property: number | null
           rent_recognition_investment: number | null
@@ -423,6 +424,8 @@ export type Database = {
           advisor_fee_fixed?: number | null
           brand_color?: string | null
           broker_fee_percent?: number | null
+          created_at?: string | null
+          default_currency?: string | null
           default_interest_rate?: number | null
           email?: string | null
           enable_rent_validation?: boolean | null
@@ -437,7 +440,6 @@ export type Database = {
           max_loan_term_years?: number | null
           name?: string | null
           other_fee_fixed?: number | null
-          owner_user_id?: string | null
           phone?: string | null
           rent_recognition_first_property?: number | null
           rent_recognition_investment?: number | null
@@ -456,6 +458,8 @@ export type Database = {
           advisor_fee_fixed?: number | null
           brand_color?: string | null
           broker_fee_percent?: number | null
+          created_at?: string | null
+          default_currency?: string | null
           default_interest_rate?: number | null
           email?: string | null
           enable_rent_validation?: boolean | null
@@ -470,7 +474,6 @@ export type Database = {
           max_loan_term_years?: number | null
           name?: string | null
           other_fee_fixed?: number | null
-          owner_user_id?: string | null
           phone?: string | null
           rent_recognition_first_property?: number | null
           rent_recognition_investment?: number | null
