@@ -59,6 +59,7 @@ const CalculatorInputSchema = z.object({
   rentalYield: z.number().min(0).max(20),
   rentRecognition: z.number().min(0).max(100),
   budgetCap: z.number().nonnegative().max(1e9).nullable(),
+  targetPropertyPrice: z.number().nonnegative().max(1e12).nullable().optional(),
   isFirstProperty: z.boolean(),
   isIsraeliTaxResident: z.boolean(),
   expectedRent: z.number().nonnegative().max(1e9).nullable(),
@@ -249,8 +250,8 @@ const handler = async (req: Request): Promise<Response> => {
     const { amortizationTable: _, ...cleanResults } = results;
 
     const leadAnalysis = calculateLeadScore(
-      processInputs,
-      ilsResults,
+      processInputs as any,
+      ilsResults as any,
       (inputs as any).language || 'en'
     );
 
