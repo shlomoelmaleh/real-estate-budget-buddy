@@ -53,15 +53,15 @@ export function CurrencySwitcher() {
                             onClick={() => setCurrency(code)}
                             className={cn(
                                 "relative flex items-center justify-center gap-1.5 cursor-pointer",
-                                "h-8 px-4 rounded-full text-sm font-semibold transition-all duration-300",
+                                "h-8 px-4 rounded-full text-sm font-semibold transition-all duration-300 border border-transparent shadow-none",
                                 isSelected
-                                    ? "bg-white text-primary shadow-sm ring-1 ring-slate-200 scale-105"
-                                    : "text-slate-500 hover:text-slate-800 hover:bg-white/50"
+                                    ? "bg-amber-500 text-white shadow-md ring-0 scale-105 border-transparent"
+                                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                             )}
                         >
                             <span className={cn(
                                 "flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shadow-sm",
-                                isSelected ? "bg-primary/10 text-primary" : "bg-slate-200 text-slate-500"
+                                isSelected ? "bg-white/20 text-white" : "bg-white border border-slate-200 text-slate-500"
                             )}>
                                 {CURRENCY_SYMBOLS[code]}
                             </span>
