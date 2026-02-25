@@ -38,10 +38,9 @@ export function Step0({ onNext }: { onNext: () => void }) {
 
     return (
         <div className="relative w-full">
-            {/* Language Switcher - Absolutely Centered on Entire Screen */}
-            {/* Force LTR direction for the container, but use flex-row-reverse to keep Language on Right and Button on Left (Hebrew style) */}
-            <div className="absolute top-0 left-0 right-0 flex justify-center z-30 pt-4 gap-4" style={{ direction: 'rtl' }}>
-                <div className="scale-90 md:scale-100 flex flex-col gap-2">
+            {/* Top Navigation Bar */}
+            <div className="relative w-full flex flex-col sm:flex-row justify-center items-center z-30 pt-10 sm:pt-8 pb-4 gap-4 sm:gap-6 px-12 sm:px-4" style={{ direction: 'rtl' }}>
+                <div className="flex flex-col items-center gap-3">
                     <LanguageSwitcher />
                     <CurrencySwitcher />
                 </div>
@@ -84,7 +83,7 @@ export function Step0({ onNext }: { onNext: () => void }) {
             </div>
 
             <div className={cn(
-                "flex flex-col gap-8 lg:gap-12 items-stretch animate-in fade-in zoom-in duration-700 w-full max-w-6xl mx-auto pb-8 lg:pb-12 px-4 pt-36 lg:pt-32",
+                "flex flex-col gap-8 lg:gap-12 items-stretch animate-in fade-in zoom-in duration-700 w-full max-w-6xl mx-auto pb-8 lg:pb-12 px-4 pt-4 lg:pt-8",
                 isHe ? "lg:flex-row-reverse" : "lg:flex-row"
             )}>
                 {/* Media Frame (40%) - Brand First */}
