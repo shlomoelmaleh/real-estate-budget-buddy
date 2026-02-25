@@ -84,7 +84,7 @@ export function Step0({ onNext }: { onNext: () => void }) {
             </div>
 
             <div className={cn(
-                "flex flex-col gap-8 lg:gap-12 items-stretch animate-in fade-in zoom-in duration-700 w-full max-w-6xl mx-auto pb-8 lg:pb-12 px-4 pt-16",
+                "flex flex-col gap-8 lg:gap-12 items-stretch animate-in fade-in zoom-in duration-700 w-full max-w-6xl mx-auto pb-8 lg:pb-12 px-4 pt-36 lg:pt-32",
                 isHe ? "lg:flex-row-reverse" : "lg:flex-row"
             )}>
                 {/* Media Frame (40%) - Brand First */}
