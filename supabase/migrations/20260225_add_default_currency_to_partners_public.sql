@@ -2,7 +2,9 @@
 -- Required for CurrencyProvider to read partner default currency
 -- Depends on: 20260224_currency_support.sql (adds column to partners table)
 
-CREATE OR REPLACE VIEW public.partners_public AS
+DROP VIEW IF EXISTS public.partners_public;
+
+CREATE VIEW public.partners_public AS
   SELECT
     id,
     name,
