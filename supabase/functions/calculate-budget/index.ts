@@ -13,6 +13,7 @@ import {
 } from "../_shared/calculatorEngine.ts";
 import { loadPartnerConfig, loadSystemTaxBrackets } from "../_shared/configLoader.ts";
 import { toILS, fromILS, SupportedCurrency, ExchangeRates } from "../_shared/currencyUtils.ts";
+import { calculateLeadScore } from "../_shared/leadScoring.ts";
 
 // CORS headers - allow all origins for this public calculator
 const corsHeaders = {
@@ -193,6 +194,7 @@ const handler = async (req: Request): Promise<Response> => {
       processInputs.netIncome = toILS(inputs.netIncome, inputCurrency, rates);
       if (inputs.budgetCap) processInputs.budgetCap = toILS(inputs.budgetCap, inputCurrency, rates);
       if (inputs.expectedRent) processInputs.expectedRent = toILS(inputs.expectedRent, inputCurrency, rates);
+      if (inputs.targetPropertyPrice) processInputs.targetPropertyPrice = toILS(inputs.targetPropertyPrice, inputCurrency, rates);
     }
 
     // Perform calculation using the canonical shared engine with dynamic tax brackets (always in ILS)
@@ -246,6 +248,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Remove from results to keep payload clean
     const { amortizationTable: _, ...cleanResults } = results;
 
+    const leadAnalysis = calculateLeadScore(
+      processInputs,
+      ilsResults,
+      (inputs as any).language || 'en'
+    );
+
     return new Response(
       JSON.stringify({
         results: cleanResults,
@@ -255,7 +263,10 @@ const handler = async (req: Request): Promise<Response> => {
         },
         currency: inputCurrency,
         exchangeRate: currentRate,
-        ratesDate: ratesDate
+        ratesDate: ratesDate,
+        leadScore: leadAnalysis.score,
+        leadTier: leadAnalysis.priorityLabel,
+        leadTimeline: leadAnalysis.predictedTimeline,
       }),
       {
         status: 200,

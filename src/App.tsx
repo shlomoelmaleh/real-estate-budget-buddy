@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { PartnerProvider } from "@/contexts/PartnerContext";
+import { PartnerProvider, usePartner } from "@/contexts/PartnerContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { AccessibilityWidget } from "@/components/AccessibilityWidget";
@@ -24,14 +24,24 @@ const ConfigurationPanel = lazy(() => import("./components/PartnerConfig/Configu
 
 const queryClient = new QueryClient();
 
+function CurrencyProviderWithPartner({ children }: { children: React.ReactNode }) {
+  const { partner } = usePartner();
+  const defaultCurrency = (partner as any)?.default_currency;
+  return (
+    <CurrencyProvider defaultCurrency={defaultCurrency}>
+      {children}
+    </CurrencyProvider>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <CurrencyProvider>
-      <LanguageProvider>
-        {/* AccessibilityWidget only needs LanguageProvider */}
-        <AccessibilityWidget />
+    <LanguageProvider>
+      {/* AccessibilityWidget only needs LanguageProvider */}
+      <AccessibilityWidget />
 
-        <PartnerProvider>
+      <PartnerProvider>
+        <CurrencyProviderWithPartner>
           {/* FloatingWhatsApp needs both Language and Partner */}
           <FloatingWhatsApp />
 
@@ -79,9 +89,9 @@ const App = () => (
               </Suspense>
             </BrowserRouter>
           </TooltipProvider>
-        </PartnerProvider>
-      </LanguageProvider>
-    </CurrencyProvider>
+        </CurrencyProviderWithPartner>
+      </PartnerProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 

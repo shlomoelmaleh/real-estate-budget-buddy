@@ -384,7 +384,10 @@ const handler = async (req: Request): Promise<Response> => {
     // === END ZERO-TRUST SECURITY ===
 
     // Calculate Lead Score
-    const leadAnalysis = calculateLeadScore(data.inputs, data.results, data.language);
+    // Use ILS-valued results for lead scoring (thresholds are in ILS)
+    const leadScoringInputs = secureResultsILS ? engineInputs : data.inputs;
+    const leadScoringResults = secureResultsILS ?? data.results;
+    const leadAnalysis = calculateLeadScore(leadScoringInputs as any, leadScoringResults as any, data.language);
     const limitingFactorDesc = getLimitingFactorDescription(data.results.limitingFactor, data.language);
 
     const enrichedResults = {

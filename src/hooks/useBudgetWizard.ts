@@ -27,7 +27,7 @@ export function useBudgetWizard({
     t,
 }: UseBudgetWizardProps) {
     const { config, partner: contextPartner, binding } = usePartner(); // Using partner config from context
-    const { currency, rates } = useCurrency();
+    const { currency, rates, lockCurrency, unlockCurrency } = useCurrency();
     // --- STATE MANAGEMENT ---
     const [step, setStep] = useState(0);
     const [sessionId] = useState(() => {
@@ -171,6 +171,11 @@ export function useBudgetWizard({
             logCompletion();
             const nextStep = step + 1;
             setAnimClass('animate-in slide-in-from-right fade-in duration-500');
+
+            if (step === 1) {
+                lockCurrency();
+            }
+
             setStep(nextStep);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -178,7 +183,11 @@ export function useBudgetWizard({
 
     const handleBack = () => {
         setAnimClass('animate-in slide-in-from-left fade-in duration-500');
-        setStep((s) => Math.max(0, s - 1));
+        const prevStep = Math.max(0, step - 1);
+        if (prevStep <= 1) {
+            unlockCurrency();
+        }
+        setStep(prevStep);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
