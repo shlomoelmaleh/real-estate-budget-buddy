@@ -136,7 +136,7 @@ for (const scenario of SCENARIOS) {
                 equity_NIS: si.equity,
                 netMonthlyIncome_NIS: si.netIncome,
                 isFirstProperty: si.isFirstProperty,
-                isIsraeliCitizen: si.isIsraeliTaxResident, // wizard field — mapped to tax residency in engine
+                isIsraeliCitizen: si.ltv === 75 && si.isFirstProperty, // wizard field — mapped to tax residency in engine
                 isIsraeliTaxResident: si.isIsraeliTaxResident,
                 isRented: si.isRented,
                 expectedRent_NIS_per_month: si.expectedRent,

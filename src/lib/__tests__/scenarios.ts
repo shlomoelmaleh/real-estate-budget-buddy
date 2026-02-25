@@ -871,5 +871,304 @@ export const SCENARIOS: Scenario[] = [
             otherFee: 3000,
         },
         config: DEFAULT_CONFIG,
+    },
+
+    // ── S27: CASE 2 — Israeli citizen living abroad (non-tax-resident) ────────
+    {
+        id: 'S27_CASE2_CITIZEN_NONRESIDENT',
+        description: 'Israeli citizen living abroad: non-tax-resident (INVESTOR tax profile) but citizen (LTV=75% per BOI 329)',
+        branches: [
+            'isIsraeliTaxResident=false → INVESTOR tax profile (8% from first shekel)',
+            'isIsraeliCitizen=true → ltv=75% (BOI directive 329: citizen ≠ foreign resident)',
+            'UNIQUE combination: INVESTOR taxProfile with ltv=75 (all other INVESTOR scenarios use ltv=50)',
+        ],
+        inputs: {
+            equity: 2_500_000,
+            ltv: 75,                        // citizen → 75% per BOI 329
+            netIncome: 45_000,
+            ratio: 33,
+            age: 40,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: false,    // not a tax resident → INVESTOR tax
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S28: CASE 3 — Non-citizen Israeli tax resident ────────────────────────
+    {
+        id: 'S28_CASE3_RESIDENT_NONCITIZEN',
+        description: 'Non-citizen Israeli tax resident: SINGLE_HOME tax brackets (tax resident) but LTV=50% (non-citizen per BOI 329)',
+        branches: [
+            'isFirstProperty=true AND isIsraeliTaxResident=true → SINGLE_HOME tax profile',
+            'isIsraeliCitizen=false → ltv=50% (BOI 329: non-citizen = foreign resident)',
+            'UNIQUE combination: SINGLE_HOME taxProfile with ltv=50 (all other SINGLE_HOME scenarios use ltv=75)',
+        ],
+        inputs: {
+            equity: 2_000_000,
+            ltv: 50,                        // non-citizen → 50% per BOI 329
+            netIncome: 30_000,
+            ratio: 33,
+            age: 40,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,     // IS a tax resident → SINGLE_HOME tax brackets!
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S29: AGE_LIMIT parameter threshold (above) ────────────────────────────
+    {
+        id: 'S29_AGE_LIMIT_BOUNDARY_ABOVE',
+        description: 'age=46 just above the age>45 threshold, maxAge=75 → term=29y=348months < 360 → AGE_LIMIT',
+        branches: [
+            'maxLoanTermMonths = (75-46)*12 = 348 < 360',
+            'age=46 > 45 → both conditions met → AGE_LIMIT',
+            'Validates the age>45 threshold is respected at the boundary',
+        ],
+        inputs: {
+            equity: 2_000_000,
+            ltv: 75,
+            netIncome: 30_000,
+            ratio: 33,
+            age: 46,                        // ממש מעל threshold
+            maxAge: 75,                     // 75-46=29 שנים = 348 חודשים < 360
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: { ...DEFAULT_CONFIG, max_age: 75 },
+    },
+
+    // ── S30: INCOME_LIMIT parameter threshold (below age boundary) ────────────
+    {
+        id: 'S30_AGE_BELOW_THRESHOLD',
+        description: 'age=44 just below the age>45 threshold, maxAge=70 → term=26y=312months < 360 BUT age<=45 → INCOME_LIMIT not AGE_LIMIT',
+        branches: [
+            'maxLoanTermMonths = (70-44)*12 = 312 < 360',
+            'age=44 <= 45 → age condition NOT met → INCOME_LIMIT (not AGE_LIMIT)',
+            'Validates age threshold boundary from below: same short term but different limitingFactor',
+        ],
+        inputs: {
+            equity: 2_000_000,
+            ltv: 75,
+            netIncome: 20_000,
+            ratio: 33,
+            age: 44,                        // ממש מתחת threshold
+            maxAge: 70,                     // 70-44=26 שנים = 312 חודשים < 360
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: { ...DEFAULT_CONFIG, max_age: 70 },
+    },
+
+    // ── S31: Budget cap not binding ───────────────────────────────────────────
+    {
+        id: 'S31_BUDGET_CAP_NOT_BINDING',
+        description: 'budgetCap set far above bank DTI limit — cap has no effect, result equals S01_BASELINE',
+        branches: [
+            'budgetCap=20,000 > bankMaxPayment=13,200 (40K * 33%) → userEffectiveLimit > bankMaxPayment',
+            'Math.min(bankMaxPayment, userEffectiveLimit) = bankMaxPayment → cap not binding',
+            'Result should match S01_BASELINE (same inputs, cap just ignored)',
+        ],
+        inputs: {
+            equity: 3_000_000,
+            ltv: 75,
+            netIncome: 40_000,
+            ratio: 33,                      // bankMaxPayment = 40,000 * 0.33 = 13,200
+            age: 30,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: 20_000,              // 20K > bank max 13.2K → cap NOT binding
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S32: Zero interest rate ───────────────────────────────────────────────
+    {
+        id: 'S32_ZERO_INTEREST_RATE',
+        description: 'interest=0% triggers the mRate===0 branch: amortization factor A=1/n (pure principal repayment)',
+        branches: [
+            'mRate = 0% / 12 = 0 → A = 1/n (special case, not standard formula)',
+            'monthlyPayment = loanAmount / n (all principal, zero interest)',
+            'totalInterest should equal 0',
+        ],
+        inputs: {
+            equity: 3_000_000,
+            ltv: 75,
+            netIncome: 40_000,
+            ratio: 33,
+            age: 30,
+            maxAge: 80,
+            interest: 0,                    // בדיוק אפס — מפעיל ענף mRate===0
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S33: First home partial rent recognition ──────────────────────────────
+    {
+        id: 'S33_FIRST_HOME_PARTIAL_RENT_RECOGNITION',
+        description: 'First property with 50% rent recognition — non-standard partner config, rent partially recognized',
+        branches: [
+            'isFirstProperty=true, isRented=true',
+            'rent_recognition_first_property=0.5 (50%) — non-zero, non-standard',
+            'bankRecognizedIncome = netIncome + (actualRent * 0.5)',
+            'Budget should be higher than S20 (0% recognition) and lower than a full 80% investment recognition',
+        ],
+        inputs: {
+            equity: 2_000_000,
+            ltv: 75,
+            netIncome: 20_000,
+            ratio: 33,
+            age: 30,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: true,
+            rentalYield: 3.0,
+            rentRecognition: 50,            // מועבר לפונקציה אבל לא בשימוש — isFirstProperty מנצח
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: { ...DEFAULT_CONFIG, rent_recognition_first_property: 0.5 },
+    },
+
+    // ── S34: Double investor condition ────────────────────────────────────────
+    {
+        id: 'S34_DOUBLE_INVESTOR_BOTH_CONDITIONS',
+        description: 'Both investor conditions simultaneously: isFirstProperty=false AND isIsraeliTaxResident=false',
+        branches: [
+            'isFirstProperty=false → INVESTOR (first condition)',
+            'isIsraeliTaxResident=false → INVESTOR (second condition)',
+            'Both true simultaneously: taxProfile should still be INVESTOR once (no double-tax)',
+            'Compare to S04 (same except taxResident=true): results should be similar',
+        ],
+        inputs: {
+            equity: 2_000_000,
+            ltv: 50,
+            netIncome: 35_000,
+            ratio: 33,
+            age: 45,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: false,         // סיבה 1 ל-INVESTOR
+            isIsraeliTaxResident: false,    // סיבה 2 ל-INVESTOR
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: DEFAULT_CONFIG,
+    },
+
+    // ── S35: Very low DTI (10%) ───────────────────────────────────────────────
+    {
+        id: 'S35_VERY_LOW_DTI_10PCT',
+        description: 'Partner allows only 10% DTI — extremely conservative, bankMaxPayment=4,000/month → strong INCOME_LIMIT',
+        branches: [
+            'ratio=10% → bankMaxPayment = 40,000 * 0.10 = 4,000/month',
+            'Very low payment cap → strong INCOME_LIMIT',
+            'Budget should be significantly lower than S01 despite same equity and income',
+        ],
+        inputs: {
+            equity: 3_000_000,
+            ltv: 75,
+            netIncome: 40_000,
+            ratio: 10,                      // DTI=10% — שמרן מאוד
+            age: 30,
+            maxAge: 80,
+            interest: 5.0,
+            isRented: false,
+            rentalYield: 3.0,
+            rentRecognition: 0,
+            budgetCap: null,
+            isFirstProperty: true,
+            isIsraeliTaxResident: true,
+            expectedRent: null,
+            lawyerPct: 1.0,
+            brokerPct: 2.0,
+            vatPct: 18,
+            advisorFee: 9000,
+            otherFee: 3000,
+        },
+        config: { ...DEFAULT_CONFIG, max_dti_ratio: 0.10 },
     }
 ];
