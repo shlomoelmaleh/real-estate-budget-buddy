@@ -201,9 +201,6 @@ export function getDossierPreview(
   };
   return generateEmailHtml(data, isAdvisorCopy, partnerContact);
 }
-  };
-  return generateEmailHtml(data, isAdvisorCopy, partnerContact);
-}
 
 // Internal function to generate HTML
 function generateEmailHtml(
