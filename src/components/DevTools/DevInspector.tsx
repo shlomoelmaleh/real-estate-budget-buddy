@@ -50,10 +50,12 @@ export function DevInspector({ formData, results, calcData, language = 'he' }: D
     // Generate HTML for preview
     const htmlContent = showPreview && results
         ? getDossierPreview(
-            { ...formData, advisorFee: formData?.advisorFee || '0', otherFee: formData?.otherFee || '0' }, // Inputs
-            results, // Results
-            language as any, // Language
-            previewTab === 'advisor' // isAdvisorCopy
+            { ...formData, advisorFee: formData?.advisorFee || '0', otherFee: formData?.otherFee || '0' },
+            results,
+            language as any,
+            previewTab === 'advisor',
+            undefined,
+            calcData || undefined
         )
         : '';
 
