@@ -170,48 +170,23 @@ export function escapeHtml(text: string): string {
 
 export function getDossierPreview(
   inputs: ReportEmailRequest['inputs'],
-  results: ReportEmailRequest['results'] & { amortizationTable?: Array<{ month: number; opening: number; payment: number; interest: number; principal: number; closing: number }> },
+  results: ReportEmailRequest['results'],
   language: ReportEmailRequest['language'],
   isAdvisorCopy: boolean = false,
-  partnerContact?: PartnerContactOverride
+  partnerContact?: PartnerContactOverride,
+  calcData?: {
+    amortizationSummary?: { totalMonths: number; firstPayment: { principal: number; interest: number }; lastPayment: { principal: number; interest: number } };
+    yearlyBalanceData?: { year: number; balance: number }[];
+    paymentBreakdownData?: { year: number; interest: number; principal: number }[];
+    [key: string]: any;
+  }
 ): string {
-  // Compute amortization data from the actual amortization table if available
-  const amortTable = results.amortizationTable || [];
-  const totalMonths = amortTable.length > 0 ? amortTable.length : results.loanTermYears * 12;
-  const firstRow = amortTable[0];
-  const lastRow = amortTable[amortTable.length - 1];
-
-  const amortizationSummary = {
-    totalMonths,
-    firstPayment: firstRow
-      ? { principal: firstRow.principal, interest: firstRow.interest }
-      : { principal: 0, interest: 0 },
-    lastPayment: lastRow
-      ? { principal: lastRow.principal, interest: lastRow.interest }
-      : { principal: 0, interest: 0 },
+  // Use pre-computed calcData if available, otherwise fallback to loanTermYears
+  const amortizationSummary = calcData?.amortizationSummary || {
+    totalMonths: results.loanTermYears * 12,
+    firstPayment: { principal: 0, interest: 0 },
+    lastPayment: { principal: 0, interest: 0 },
   };
-
-  // Generate yearly balance data for charts
-  const yearlyBalanceData: { year: number; balance: number }[] = [];
-  for (let i = 0; i < amortTable.length; i++) {
-    if ((i + 1) % 12 === 0 || i === amortTable.length - 1) {
-      yearlyBalanceData.push({ year: Math.ceil((i + 1) / 12), balance: amortTable[i].closing });
-    }
-  }
-
-  // Generate payment breakdown by year
-  const paymentBreakdownData: { year: number; interest: number; principal: number }[] = [];
-  for (let yearIndex = 0; yearIndex < Math.ceil(amortTable.length / 12); yearIndex++) {
-    const startMonth = yearIndex * 12;
-    const endMonth = Math.min(startMonth + 12, amortTable.length);
-    let yearlyInterest = 0;
-    let yearlyPrincipal = 0;
-    for (let i = startMonth; i < endMonth; i++) {
-      yearlyInterest += amortTable[i].interest;
-      yearlyPrincipal += amortTable[i].principal;
-    }
-    paymentBreakdownData.push({ year: yearIndex + 1, interest: yearlyInterest, principal: yearlyPrincipal });
-  }
 
   const data: ReportEmailRequest = {
     recipientEmail: "client@example.com",
@@ -221,8 +196,11 @@ export function getDossierPreview(
     inputs,
     results,
     amortizationSummary,
-    yearlyBalanceData: yearlyBalanceData.length > 0 ? yearlyBalanceData : undefined,
-    paymentBreakdownData: paymentBreakdownData.length > 0 ? paymentBreakdownData : undefined,
+    yearlyBalanceData: calcData?.yearlyBalanceData,
+    paymentBreakdownData: calcData?.paymentBreakdownData,
+  };
+  return generateEmailHtml(data, isAdvisorCopy, partnerContact);
+}
   };
   return generateEmailHtml(data, isAdvisorCopy, partnerContact);
 }
