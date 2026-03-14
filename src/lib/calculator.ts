@@ -26,7 +26,7 @@ export interface CalculatorInputs {
   rentalYield: number;
   rentRecognition: number;
   budgetCap: number | null;
-  maxLoanTerm: number | null;
+  maxLoanTerm?: number | null;
   isFirstProperty: boolean;
   isIsraeliTaxResident: boolean;
   expectedRent: number | null;
