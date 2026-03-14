@@ -124,6 +124,11 @@ export interface Translations {
   isRentedYes: string;
   isRentedNo: string;
   optional: string;
+  maxLoanTermWizardLabel: string;
+  maxLoanTermWizardInactive: string;
+  maxLoanTermWizardActive: string;
+  maxLoanTermWizardYears: string;
+  maxLoanTermWizardUnit: string;
   floatingContact: string;
   // Feasibility
   dealFeasibility: string;
