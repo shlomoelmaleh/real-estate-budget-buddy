@@ -16,7 +16,7 @@ interface DevInspectorProps {
     language?: string;
 }
 
-export function DevInspector({ formData, results, language = 'he' }: DevInspectorProps) {
+export function DevInspector({ formData, results, calcData, language = 'he' }: DevInspectorProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
     const [previewTab, setPreviewTab] = useState<'client' | 'advisor'>('client');
