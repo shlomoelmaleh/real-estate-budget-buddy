@@ -760,6 +760,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "Rental plan & monthly comfort limit",
     currencySymbol: "₪",
     convertNotice: "*Values in Shekels (Please convert foreign currency before entering)",
+    maxLoanTermWizardLabel: "Limit mortgage term",
+    maxLoanTermWizardInactive: "No limit — uses the maximum allowed term",
+    maxLoanTermWizardActive: "Mortgage ends within {years} years",
+    maxLoanTermWizardYears: "Max term (years)",
+    maxLoanTermWizardUnit: "years",
     // Financial Strength Celebration
     milestone1: "Entry-Level Capacity Unlocked ✅",
     milestone2: "Significant Financial Power! 💪",
