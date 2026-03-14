@@ -113,9 +113,9 @@ export function Step5({
         // ACCESSIBILITY: Detect reduced motion preference
         const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        let intervalId: NodeJS.Timeout;
-        let confettiTimeoutId: NodeJS.Timeout;
-        let dossierTimeoutId: NodeJS.Timeout;
+        let intervalId: ReturnType<typeof setInterval>;
+        let confettiTimeoutId: ReturnType<typeof setTimeout>;
+        let dossierTimeoutId: ReturnType<typeof setTimeout>;
 
         // Configuration
         const target = results.maxPropertyValue;

@@ -18,7 +18,7 @@ const MAX_RETRIES = 3;
 class AnalyticsQueue {
     private queue: FunnelEvent[] = [];
     private isFlushing = false;
-    private timer: NodeJS.Timeout | null = null;
+    private timer: ReturnType<typeof setInterval> | null = null;
 
     constructor() {
         this.loadQueue();
