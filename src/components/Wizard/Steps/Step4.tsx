@@ -1,5 +1,5 @@
 import { Controller, useWatch } from 'react-hook-form';
-import { Building2, CircleDollarSign, Target } from 'lucide-react';
+import { Building2, CircleDollarSign, Target, Clock } from 'lucide-react';
 import { FormInput } from '@/components/FormInput';
 import { StepProps } from '../types';
 import { Label } from '@/components/ui/label';
@@ -94,6 +94,63 @@ export function Step4({ control, errors, t, watch, setValue }: StepProps) {
                         helperText={ilsBudget ? `≈ ${fmt(ilsBudget, 'ILS')}` : undefined}
                     />
                 )}
+            />
+
+            {/* Max Loan Term */}
+            <Controller
+                name="maxLoanTerm"
+                control={control}
+                render={({ field }) => {
+                    const currentVal = field.value ? parseInt(field.value as string) : 0;
+                    const isActive = currentVal > 0;
+                    return (
+                        <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-white/20 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <Label className="text-base font-semibold flex items-center gap-2">
+                                        <Clock className="w-4 h-4" />
+                                        {t.maxLoanTermWizardLabel}
+                                    </Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        {isActive
+                                            ? t.maxLoanTermWizardActive.replace('{years}', field.value as string)
+                                            : t.maxLoanTermWizardInactive}
+                                    </p>
+                                </div>
+                                <span dir="ltr" className="flex items-center">
+                                    <Switch
+                                        checked={isActive}
+                                        onCheckedChange={(on) => {
+                                            if (!on) {
+                                                field.onChange('');
+                                            } else {
+                                                field.onChange('20');
+                                            }
+                                        }}
+                                    />
+                                </span>
+                            </div>
+
+                            <div className={cn(
+                                "grid transition-all duration-300 ease-in-out",
+                                isActive ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                            )}>
+                                <div className="overflow-hidden">
+                                    <FormInput
+                                        label={t.maxLoanTermWizardYears}
+                                        suffix={t.maxLoanTermWizardUnit}
+                                        icon={<Clock className="w-4 h-4" />}
+                                        {...field}
+                                        value={field.value as string}
+                                        formatNumber={false}
+                                        hasError={!!errors.maxLoanTerm}
+                                        className="bg-white"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }}
             />
 
             <p className="text-[10px] text-muted-foreground mt-4 italic">

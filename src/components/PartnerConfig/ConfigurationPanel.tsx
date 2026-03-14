@@ -207,6 +207,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
             rentalYield: config.rental_yield_default,
             rentRecognition: config.rent_recognition_investment * 100,
             budgetCap: null,
+            maxLoanTerm: null,
             isFirstProperty: true,
             isIsraeliTaxResident: true,
             expectedRent: null,

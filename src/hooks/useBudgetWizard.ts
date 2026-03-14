@@ -217,6 +217,7 @@ export function useBudgetWizard({
             rentalYield: parseFloat(data.rentalYield || config.rental_yield_default.toString()) || 0,
             rentRecognition: parseFormattedNumber(data.rentRecognition || (config.rent_recognition_investment * 100).toString()),
             budgetCap: data.budgetCap ? parseFormattedNumber(data.budgetCap) : null,
+            maxLoanTerm: data.maxLoanTerm ? parseInt(data.maxLoanTerm) : null,
             isFirstProperty: data.isFirstProperty,
             isIsraeliTaxResident: data.isIsraeliTaxResident,
             expectedRent: data.isRented && data.expectedRent ? parseFormattedNumber(data.expectedRent) : null,

@@ -124,6 +124,11 @@ export interface Translations {
   isRentedYes: string;
   isRentedNo: string;
   optional: string;
+  maxLoanTermWizardLabel: string;
+  maxLoanTermWizardInactive: string;
+  maxLoanTermWizardActive: string;
+  maxLoanTermWizardYears: string;
+  maxLoanTermWizardUnit: string;
   floatingContact: string;
   // Feasibility
   dealFeasibility: string;
@@ -463,6 +468,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "האם הנכס מושכר וכמה תוכלו להחזיר?",
     currencySymbol: "₪",
     convertNotice: "*הסכומים בשקלים (נא להמיר מט\"ח לפי השער היציג)",
+    maxLoanTermWizardLabel: "הגבלת תקופת המשכנתא",
+    maxLoanTermWizardInactive: "ללא הגבלה — יחושב לפי התקופה המרבית האפשרית",
+    maxLoanTermWizardActive: "המשכנתא תסתיים תוך {years} שנים",
+    maxLoanTermWizardYears: "תקופה מרבית (שנים)",
+    maxLoanTermWizardUnit: "שנים",
     // Financial Strength Celebration
     milestone1: "כניסה לטווח רכישה בסיסי ✅",
     milestone2: "עוצמה פיננסית משמעותית! 💪",
@@ -750,6 +760,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "Rental plan & monthly comfort limit",
     currencySymbol: "₪",
     convertNotice: "*Values in Shekels (Please convert foreign currency before entering)",
+    maxLoanTermWizardLabel: "Limit mortgage term",
+    maxLoanTermWizardInactive: "No limit — uses the maximum allowed term",
+    maxLoanTermWizardActive: "Mortgage ends within {years} years",
+    maxLoanTermWizardYears: "Max term (years)",
+    maxLoanTermWizardUnit: "years",
     // Financial Strength Celebration
     milestone1: "Entry-Level Capacity Unlocked ✅",
     milestone2: "Significant Financial Power! 💪",
@@ -1037,6 +1052,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "Location prévue & limite mensuelle",
     currencySymbol: "₪",
     convertNotice: "*Montants en Shekels (Veuillez convertir vos devises avant la saisie)",
+    maxLoanTermWizardLabel: "Limiter la durée du prêt",
+    maxLoanTermWizardInactive: "Sans limite — utilise la durée maximale autorisée",
+    maxLoanTermWizardActive: "Le prêt se termine dans {years} ans",
+    maxLoanTermWizardYears: "Durée maximale (années)",
+    maxLoanTermWizardUnit: "ans",
     // Financial Strength Celebration
     milestone1: "Capacité d'achat de base débloquée ✅",
     milestone2: "Puissance financière significative ! 💪",
