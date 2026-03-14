@@ -1688,6 +1688,16 @@ function generateEmailHtml(
             <div class="a-label">${t.firstProperty}</div>
             <div class="a-value">${inputs.isFirstProperty ? t.yes : t.no}</div>
           </div>
+          <div class="assumption-item">
+            <div class="a-label">${t.loanTerm}</div>
+            <div class="a-value">${results.loanTermYears} ${t.years}</div>
+          </div>
+          ${inputs.isRented ? `
+          <div class="assumption-item">
+            <div class="a-label">${t.estimatedRentalIncome || (language === 'he' ? 'הכנסה משכירות משוערת' : language === 'fr' ? 'Revenu locatif estimé' : 'Estimated rental income')}</div>
+            <div class="a-value">₪ ${formatNumber(results.rentIncome)}</div>
+          </div>
+          ` : ''}
         </div>
       </div>
 
