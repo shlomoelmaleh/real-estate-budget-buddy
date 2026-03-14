@@ -468,6 +468,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "האם הנכס מושכר וכמה תוכלו להחזיר?",
     currencySymbol: "₪",
     convertNotice: "*הסכומים בשקלים (נא להמיר מט\"ח לפי השער היציג)",
+    maxLoanTermWizardLabel: "הגבלת תקופת המשכנתא",
+    maxLoanTermWizardInactive: "ללא הגבלה — יחושב לפי התקופה המרבית האפשרית",
+    maxLoanTermWizardActive: "המשכנתא תסתיים תוך {years} שנים",
+    maxLoanTermWizardYears: "תקופה מרבית (שנים)",
+    maxLoanTermWizardUnit: "שנים",
     // Financial Strength Celebration
     milestone1: "כניסה לטווח רכישה בסיסי ✅",
     milestone2: "עוצמה פיננסית משמעותית! 💪",
