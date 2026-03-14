@@ -59,6 +59,7 @@ const CalculatorInputSchema = z.object({
   rentalYield: z.number().min(0).max(20),
   rentRecognition: z.number().min(0).max(100),
   budgetCap: z.number().nonnegative().max(1e9).nullable(),
+  maxLoanTerm: z.number().int().min(1).max(50).nullable().optional(),
   targetPropertyPrice: z.number().nonnegative().max(1e12).nullable().optional(),
   isFirstProperty: z.boolean(),
   isIsraeliTaxResident: z.boolean(),

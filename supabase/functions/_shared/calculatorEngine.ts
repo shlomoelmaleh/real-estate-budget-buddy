@@ -287,7 +287,10 @@ export function calculateMaxBudget(
     const { age, maxAge, interest, isFirstProperty, isIsraeliTaxResident } = inputs;
 
     const effectiveMaxAge = Math.min(config.max_age, maxAge || config.max_age);
-    const years = Math.min(config.max_loan_term_years, effectiveMaxAge - age);
+    const effectiveMaxTerm = inputs.maxLoanTerm
+        ? Math.min(inputs.maxLoanTerm, config.max_loan_term_years)
+        : config.max_loan_term_years;
+    const years = Math.min(effectiveMaxTerm, effectiveMaxAge - age);
     if (years <= 0) return null;
 
     const n = years * 12;

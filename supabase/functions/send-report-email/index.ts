@@ -63,6 +63,7 @@ const EmailRequestSchema = z.object({
     rentalYield: z.string().max(10),
     rentRecognition: z.string().max(10),
     budgetCap: z.string().max(30),
+    maxLoanTerm: z.string().max(5).optional(),
     lawyerPct: z.string().max(10),
     brokerPct: z.string().max(10),
     vatPct: z.string().max(10),

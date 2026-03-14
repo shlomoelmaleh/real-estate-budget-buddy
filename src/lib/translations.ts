@@ -1052,6 +1052,11 @@ export const translations: Record<Language, Translations> = {
     roadmap4Desc: "Location prévue & limite mensuelle",
     currencySymbol: "₪",
     convertNotice: "*Montants en Shekels (Veuillez convertir vos devises avant la saisie)",
+    maxLoanTermWizardLabel: "Limiter la durée du prêt",
+    maxLoanTermWizardInactive: "Sans limite — utilise la durée maximale autorisée",
+    maxLoanTermWizardActive: "Le prêt se termine dans {years} ans",
+    maxLoanTermWizardYears: "Durée maximale (années)",
+    maxLoanTermWizardUnit: "ans",
     // Financial Strength Celebration
     milestone1: "Capacité d'achat de base débloquée ✅",
     milestone2: "Puissance financière significative ! 💪",
