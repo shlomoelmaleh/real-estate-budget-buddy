@@ -1694,7 +1694,7 @@ function generateEmailHtml(
           </div>
           ${inputs.isRented ? `
           <div class="assumption-item">
-            <div class="a-label">${t.estimatedRentalIncome || (language === 'he' ? 'הכנסה משכירות משוערת' : language === 'fr' ? 'Revenu locatif estimé' : 'Estimated rental income')}</div>
+            <div class="a-label">${t.estimatedRentalIncome}</div>
             <div class="a-value">₪ ${formatNumber(results.rentIncome)}</div>
           </div>
           ` : ''}
