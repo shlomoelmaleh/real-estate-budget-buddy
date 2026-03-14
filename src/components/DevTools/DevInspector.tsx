@@ -7,6 +7,12 @@ import { getDossierPreview } from '@/lib/devMirror';
 interface DevInspectorProps {
     formData: any;
     results: any;
+    calcData?: {
+        amortizationSummary?: any;
+        yearlyBalanceData?: any[];
+        paymentBreakdownData?: any[];
+        [key: string]: any;
+    } | null;
     language?: string;
 }
 
