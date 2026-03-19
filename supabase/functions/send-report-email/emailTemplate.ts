@@ -1198,7 +1198,7 @@ export function generateEmailHtml(
         </div>
         <div class="row">
           <span class="label">${t.estimatedBudgetLabel}</span>
-          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">₪ ${formatNumber(maxBudget)}</span>
+          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">${displayValue(maxBudget)}</span>
         </div>
         <div class="row" style="border-bottom: none;">
           <span class="label">${t.differenceLabel}</span>
