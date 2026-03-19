@@ -574,6 +574,24 @@ export default function AdminPartners() {
                     <p className="text-xs text-muted-foreground">Default currency for this partner's calculator</p>
                   </div>
 
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Default Language</label>
+                    <Select
+                      value={form.default_language}
+                      onValueChange={(v) => setForm((f) => ({ ...f, default_language: v as any }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="he">עברית (Hebrew)</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="fr">Français (French)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">Default language for this partner's calculator</p>
+                  </div>
+
                   {/* ===== Configuration Parameters ===== */}
                   <details className="border border-border/60 rounded-lg p-3 space-y-3">
                     <summary className="cursor-pointer font-semibold text-sm">⚙️ Configuration Parameters</summary>
