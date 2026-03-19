@@ -1194,7 +1194,7 @@ export function generateEmailHtml(
         <div class="section-title" style="color: #475569;">📋 ${t.dealSummaryTitle}</div>
         <div class="row">
           <span class="label">${t.targetPropertyPriceLabel}</span>
-          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">₪ ${formatNumber(targetPrice)}</span>
+          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">${displayValue(targetPrice)}</span>
         </div>
         <div class="row">
           <span class="label">${t.estimatedBudgetLabel}</span>
