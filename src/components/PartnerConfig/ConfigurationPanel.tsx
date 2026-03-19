@@ -288,6 +288,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                 slogan_font_family: config.slogan_font_family || 'system',
                 phone: config.phone || null,
                 whatsapp: config.whatsapp || null,
+                default_language: config.default_language || 'he',
 
                 // Read-Only fields EXCLUDED: name, slug, email, is_active
 
