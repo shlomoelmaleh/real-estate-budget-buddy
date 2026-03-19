@@ -1127,6 +1127,8 @@ export const translations: Record<Language, Translations> = {
     brandingTabDesc: "Votre identité de marque et vos coordonnées affichées aux clients",
     logoUploadDesc: "Recommandé : PNG ou SVG avec fond transparent. Max 2 Mo.",
     brandColorDesc: "Couleur principale pour les boutons et les éléments de design",
+    defaultLanguageLabel: "Langue par défaut",
+    defaultLanguageDesc: "La langue affichée par défaut pour les clients accédant via votre lien",
     sloganPlaceholder: "Votre partenaire hypothécaire de confiance",
     sloganSizeXs: "Très petit",
     sloganSizeSm: "Petit",
