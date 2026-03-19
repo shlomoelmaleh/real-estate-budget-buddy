@@ -15,6 +15,7 @@
     "test:snapshot": "tsx src/lib/__tests__/snapshot-runner.ts",
     "test:approve": "tsx src/lib/__tests__/approve-golden.ts"
   },
+
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@playwright/test": "^1.57.0",
