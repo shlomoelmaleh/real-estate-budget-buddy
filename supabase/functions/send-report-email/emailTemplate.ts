@@ -1306,7 +1306,7 @@ export function generateEmailHtml(
         ${recognizedRent > 0 ? `
         <div class="row" style="background: #fef3c7; border-radius: 6px; padding: 8px !important; margin: 8px 0;">
           <span class="label" style="color: #92400e; font-weight: 600;">${t.adjustedIncomeForDTI}</span>
-          <span class="value" style="color: #b45309; font-weight: 700;">₪ ${formatNumber(adjustedIncomeForDTI)}</span>
+          <span class="value" style="color: #b45309; font-weight: 700;">${displayValue(adjustedIncomeForDTI)}</span>
         </div>
         <div style="font-size: 10px; color: #92400e; margin-bottom: 8px; padding-${alignStart}: 8px;">
           ${t.incomeLabel}: ₪${formatNumber(incomeNet)} + ${t.recognizedRentLabel}: ₪${formatNumber(recognizedRent)}
