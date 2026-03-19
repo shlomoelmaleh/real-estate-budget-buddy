@@ -77,6 +77,7 @@ export default function AdminPartners() {
     slogan_font_family: "system" as SloganFontFamily,
     is_active: true,
     default_currency: "ILS" as "ILS" | "USD" | "EUR" | "GBP",
+    default_language: "he" as "he" | "en" | "fr",
     // Config params
     max_dti_ratio: 0.33,
     max_age: 80,
