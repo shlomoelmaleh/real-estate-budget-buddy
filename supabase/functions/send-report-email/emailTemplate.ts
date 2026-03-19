@@ -1176,7 +1176,7 @@ export function generateEmailHtml(
               </div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 6px; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.maxBudgetLabel}</span>
-                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">₪ ${formatNumber(maxBudget)}</span>
+                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">${displayValue(maxBudget)}</span>
               </div>
               <div style="display: flex; justify-content: space-between; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.budgetGap}</span>
