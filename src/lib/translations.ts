@@ -539,6 +539,8 @@ export const translations: Record<Language, Translations> = {
     brandingTabDesc: "זהות המותג ופרטי הקשר שלכם שיוצגו ללקוחות",
     logoUploadDesc: "מומלץ: PNG או SVG עם רקע שקוף. מקסימום 2MB.",
     brandColorDesc: "צבע ראשי שיופיע בכפתורים ובאלמנטים עיצוביים",
+    defaultLanguageLabel: "שפת ברירת מחדל",
+    defaultLanguageDesc: "השפה שתוצג כברירת מחדל ללקוחות שנכנסים דרך הקישור שלך",
     sloganPlaceholder: "השותף המהימן שלך למשכנתאות",
     sloganSizeXs: "קטן מאוד",
     sloganSizeSm: "קטן",
