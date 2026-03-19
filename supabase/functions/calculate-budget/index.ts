@@ -236,6 +236,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (results.amortizationTable) {
         results.amortizationTable = results.amortizationTable.map(row => ({
           ...row,
+          opening: fromILS(row.opening, inputCurrency, rates),
           payment: fromILS(row.payment, inputCurrency, rates),
           interest: fromILS(row.interest, inputCurrency, rates),
           principal: fromILS(row.principal, inputCurrency, rates),
