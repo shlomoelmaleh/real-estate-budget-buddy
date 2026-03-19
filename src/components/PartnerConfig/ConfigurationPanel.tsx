@@ -155,6 +155,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                     slogan_font_family: data.slogan_font_family as SloganFontFamily,
                     phone: data.phone || (isAdminMode ? t.advisorPhone : null),
                     whatsapp: data.whatsapp || (isAdminMode ? t.advisorPhone : null),
+                    default_language: (data as any).default_language || 'he',
 
                     // Configuration
                     max_dti_ratio: data.max_dti_ratio ?? DEFAULT_PARTNER_CONFIG.max_dti_ratio,
