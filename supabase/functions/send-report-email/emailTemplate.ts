@@ -1309,7 +1309,7 @@ export function generateEmailHtml(
           <span class="value" style="color: #b45309; font-weight: 700;">${displayValue(adjustedIncomeForDTI)}</span>
         </div>
         <div style="font-size: 10px; color: #92400e; margin-bottom: 8px; padding-${alignStart}: 8px;">
-          ${t.incomeLabel}: ₪${formatNumber(incomeNet)} + ${t.recognizedRentLabel}: ₪${formatNumber(recognizedRent)}
+          ${t.incomeLabel}: ${displayValue(incomeNet)} + ${t.recognizedRentLabel}: ${displayValue(recognizedRent)}
         </div>
         ` : ''}
         ${isAdvisorCopy ? `
