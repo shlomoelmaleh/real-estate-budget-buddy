@@ -203,6 +203,7 @@ export default function AdminPartners() {
       is_active: !!p.is_active,
       default_currency: p.default_currency || "ILS",
       default_language: (p as any).default_language || "he",
+      max_dti_ratio: p.max_dti_ratio ?? 0.33,
       max_age: p.max_age ?? 80,
       max_loan_term_years: p.max_loan_term_years ?? 30,
       rent_recognition_first_property: p.rent_recognition_first_property ?? 0.0,
