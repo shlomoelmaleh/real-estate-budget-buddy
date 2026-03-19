@@ -1328,7 +1328,7 @@ export function generateEmailHtml(
           <div style="font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 10px;">📋 ${t.monthlySummary}</div>
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentUsed}</span>
-            <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
+            <span class="value">${displayValue(results.monthlyPayment)}</span>
           </div>
           ${parseNumber(inputs.budgetCap) > 0
       ? `
