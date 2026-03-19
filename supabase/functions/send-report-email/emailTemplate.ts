@@ -1349,7 +1349,7 @@ export function generateEmailHtml(
         ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.rentalIncomeRetained}</span>
-            <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
+            <span class="value">${displayValue(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
           `
         : ""
