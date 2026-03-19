@@ -248,6 +248,8 @@ export interface Translations {
   brandingTabDesc: string;
   logoUploadDesc: string;
   brandColorDesc: string;
+  defaultLanguageLabel: string;
+  defaultLanguageDesc: string;
   sloganPlaceholder: string;
   sloganSizeXs: string;
   sloganSizeSm: string;
@@ -537,6 +539,8 @@ export const translations: Record<Language, Translations> = {
     brandingTabDesc: "זהות המותג ופרטי הקשר שלכם שיוצגו ללקוחות",
     logoUploadDesc: "מומלץ: PNG או SVG עם רקע שקוף. מקסימום 2MB.",
     brandColorDesc: "צבע ראשי שיופיע בכפתורים ובאלמנטים עיצוביים",
+    defaultLanguageLabel: "שפת ברירת מחדל",
+    defaultLanguageDesc: "השפה שתוצג כברירת מחדל ללקוחות שנכנסים דרך הקישור שלך",
     sloganPlaceholder: "השותף המהימן שלך למשכנתאות",
     sloganSizeXs: "קטן מאוד",
     sloganSizeSm: "קטן",
@@ -829,6 +833,8 @@ export const translations: Record<Language, Translations> = {
     brandingTabDesc: "Your brand identity and contact details shown to clients",
     logoUploadDesc: "Recommended: PNG or SVG with transparent background. Max 2MB.",
     brandColorDesc: "Primary color for buttons and design elements",
+    defaultLanguageLabel: "Default Language",
+    defaultLanguageDesc: "The language displayed by default for clients accessing through your link",
     sloganPlaceholder: "Your trusted mortgage partner",
     sloganSizeXs: "Extra Small",
     sloganSizeSm: "Small",
@@ -1121,6 +1127,8 @@ export const translations: Record<Language, Translations> = {
     brandingTabDesc: "Votre identité de marque et vos coordonnées affichées aux clients",
     logoUploadDesc: "Recommandé : PNG ou SVG avec fond transparent. Max 2 Mo.",
     brandColorDesc: "Couleur principale pour les boutons et les éléments de design",
+    defaultLanguageLabel: "Langue par défaut",
+    defaultLanguageDesc: "La langue affichée par défaut pour les clients accédant via votre lien",
     sloganPlaceholder: "Votre partenaire hypothécaire de confiance",
     sloganSizeXs: "Très petit",
     sloganSizeSm: "Petit",

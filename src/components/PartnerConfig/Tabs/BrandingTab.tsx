@@ -251,6 +251,27 @@ export function BrandingTab({ config, updateConfig, t, partnerId }: TabProps) {
                     </div>
                 </div>
 
+                {/* Default Language */}
+                <div className="space-y-2">
+                    <Label>{t.defaultLanguageLabel || 'שפת ברירת מחדל'}</Label>
+                    <Select
+                        value={config.default_language || 'he'}
+                        onValueChange={(val) => updateConfig('default_language', val as "he" | "en" | "fr")}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="he">עברית (Hebrew)</SelectItem>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="fr">Français (French)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground italic">
+                        {t.defaultLanguageDesc || 'השפה שתוצג כברירת מחדל ללקוחות שנכנסים דרך הקישור שלך'}
+                    </p>
+                </div>
+
                 {/* Partner Link Box - READ ONLY display */}
                 <div className="mt-6 p-4 bg-muted/50 border rounded-lg space-y-3">
                     <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">

@@ -44,6 +44,7 @@ export type Partner = {
   slogan_font_family: SloganFontFamily | null;
   is_active: boolean;
   default_currency: "ILS" | "USD" | "EUR" | "GBP";
+  default_language: "he" | "en" | "fr";
   created_at: string;
 };
 

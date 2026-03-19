@@ -62,7 +62,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                         vat_percent, advisor_fee_fixed, other_fee_fixed, rental_yield_default,
                         rent_warning_high_multiplier, rent_warning_low_multiplier,
                         enable_rent_validation, enable_what_if_calculator,
-                        show_amortization_table, max_amortization_months
+                        show_amortization_table, max_amortization_months, default_language
                     `);
 
                 if (isAdminMode) {
@@ -155,6 +155,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                     slogan_font_family: data.slogan_font_family as SloganFontFamily,
                     phone: data.phone || (isAdminMode ? t.advisorPhone : null),
                     whatsapp: data.whatsapp || (isAdminMode ? t.advisorPhone : null),
+                    default_language: (data as any).default_language || 'he',
 
                     // Configuration
                     max_dti_ratio: data.max_dti_ratio ?? DEFAULT_PARTNER_CONFIG.max_dti_ratio,
@@ -287,6 +288,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                 slogan_font_family: config.slogan_font_family || 'system',
                 phone: config.phone || null,
                 whatsapp: config.whatsapp || null,
+                default_language: config.default_language || 'he',
 
                 // Read-Only fields EXCLUDED: name, slug, email, is_active
 

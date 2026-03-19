@@ -159,6 +159,7 @@ export type Database = {
           created_at: string
           default_currency: string
           default_interest_rate: number | null
+          default_language: string
           email: string | null
           enable_rent_validation: boolean | null
           enable_what_if_calculator: boolean | null
@@ -197,6 +198,7 @@ export type Database = {
           created_at?: string
           default_currency?: string
           default_interest_rate?: number | null
+          default_language?: string
           email?: string | null
           enable_rent_validation?: boolean | null
           enable_what_if_calculator?: boolean | null
@@ -235,6 +237,7 @@ export type Database = {
           created_at?: string
           default_currency?: string
           default_interest_rate?: number | null
+          default_language?: string
           email?: string | null
           enable_rent_validation?: boolean | null
           enable_what_if_calculator?: boolean | null
@@ -393,6 +396,7 @@ export type Database = {
           created_at: string | null
           default_currency: string | null
           default_interest_rate: number | null
+          default_language: string | null
           email: string | null
           enable_rent_validation: boolean | null
           enable_what_if_calculator: boolean | null
@@ -427,6 +431,7 @@ export type Database = {
           created_at?: string | null
           default_currency?: string | null
           default_interest_rate?: number | null
+          default_language?: string | null
           email?: string | null
           enable_rent_validation?: boolean | null
           enable_what_if_calculator?: boolean | null
@@ -461,6 +466,7 @@ export type Database = {
           created_at?: string | null
           default_currency?: string | null
           default_interest_rate?: number | null
+          default_language?: string | null
           email?: string | null
           enable_rent_validation?: boolean | null
           enable_what_if_calculator?: boolean | null

@@ -4,11 +4,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LanguageProvider } from "@/contexts/LanguageContext";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { PartnerProvider, usePartner } from "@/contexts/PartnerContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { AccessibilityWidget } from "@/components/AccessibilityWidget";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import { BudgetErrorBoundary } from "@/components/BudgetErrorBoundary";
 import { LoginRedirect } from "./components/auth/LoginRedirect";
@@ -34,6 +35,22 @@ function CurrencyProviderWithPartner({ children }: { children: React.ReactNode }
   );
 }
 
+function PartnerLanguageApplier({ children }: { children: React.ReactNode }) {
+  const { partner, isLoading } = usePartner();
+  const { setLanguage } = useLanguage();
+
+  useEffect(() => {
+    if (!isLoading && partner) {
+      const defaultLang = (partner as any)?.default_language;
+      if (defaultLang && ['he', 'en', 'fr'].includes(defaultLang)) {
+        setLanguage(defaultLang);
+      }
+    }
+  }, [partner, isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -41,6 +58,7 @@ const App = () => (
       <AccessibilityWidget />
 
       <PartnerProvider>
+        <PartnerLanguageApplier>
         <CurrencyProviderWithPartner>
           {/* FloatingWhatsApp needs both Language and Partner */}
           <FloatingWhatsApp />
@@ -90,6 +108,7 @@ const App = () => (
             </BrowserRouter>
           </TooltipProvider>
         </CurrencyProviderWithPartner>
+        </PartnerLanguageApplier>
       </PartnerProvider>
     </LanguageProvider>
   </QueryClientProvider>
