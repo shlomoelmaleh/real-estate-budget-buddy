@@ -1334,7 +1334,7 @@ export function generateEmailHtml(
       ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
-            <span class="value">₪ ${inputs.budgetCap}</span>
+            <span class="value">${displayValue(parseNumber(inputs.budgetCap))}</span>
           </div>
           `
       : ""
