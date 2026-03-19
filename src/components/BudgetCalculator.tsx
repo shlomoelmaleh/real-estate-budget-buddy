@@ -357,7 +357,7 @@ export function BudgetCalculator() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-muted-foreground hover:text-green-600 transition-colors"
                   >
-                    <WhatsAppIcon size={16} className="text-green-600" />
+                    <Phone className="w-4 h-4 text-primary" />
                     <span>{displayPhone}</span>
                   </a>
                   <a
