@@ -201,7 +201,7 @@ export default function AdminPartners() {
       slogan_font_family: (p.slogan_font_family || "system") as SloganFontFamily,
       is_active: !!p.is_active,
       default_currency: p.default_currency || "ILS",
-      max_dti_ratio: p.max_dti_ratio ?? 0.33,
+      default_language: (p as any).default_language || "he",
       max_age: p.max_age ?? 80,
       max_loan_term_years: p.max_loan_term_years ?? 30,
       rent_recognition_first_property: p.rent_recognition_first_property ?? 0.0,
