@@ -269,7 +269,7 @@ export default function AdminPartners() {
           slogan_font_family: form.slogan_font_family || "system",
           is_active: !!form.is_active,
           default_currency: form.default_currency || "ILS",
-          max_dti_ratio: form.max_dti_ratio,
+          default_language: form.default_language || "he",
           max_age: form.max_age,
           max_loan_term_years: form.max_loan_term_years,
           rent_recognition_first_property: form.rent_recognition_first_property,
