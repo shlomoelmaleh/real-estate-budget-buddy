@@ -63,6 +63,15 @@ export function CurrencyProvider({ children, defaultCurrency }: {
     const [isLoading, setIsLoading] = useState(true);
     const [isLocked, setIsLocked] = useState(false);
     const fetchedRef = useRef(false);
+    const hasManuallySetRef = useRef(false);
+
+    // Sync with defaultCurrency prop (e.g. when partner config loads)
+    useEffect(() => {
+        if (hasManuallySetRef.current || isLocked) return;
+        if (defaultCurrency && PHASE1_CURRENCIES.includes(defaultCurrency)) {
+            setCurrencyState(defaultCurrency);
+        }
+    }, [defaultCurrency, isLocked]);
 
     // Load exchange rates from Supabase on mount
     useEffect(() => {
@@ -99,6 +108,7 @@ export function CurrencyProvider({ children, defaultCurrency }: {
         if (isLocked) return; // Cannot change after lock
         if (!PHASE1_CURRENCIES.includes(c)) return;
         setCurrencyState(c);
+        hasManuallySetRef.current = true;
         try { localStorage.setItem(CURRENCY_STORAGE_KEY, c); } catch { }
     }, [isLocked]);
 

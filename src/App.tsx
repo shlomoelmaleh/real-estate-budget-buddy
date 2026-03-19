@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import { PartnerProvider, usePartner } from "@/contexts/PartnerContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { SupportedCurrency } from "@/lib/currencyUtils";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { AccessibilityWidget } from "@/components/AccessibilityWidget";
 import { useEffect } from "react";
@@ -27,7 +28,8 @@ const queryClient = new QueryClient();
 
 function CurrencyProviderWithPartner({ children }: { children: React.ReactNode }) {
   const { partner } = usePartner();
-  const defaultCurrency = (partner as any)?.default_currency;
+  const defaultCurrency = (partner as any)?.default_currency as SupportedCurrency;
+  
   return (
     <CurrencyProvider defaultCurrency={defaultCurrency}>
       {children}

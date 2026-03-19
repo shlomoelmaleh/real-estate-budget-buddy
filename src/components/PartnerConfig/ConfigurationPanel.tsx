@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { calculateMaxBudget } from '@/lib/calculatorLogic';
 import { CalculatorInputs, CalculatorResults, formatNumber } from '@/lib/calculator';
+import { fromILS, fmt } from '@/lib/currencyUtils';
 import { PartnerConfig, DEFAULT_PARTNER_CONFIG, validatePartnerConfig } from '@/types/partnerConfig';
 import type { SloganFontSize, SloganFontStyle, SloganFontFamily } from '@/lib/partnerTypes';
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
@@ -15,6 +16,7 @@ import { toast } from 'sonner';
 import { Save, RotateCcw, TrendingUp, User, ShieldCheck, DollarSign, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { usePartner } from '@/contexts/PartnerContext';
 import logoEshel from '@/assets/logo-eshel-sm.webp';
 
 // New Tab Components
@@ -26,7 +28,8 @@ import { ExtendedConfig, toDisplayPercent, toDbDecimal } from './types';
 
 export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: boolean }) {
     const { t } = useLanguage();
-    const { display } = useCurrency();
+    const { display, rates } = useCurrency();
+    const { partner, refreshPartner } = usePartner();
     const navigate = useNavigate();
     const [config, setConfig] = useState<ExtendedConfig | null>(null);
     const [originalConfig, setOriginalConfig] = useState<ExtendedConfig | null>(null);
@@ -307,6 +310,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
 
             setOriginalConfig(config);
             toast.success(t.configSaved);
+            if (refreshPartner) await refreshPartner();
         } catch (e: any) {
             console.error('Save error:', e);
             toast.error(t.configSaveError);
@@ -484,12 +488,19 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                             {previewStats ? (
                                 <div className="space-y-4">
                                     <div className="p-4 bg-white rounded-lg border shadow-sm">
-                                        <p className="text-sm text-muted-foreground">{t.impactMaxProperty}</p>
-                                        <p className="text-2xl font-bold text-primary">{display(previewStats.maxPropertyValue)}</p>
+                                        <p className="text-2xl font-bold text-primary">
+                                            {rates && config.default_currency !== 'ILS'
+                                                ? fmt(fromILS(previewStats.maxPropertyValue, config.default_currency, rates), config.default_currency)
+                                                : fmt(previewStats.maxPropertyValue, 'ILS')}
+                                        </p>
                                     </div>
                                     <div className="p-4 bg-white rounded-lg border shadow-sm">
                                         <p className="text-sm text-muted-foreground">{t.impactMonthlyPayment}</p>
-                                        <p className="text-xl font-bold">{display(previewStats.monthlyPayment)}</p>
+                                        <p className="text-xl font-bold">
+                                            {rates && config.default_currency !== 'ILS'
+                                                ? fmt(fromILS(previewStats.monthlyPayment, config.default_currency, rates), config.default_currency)
+                                                : fmt(previewStats.monthlyPayment, 'ILS')}
+                                        </p>
                                         <p className="text-xs text-muted-foreground">DTI: {toDisplayPercent(config.max_dti_ratio)}% of ₪20k income</p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">

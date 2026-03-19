@@ -20,6 +20,7 @@ type PartnerContextValue = {
   isOwner: boolean;
   isAdmin: boolean;
   clearBinding: () => void;
+  refreshPartner: () => Promise<void>;
 };
 
 const PartnerContext = createContext<PartnerContextValue | undefined>(undefined);
@@ -294,8 +295,18 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isOwner, partner]);
 
+  const refreshPartner = async () => {
+    if (!partner?.id) return;
+    const p = await fetchPartnerById(partner.id);
+    if (p) {
+      setPartner(p);
+      setConfig(mapToPartnerConfig(p));
+      applyPartnerBrandColor(normalizeHexColor(p.brand_color));
+    }
+  };
+
   const value = useMemo<PartnerContextValue>(
-    () => ({ partner, config, binding, isLoading, isOwner, isAdmin, clearBinding }),
+    () => ({ partner, config, binding, isLoading, isOwner, isAdmin, clearBinding, refreshPartner }),
     [partner, config, binding, isLoading, isOwner, isAdmin],
   );
 
