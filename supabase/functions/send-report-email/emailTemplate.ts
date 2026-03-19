@@ -1172,15 +1172,15 @@ export function generateEmailHtml(
             <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 6px; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.askingPrice}</span>
-                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">₪ ${formatNumber(targetPrice)}</span>
+                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">${displayValue(targetPrice)}</span>
               </div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 6px; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.maxBudgetLabel}</span>
-                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">₪ ${formatNumber(maxBudget)}</span>
+                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">${displayValue(maxBudget)}</span>
               </div>
               <div style="display: flex; justify-content: space-between; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.budgetGap}</span>
-                <span style="color: ${trafficLightGap >= 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 13px; direction: ltr;">${trafficLightGap >= 0 ? '+' : ''}₪ ${formatNumber(trafficLightGap)}</span>
+                <span style="color: ${trafficLightGap >= 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 13px; direction: ltr;">${trafficLightGap >= 0 ? '+' : '-'}${displayValue(Math.abs(trafficLightGap))}</span>
               </div>
             </div>
           </div>
@@ -1194,15 +1194,15 @@ export function generateEmailHtml(
         <div class="section-title" style="color: #475569;">📋 ${t.dealSummaryTitle}</div>
         <div class="row">
           <span class="label">${t.targetPropertyPriceLabel}</span>
-          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">₪ ${formatNumber(targetPrice)}</span>
+          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">${displayValue(targetPrice)}</span>
         </div>
         <div class="row">
           <span class="label">${t.estimatedBudgetLabel}</span>
-          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">₪ ${formatNumber(maxBudget)}</span>
+          <span class="value" style="direction: ltr !important; unicode-bidi: isolate;">${displayValue(maxBudget)}</span>
         </div>
         <div class="row" style="border-bottom: none;">
           <span class="label">${t.differenceLabel}</span>
-          <span class="value" style="font-weight: 700; direction: ltr !important; unicode-bidi: isolate;">${trafficLightGap >= 0 ? '' : '-'}₪ ${formatNumber(Math.abs(trafficLightGap))}</span>
+          <span class="value" style="font-weight: 700; direction: ltr !important; unicode-bidi: isolate;">${trafficLightGap >= 0 ? '' : '-'}${displayValue(Math.abs(trafficLightGap))}</span>
         </div>
         ${trafficLightGap < 0 ? `
         <div style="margin-top: 12px; padding: 12px; background: #e0f2fe; border-radius: 8px; font-size: 13px; color: #0369a1; text-align: ${alignStart};">
@@ -1306,10 +1306,10 @@ export function generateEmailHtml(
         ${recognizedRent > 0 ? `
         <div class="row" style="background: #fef3c7; border-radius: 6px; padding: 8px !important; margin: 8px 0;">
           <span class="label" style="color: #92400e; font-weight: 600;">${t.adjustedIncomeForDTI}</span>
-          <span class="value" style="color: #b45309; font-weight: 700;">₪ ${formatNumber(adjustedIncomeForDTI)}</span>
+          <span class="value" style="color: #b45309; font-weight: 700;">${displayValue(adjustedIncomeForDTI)}</span>
         </div>
         <div style="font-size: 10px; color: #92400e; margin-bottom: 8px; padding-${alignStart}: 8px;">
-          ${t.incomeLabel}: ₪${formatNumber(incomeNet)} + ${t.recognizedRentLabel}: ₪${formatNumber(recognizedRent)}
+          ${t.incomeLabel}: ${displayValue(incomeNet)} + ${t.recognizedRentLabel}: ${displayValue(recognizedRent)}
         </div>
         ` : ''}
         ${isAdvisorCopy ? `
@@ -1328,13 +1328,13 @@ export function generateEmailHtml(
           <div style="font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 10px;">📋 ${t.monthlySummary}</div>
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentUsed}</span>
-            <span class="value">₪ ${formatNumber(results.monthlyPayment)}</span>
+            <span class="value">${displayValue(results.monthlyPayment)}</span>
           </div>
           ${parseNumber(inputs.budgetCap) > 0
       ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.monthlyPaymentCap}</span>
-            <span class="value">₪ ${inputs.budgetCap}</span>
+            <span class="value">${displayValue(parseNumber(inputs.budgetCap))}</span>
           </div>
           `
       : ""
@@ -1343,13 +1343,13 @@ export function generateEmailHtml(
       ? `
           <div class="row" style="margin-bottom: 4px; ${hasManualRent ? "background-color: #fffbf0; border-radius: 4px; border: 1px solid #fde68a; padding: 4px !important;" : ""}">
             <span class="label" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">${rentLabel}</span>
-            <span class="value" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">₪ ${formatNumber(results.rentIncome)}</span>
+            <span class="value" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">${displayValue(results.rentIncome)}</span>
           </div>
           ${!inputs.isFirstProperty
         ? `
           <div class="row" style="margin-bottom: 4px;">
             <span class="label">${t.rentalIncomeRetained}</span>
-            <span class="value">₪ ${formatNumber(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
+            <span class="value">${displayValue(results.rentIncome * (parseNumber(inputs.rentRecognition) / 100))}</span>
           </div>
           `
         : ""
