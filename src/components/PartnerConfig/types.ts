@@ -12,6 +12,7 @@ export interface ExtendedConfig extends PartnerConfig {
     slogan_font_family: SloganFontFamily | null;
     phone: string | null;
     whatsapp: string | null;
+    default_language: "he" | "en" | "fr";
 
     // Read-only display fields (NOT in update payload)
     name: string;
