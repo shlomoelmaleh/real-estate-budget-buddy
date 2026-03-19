@@ -1,5 +1,6 @@
 import { PartnerConfig } from '@/types/partnerConfig';
 import { SloganFontSize, SloganFontStyle, SloganFontFamily } from '@/lib/partnerTypes';
+import { SupportedCurrency } from '@/lib/currencyUtils';
 
 // Extended config with all partner fields
 export interface ExtendedConfig extends PartnerConfig {
@@ -13,6 +14,7 @@ export interface ExtendedConfig extends PartnerConfig {
     phone: string | null;
     whatsapp: string | null;
     default_language: "he" | "en" | "fr";
+    default_currency: SupportedCurrency;
 
     // Read-only display fields (NOT in update payload)
     name: string;

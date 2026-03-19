@@ -250,6 +250,8 @@ export interface Translations {
   brandColorDesc: string;
   defaultLanguageLabel: string;
   defaultLanguageDesc: string;
+  defaultCurrencyLabel: string;
+  defaultCurrencyDesc: string;
   sloganPlaceholder: string;
   sloganSizeXs: string;
   sloganSizeSm: string;
@@ -541,6 +543,8 @@ export const translations: Record<Language, Translations> = {
     brandColorDesc: "צבע ראשי שיופיע בכפתורים ובאלמנטים עיצוביים",
     defaultLanguageLabel: "שפת ברירת מחדל",
     defaultLanguageDesc: "השפה שתוצג כברירת מחדל ללקוחות שנכנסים דרך הקישור שלך",
+    defaultCurrencyLabel: "מטבע ברירת מחדל",
+    defaultCurrencyDesc: "המטבע שיוצג כברירת מחדל ללקוחות שנכנסים דרך הקישור שלך",
     sloganPlaceholder: "השותף המהימן שלך למשכנתאות",
     sloganSizeXs: "קטן מאוד",
     sloganSizeSm: "קטן",
@@ -835,6 +839,8 @@ export const translations: Record<Language, Translations> = {
     brandColorDesc: "Primary color for buttons and design elements",
     defaultLanguageLabel: "Default Language",
     defaultLanguageDesc: "The language displayed by default for clients accessing through your link",
+    defaultCurrencyLabel: "Default Currency",
+    defaultCurrencyDesc: "The currency displayed by default for clients accessing through your link",
     sloganPlaceholder: "Your trusted mortgage partner",
     sloganSizeXs: "Extra Small",
     sloganSizeSm: "Small",
@@ -1129,6 +1135,8 @@ export const translations: Record<Language, Translations> = {
     brandColorDesc: "Couleur principale pour les boutons et les éléments de design",
     defaultLanguageLabel: "Langue par défaut",
     defaultLanguageDesc: "La langue affichée par défaut pour les clients accédant via votre lien",
+    defaultCurrencyLabel: "Devise par défaut",
+    defaultCurrencyDesc: "La devise affichée par défaut pour les clients accédant via votre lien",
     sloganPlaceholder: "Votre partenaire hypothécaire de confiance",
     sloganSizeXs: "Très petit",
     sloganSizeSm: "Petit",

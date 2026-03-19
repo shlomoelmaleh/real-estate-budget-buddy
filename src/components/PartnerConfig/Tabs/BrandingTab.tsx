@@ -11,6 +11,7 @@ import { Copy } from 'lucide-react';
 import { FONT_FAMILY_OPTIONS } from '@/lib/partnerTypes';
 import type { SloganFontSize, SloganFontStyle, SloganFontFamily } from '@/lib/partnerTypes';
 import { TabProps } from '../types';
+import { PHASE1_CURRENCIES, SupportedCurrency } from '@/lib/currencyUtils';
 
 export function BrandingTab({ config, updateConfig, t, partnerId }: TabProps) {
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -269,6 +270,29 @@ export function BrandingTab({ config, updateConfig, t, partnerId }: TabProps) {
                     </Select>
                     <p className="text-[10px] text-muted-foreground italic">
                         {t.defaultLanguageDesc || 'השפה שתוצג כברירת מחדל ללקוחות שנכנסים דרך הקישור שלך'}
+                    </p>
+                </div>
+
+                {/* Default Currency */}
+                <div className="space-y-2">
+                    <Label>{t.defaultCurrencyLabel || 'מטבע ברירת מחדל'}</Label>
+                    <Select
+                        value={config.default_currency || 'ILS'}
+                        onValueChange={(val) => updateConfig('default_currency', val as SupportedCurrency)}
+                    >
+                        <SelectTrigger>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {PHASE1_CURRENCIES.map(curr => (
+                                <SelectItem key={curr} value={curr}>
+                                    {curr} ({t[`currency${curr}`] || curr})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground italic">
+                        {t.defaultCurrencyDesc || 'המטבע שיוצג כברירת מחדל ללקוחות שנכנסים דרך הקישור שלך'}
                     </p>
                 </div>
 
