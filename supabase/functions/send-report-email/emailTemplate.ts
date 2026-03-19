@@ -1180,7 +1180,7 @@ export function generateEmailHtml(
               </div>
               <div style="display: flex; justify-content: space-between; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.budgetGap}</span>
-                <span style="color: ${trafficLightGap >= 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 13px; direction: ltr;">${trafficLightGap >= 0 ? '+' : ''}₪ ${formatNumber(trafficLightGap)}</span>
+                <span style="color: ${trafficLightGap >= 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 13px; direction: ltr;">${trafficLightGap >= 0 ? '+' : '-'}${displayValue(Math.abs(trafficLightGap))}</span>
               </div>
             </div>
           </div>
