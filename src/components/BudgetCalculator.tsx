@@ -6,11 +6,12 @@ import {
   Mail,
   CheckCircle2,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Phone
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
-import { WhatsAppIcon } from './icons/WhatsAppIcon';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import logoEshel from '@/assets/logo-eshel-sm.webp';
@@ -354,9 +355,9 @@ export function BudgetCalculator() {
                     href={buildWhatsAppHref()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-muted-foreground hover:text-green-600 transition-colors"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
                   >
-                    <WhatsAppIcon size={16} className="text-green-600" />
+                    <Phone className="w-4 h-4 text-primary" />
                     <span>{displayPhone}</span>
                   </a>
                   <a
