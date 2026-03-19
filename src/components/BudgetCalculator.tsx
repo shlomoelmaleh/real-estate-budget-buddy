@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePartner } from '@/contexts/PartnerContext';
-import { WhatsAppIcon } from './icons/WhatsAppIcon';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import logoEshel from '@/assets/logo-eshel-sm.webp';
