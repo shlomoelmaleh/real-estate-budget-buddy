@@ -355,7 +355,7 @@ export function BudgetCalculator() {
                     href={buildWhatsAppHref()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-muted-foreground hover:text-green-600 transition-colors"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
                   >
                     <Phone className="w-4 h-4 text-primary" />
                     <span>{displayPhone}</span>
