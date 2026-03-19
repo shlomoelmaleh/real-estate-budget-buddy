@@ -1202,7 +1202,7 @@ export function generateEmailHtml(
         </div>
         <div class="row" style="border-bottom: none;">
           <span class="label">${t.differenceLabel}</span>
-          <span class="value" style="font-weight: 700; direction: ltr !important; unicode-bidi: isolate;">${trafficLightGap >= 0 ? '' : '-'}₪ ${formatNumber(Math.abs(trafficLightGap))}</span>
+          <span class="value" style="font-weight: 700; direction: ltr !important; unicode-bidi: isolate;">${trafficLightGap >= 0 ? '' : '-'}${displayValue(Math.abs(trafficLightGap))}</span>
         </div>
         ${trafficLightGap < 0 ? `
         <div style="margin-top: 12px; padding: 12px; background: #e0f2fe; border-radius: 8px; font-size: 13px; color: #0369a1; text-align: ${alignStart};">
