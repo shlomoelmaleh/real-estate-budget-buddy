@@ -248,6 +248,8 @@ export interface Translations {
   brandingTabDesc: string;
   logoUploadDesc: string;
   brandColorDesc: string;
+  defaultLanguageLabel: string;
+  defaultLanguageDesc: string;
   sloganPlaceholder: string;
   sloganSizeXs: string;
   sloganSizeSm: string;
