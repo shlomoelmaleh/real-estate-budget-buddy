@@ -108,6 +108,7 @@ const App = () => (
             </BrowserRouter>
           </TooltipProvider>
         </CurrencyProviderWithPartner>
+        </PartnerLanguageApplier>
       </PartnerProvider>
     </LanguageProvider>
   </QueryClientProvider>
