@@ -155,7 +155,7 @@ export default function AdminPartners() {
       slogan_font_family: "system",
       is_active: true,
       default_currency: "ILS",
-      max_dti_ratio: 0.33,
+      default_language: "he",
       max_age: 80,
       max_loan_term_years: 30,
       rent_recognition_first_property: 0.0,
