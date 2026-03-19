@@ -1172,7 +1172,7 @@ export function generateEmailHtml(
             <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 6px; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.askingPrice}</span>
-                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">₪ ${formatNumber(targetPrice)}</span>
+                <span style="color: white; font-weight: 600; font-size: 13px; direction: ltr;">${displayValue(targetPrice)}</span>
               </div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 6px; ${isRTL ? "flex-direction: row-reverse;" : ""}">
                 <span style="color: #a0aec0; font-size: 13px;">${t.maxBudgetLabel}</span>
