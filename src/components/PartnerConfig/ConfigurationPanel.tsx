@@ -62,7 +62,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                         vat_percent, advisor_fee_fixed, other_fee_fixed, rental_yield_default,
                         rent_warning_high_multiplier, rent_warning_low_multiplier,
                         enable_rent_validation, enable_what_if_calculator,
-                        show_amortization_table, max_amortization_months
+                        show_amortization_table, max_amortization_months, default_language
                     `);
 
                 if (isAdminMode) {
