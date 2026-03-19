@@ -1343,7 +1343,7 @@ export function generateEmailHtml(
       ? `
           <div class="row" style="margin-bottom: 4px; ${hasManualRent ? "background-color: #fffbf0; border-radius: 4px; border: 1px solid #fde68a; padding: 4px !important;" : ""}">
             <span class="label" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">${rentLabel}</span>
-            <span class="value" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">₪ ${formatNumber(results.rentIncome)}</span>
+            <span class="value" style="${hasManualRent ? "font-weight: 700; color: #92400e;" : ""}">${displayValue(results.rentIncome)}</span>
           </div>
           ${!inputs.isFirstProperty
         ? `
