@@ -58,6 +58,7 @@ const App = () => (
       <AccessibilityWidget />
 
       <PartnerProvider>
+        <PartnerLanguageApplier>
         <CurrencyProviderWithPartner>
           {/* FloatingWhatsApp needs both Language and Partner */}
           <FloatingWhatsApp />
