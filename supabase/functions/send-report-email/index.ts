@@ -12,10 +12,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ADVISOR_EMAIL = "shlomo.elmaleh@gmail.com";
 
 // Whitelist of emails exempt from rate limiting (for testing)
-const WHITELISTED_EMAILS = [
-  "office@eshel-f.com",
-  "shlomo.elmaleh@gmail.com",
-];
+const WHITELISTED_EMAILS = ["office@eshel-f.com", "shlomo.elmaleh@gmail.com"];
 
 // CORS headers - allow all origins for this public calculator
 const corsHeaders = {
@@ -23,7 +20,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-build-sha",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-
 
 import { calculateLeadScore, getLimitingFactorDescription } from "./leadScoring.ts";
 import { generateEmailHtml, toBase64, type ReportEmailRequest } from "./emailTemplate.ts";
@@ -37,6 +33,113 @@ type PartnerContactOverride = {
   email?: string | null;
   whatsapp?: string | null;
 };
+
+// ─── Google Sheets Integration ────────────────────────────────────────────────
+const ALLOJ_PARTNER_ID = "fabb0c33-5a46-4ae3-98d9-c15fa4f9d7dc";
+const ALLOJ_SHEET_ID = "1ChGR6kN6mbVsm8IuaK_0eJbfnKDwB1HTI1L7ZP7mtHY";
+const ALLOJ_SHEET_RANGE = "Sheet1!A:F";
+
+async function appendToAllojSheet(
+  clientName: string,
+  phone: string,
+  email: string,
+  maxBudgetILS: number,
+  equityILS: number,
+): Promise<void> {
+  try {
+    const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
+    if (!serviceAccountJson) {
+      console.error("[Sheets] GOOGLE_SERVICE_ACCOUNT_JSON secret not found");
+      return;
+    }
+
+    const serviceAccount = JSON.parse(serviceAccountJson);
+
+    // Build JWT for Google Auth
+    const now = Math.floor(Date.now() / 1000);
+    const header = { alg: "RS256", typ: "JWT" };
+    const payload = {
+      iss: serviceAccount.client_email,
+      scope: "https://www.googleapis.com/auth/spreadsheets",
+      aud: "https://oauth2.googleapis.com/token",
+      exp: now + 3600,
+      iat: now,
+    };
+
+    const encode = (obj: object) => btoa(JSON.stringify(obj)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+
+    const signingInput = `${encode(header)}.${encode(payload)}`;
+
+    // Import private key and sign
+    const pemBody = serviceAccount.private_key
+      .replace("-----BEGIN PRIVATE KEY-----", "")
+      .replace("-----END PRIVATE KEY-----", "")
+      .replace(/\s/g, "");
+    const keyBytes = Uint8Array.from(atob(pemBody), (c) => c.charCodeAt(0));
+
+    const cryptoKey = await crypto.subtle.importKey(
+      "pkcs8",
+      keyBytes,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+
+    const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", cryptoKey, new TextEncoder().encode(signingInput));
+
+    const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+
+    const jwt = `${signingInput}.${signatureB64}`;
+
+    // Exchange JWT for Access Token
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+    });
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+
+    if (!accessToken) {
+      console.error("[Sheets] Failed to get access token:", tokenData);
+      return;
+    }
+
+    // Format date (Paris timezone — French community)
+    const dateStr = new Date().toLocaleString("fr-FR", { timeZone: "Europe/Paris" });
+
+    // Format numbers (French locale: spaces as thousands separator)
+    const formatILS = (n: number) => new Intl.NumberFormat("fr-FR").format(Math.round(n));
+
+    // Append row: תאריך | שם | טלפון | אימייל | תקציב מרבי ₪ | הון עצמי ₪
+    const appendRes = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${ALLOJ_SHEET_ID}/values/${ALLOJ_SHEET_RANGE}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          values: [[dateStr, clientName, phone, email, formatILS(maxBudgetILS), formatILS(equityILS)]],
+        }),
+      },
+    );
+
+    if (appendRes.ok) {
+      console.log("[Sheets] Row appended successfully for:", clientName);
+    } else {
+      const err = await appendRes.text();
+      console.error("[Sheets] Append failed:", err);
+    }
+  } catch (err) {
+    console.error("[Sheets] Exception:", err);
+  }
+}
+// ─── End Google Sheets Integration ───────────────────────────────────────────
 
 // Input validation schema with strict character set restrictions
 const EmailRequestSchema = z.object({
@@ -90,8 +193,10 @@ const EmailRequestSchema = z.object({
     equityRemaining: z.number().max(1e12),
     lawyerFeeTTC: z.number().nonnegative().max(1e9),
     brokerFeeTTC: z.number().nonnegative().max(1e9),
-    limitingFactor: z.enum(['EQUITY_LIMIT', 'INCOME_LIMIT', 'LTV_LIMIT', 'AGE_LIMIT', 'INSUFFICIENT_DATA', 'UNKNOWN']).optional(),
-    rentWarning: z.enum(['high', 'low']).nullable().optional(),
+    limitingFactor: z
+      .enum(["EQUITY_LIMIT", "INCOME_LIMIT", "LTV_LIMIT", "AGE_LIMIT", "INSUFFICIENT_DATA", "UNKNOWN"])
+      .optional(),
+    rentWarning: z.enum(["high", "low"]).nullable().optional(),
     estimatedMarketRent: z.number().nonnegative().optional(),
   }),
   amortizationSummary: z.object({
@@ -152,11 +257,9 @@ async function checkRateLimitAtomic(
 
   if (error) {
     console.error("Rate limit check error:", error);
-    // On error, allow but log for monitoring
     return { allowed: true, remaining: 0 };
   }
 
-  // The function returns an array with one row
   const result = Array.isArray(data) ? data[0] : data;
   return {
     allowed: result?.allowed ?? true,
@@ -170,21 +273,16 @@ async function checkMultiLayerRateLimit(
   clientIP: string,
   recipientEmail: string,
 ): Promise<{ allowed: boolean; reason?: string }> {
-  // Skip rate limiting for whitelisted emails (testing accounts)
   if (WHITELISTED_EMAILS.includes(recipientEmail.toLowerCase())) {
     console.log(`Whitelisted email bypassing rate limit: ${recipientEmail}`);
     return { allowed: true };
   }
 
-  // Layer 1: IP-based rate limit (10 emails per hour from same IP)
   const ipCheck = await checkRateLimitAtomic(supabaseAdmin, `ip:${clientIP}`, "send-report-email", 10, 60);
-
   if (!ipCheck.allowed) {
     return { allowed: false, reason: "ip_limit" };
   }
 
-  // Layer 2: Email-based rate limit (5 emails per hour to same address)
-  // This prevents IP spoofing attacks since email address is harder to forge
   const emailCheck = await checkRateLimitAtomic(
     supabaseAdmin,
     `email:${recipientEmail.toLowerCase()}`,
@@ -192,7 +290,6 @@ async function checkMultiLayerRateLimit(
     5,
     60,
   );
-
   if (!emailCheck.allowed) {
     return { allowed: false, reason: "email_limit" };
   }
@@ -212,13 +309,12 @@ const handler = async (req: Request): Promise<Response> => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
       console.error("[send-report-email] RESEND_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ error: "Email service temporarily unavailable" }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Email service temporarily unavailable" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // קריאת המידע מהבקשה וביצוע ולידציה
     const rawBody = await req.json();
     const rawAdvisorFee = rawBody?.inputs?.advisorFee;
     const parseResult = EmailRequestSchema.safeParse(rawBody);
@@ -243,16 +339,16 @@ const handler = async (req: Request): Promise<Response> => {
     const data = parseResult.data as ReportEmailRequest;
     data.inputs.advisorFee = data.inputs.advisorFee || rawAdvisorFee || "0";
 
-    // בדיקות Rate Limit
     const clientIP =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 
     const rateCheck = await checkMultiLayerRateLimit(supabaseAdmin, clientIP, data.recipientEmail);
 
     if (!rateCheck.allowed) {
-      const errorMsg = rateCheck.reason === "email_limit"
-        ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
-        : "Rate limit exceeded. Maximum 10 emails per hour.";
+      const errorMsg =
+        rateCheck.reason === "email_limit"
+          ? "Rate limit exceeded. Maximum 5 emails per hour to this address."
+          : "Rate limit exceeded. Maximum 10 emails per hour.";
 
       const clientBuildSha = req.headers.get("x-build-sha") || data.buildSha || null;
       return new Response(
@@ -287,7 +383,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Performing zero-trust calculation...`);
     const [partnerConfig, systemBrackets] = await Promise.all([
       loadPartnerConfig(supabaseAdmin, effectivePartnerId),
-      loadSystemTaxBrackets(supabaseAdmin)
+      loadSystemTaxBrackets(supabaseAdmin),
     ]);
 
     const parsedInputs: CalculatorInputs = {
@@ -302,6 +398,7 @@ const handler = async (req: Request): Promise<Response> => {
       rentalYield: parseFloat(data.inputs.rentalYield || "0"),
       rentRecognition: parseFloat(data.inputs.rentRecognition || "0"),
       budgetCap: data.inputs.budgetCap ? parseFloat(data.inputs.budgetCap) : null,
+      maxLoanTerm: data.inputs.maxLoanTerm ? parseInt(data.inputs.maxLoanTerm) : null,
       isFirstProperty: data.inputs.isFirstProperty,
       isIsraeliTaxResident: data.inputs.isIsraeliTaxResident,
       expectedRent: data.inputs.expectedRent ? parseFloat(data.inputs.expectedRent) : null,
@@ -309,28 +406,38 @@ const handler = async (req: Request): Promise<Response> => {
       brokerPct: parseFloat(data.inputs.brokerPct || "0"),
       vatPct: parseFloat(data.inputs.vatPct || "0"),
       advisorFee: parseFloat(data.inputs.advisorFee || "0"),
-      otherFee: parseFloat(data.inputs.otherFee || "0")
+      otherFee: parseFloat(data.inputs.otherFee || "0"),
     };
 
     const inputCurrency = (data.currency as SupportedCurrency) || "ILS";
 
-    // Convert inputs to ILS if necessary for secure engine calculation
     let engineInputs = { ...parsedInputs };
-    if (inputCurrency !== 'ILS' && data.exchangeRate) {
-      const pseudoRates = { rates: { [inputCurrency]: data.exchangeRate }, fetchedAt: data.ratesDate || '', source: 'cache', nextRefreshAfter: '' } as ExchangeRates;
+    if (inputCurrency !== "ILS" && data.exchangeRate) {
+      const pseudoRates = {
+        rates: { [inputCurrency]: data.exchangeRate },
+        fetchedAt: data.ratesDate || "",
+        source: "cache",
+        nextRefreshAfter: "",
+      } as ExchangeRates;
       engineInputs.equity = toILS(parsedInputs.equity, inputCurrency, pseudoRates);
       engineInputs.netIncome = toILS(parsedInputs.netIncome, inputCurrency, pseudoRates);
-      if (parsedInputs.budgetCap !== null) engineInputs.budgetCap = toILS(parsedInputs.budgetCap, inputCurrency, pseudoRates);
-      if (parsedInputs.expectedRent !== null) engineInputs.expectedRent = toILS(parsedInputs.expectedRent, inputCurrency, pseudoRates);
+      if (parsedInputs.budgetCap !== null)
+        engineInputs.budgetCap = toILS(parsedInputs.budgetCap, inputCurrency, pseudoRates);
+      if (parsedInputs.expectedRent !== null)
+        engineInputs.expectedRent = toILS(parsedInputs.expectedRent, inputCurrency, pseudoRates);
     }
 
     const secureResultsILS = calculateMaxBudget(engineInputs, partnerConfig, systemBrackets);
 
     if (secureResultsILS) {
-      // Convert results back to chosen currency before overriding client data
       const secureResults = { ...secureResultsILS };
-      if (inputCurrency !== 'ILS' && data.exchangeRate) {
-        const pseudoRates = { rates: { [inputCurrency]: data.exchangeRate }, fetchedAt: data.ratesDate || '', source: 'cache', nextRefreshAfter: '' } as ExchangeRates;
+      if (inputCurrency !== "ILS" && data.exchangeRate) {
+        const pseudoRates = {
+          rates: { [inputCurrency]: data.exchangeRate },
+          fetchedAt: data.ratesDate || "",
+          source: "cache",
+          nextRefreshAfter: "",
+        } as ExchangeRates;
         secureResults.maxPropertyValue = fromILS(secureResultsILS.maxPropertyValue, inputCurrency, pseudoRates);
         secureResults.loanAmount = fromILS(secureResultsILS.loanAmount, inputCurrency, pseudoRates);
         secureResults.monthlyPayment = fromILS(secureResultsILS.monthlyPayment, inputCurrency, pseudoRates);
@@ -344,15 +451,13 @@ const handler = async (req: Request): Promise<Response> => {
         secureResults.equityRemaining = fromILS(secureResultsILS.equityRemaining, inputCurrency, pseudoRates);
         secureResults.lawyerFeeTTC = fromILS(secureResultsILS.lawyerFeeTTC, inputCurrency, pseudoRates);
         secureResults.brokerFeeTTC = fromILS(secureResultsILS.brokerFeeTTC, inputCurrency, pseudoRates);
-        if (secureResults.estimatedMarketRent) secureResults.estimatedMarketRent = fromILS(secureResults.estimatedMarketRent, inputCurrency, pseudoRates);
+        if (secureResults.estimatedMarketRent)
+          secureResults.estimatedMarketRent = fromILS(secureResults.estimatedMarketRent, inputCurrency, pseudoRates);
       }
 
-      // Override client payload with trusted backend calculated values
       const incomeNet = parsedInputs.netIncome;
-      // Re-calculate derived shekelRatio if needed
-      const safeShekelRatio = parsedInputs.netIncome > 0
-        ? ((secureResults.netPayment / incomeNet) * 100)
-        : data.results.shekelRatio;
+      const safeShekelRatio =
+        parsedInputs.netIncome > 0 ? (secureResults.netPayment / incomeNet) * 100 : data.results.shekelRatio;
 
       data.results = {
         ...data.results,
@@ -375,7 +480,7 @@ const handler = async (req: Request): Promise<Response> => {
         limitingFactor: secureResults.limitingFactor,
         estimatedMarketRent: secureResults.estimatedMarketRent,
         rentWarning: secureResults.rentWarning,
-        shekelRatio: safeShekelRatio
+        shekelRatio: safeShekelRatio,
       };
 
       console.log(`[${requestId}] Zero-trust override applied successfully.`);
@@ -384,8 +489,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
     // === END ZERO-TRUST SECURITY ===
 
-    // Calculate Lead Score
-    // Use ILS-valued results for lead scoring (thresholds are in ILS)
     const leadScoringInputs = secureResultsILS ? engineInputs : data.inputs;
     const leadScoringResults = secureResultsILS ?? data.results;
     const leadAnalysis = calculateLeadScore(leadScoringInputs as any, leadScoringResults as any, data.language);
@@ -396,7 +499,7 @@ const handler = async (req: Request): Promise<Response> => {
       lead_score: leadAnalysis.score,
       priority_label: leadAnalysis.priorityLabel,
       limiting_factor: data.results.limitingFactor,
-      limiting_factor_description: limitingFactorDesc
+      limiting_factor_description: limitingFactorDesc,
     };
 
     // Save simulation to database
@@ -412,15 +515,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (insertError) console.error(`[${requestId}] Database insert failed:`, insertError.message);
 
-    // Load Partner Information
-    let partnerContact: PartnerContactOverride | undefined = data.partnerEmail ? {
-      name: data.partnerName || null,
-      email: data.partnerEmail,
-      phone: null,
-      whatsapp: null
-    } : undefined;
+    // ─── Google Sheets: append lead for alloj ────────────────────────────────
+    if (effectivePartnerId === ALLOJ_PARTNER_ID && secureResultsILS) {
+      await appendToAllojSheet(
+        data.recipientName,
+        data.recipientPhone,
+        data.recipientEmail,
+        secureResultsILS.maxPropertyValue, // always ILS
+        engineInputs.equity, // always ILS
+      );
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
-    let recipientTo = data.partnerEmail || ADVISOR_EMAIL; // Body override or default to Admin
+    // Load Partner Information
+    let partnerContact: PartnerContactOverride | undefined = data.partnerEmail
+      ? {
+          name: data.partnerName || null,
+          email: data.partnerEmail,
+          phone: null,
+          whatsapp: null,
+        }
+      : undefined;
+
+    let recipientTo = data.partnerEmail || ADVISOR_EMAIL;
     let bccTo: string | undefined = data.partnerEmail ? ADVISOR_EMAIL : undefined;
 
     if (effectivePartnerId) {
@@ -439,7 +556,7 @@ const handler = async (req: Request): Promise<Response> => {
         };
         if (partnerData.email) {
           recipientTo = partnerData.email;
-          bccTo = ADVISOR_EMAIL; // Admin gets BCC
+          bccTo = ADVISOR_EMAIL;
           console.log(`[${requestId}] Routing email to Partner: ${recipientTo}, BCC to Admin`);
         }
       } else {
@@ -450,11 +567,13 @@ const handler = async (req: Request): Promise<Response> => {
     const emailHtmlClient = generateEmailHtml(data, false, partnerContact);
     const emailHtmlAdvisor = generateEmailHtml(data, true, partnerContact);
 
-    const t = (({
-      he: { subjectWithName: "תיק האסטרטגיה הפיננסית של", fromPartner: "מאת" },
-      en: { subjectWithName: "Strategic Dossier for", fromPartner: "from" },
-      fr: { subjectWithName: "Dossier Stratégique pour", fromPartner: "de la part de" }
-    }) as Record<string, Record<string, string>>)[data.language] || { subjectWithName: "Report for", fromPartner: "from" };
+    const t = (
+      {
+        he: { subjectWithName: "תיק האסטרטגיה הפיננסית של", fromPartner: "מאת" },
+        en: { subjectWithName: "Strategic Dossier for", fromPartner: "from" },
+        fr: { subjectWithName: "Dossier Stratégique pour", fromPartner: "de la part de" },
+      } as Record<string, Record<string, string>>
+    )[data.language] || { subjectWithName: "Report for", fromPartner: "from" };
 
     const clientSubject = `${t.subjectWithName} ${data.recipientName}`;
     let adminSubject = clientSubject;
@@ -462,7 +581,6 @@ const handler = async (req: Request): Promise<Response> => {
       adminSubject = `${clientSubject} ${t.fromPartner} ${partnerContact.name}`;
     }
 
-    // Prepare CSV attachment
     const csvFilenames: Record<string, string> = {
       he: "loach-silkukin.csv",
       en: "amortization-table.csv",
@@ -470,11 +588,13 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const attachments = data.csvData
-      ? [{
-        filename: csvFilenames[data.language] || "report.csv",
-        content: toBase64("\uFEFF" + data.csvData),
-        content_type: "text/csv; charset=utf-8",
-      }]
+      ? [
+          {
+            filename: csvFilenames[data.language] || "report.csv",
+            content: toBase64("\uFEFF" + data.csvData),
+            content_type: "text/csv; charset=utf-8",
+          },
+        ]
       : [];
 
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -511,51 +631,65 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     // 1. Send to Client
-    const clientSend = await sendResendEmail({
-      from: "Property Budget Pro <noreply@eshel-f.com>",
-      to: [data.recipientEmail],
-      reply_to: partnerContact?.email || ADVISOR_EMAIL,
-      subject: clientSubject,
-      html: emailHtmlClient,
-      attachments,
-    }, { label: "client", throttleMs: 0 });
+    const clientSend = await sendResendEmail(
+      {
+        from: "Property Budget Pro <noreply@eshel-f.com>",
+        to: [data.recipientEmail],
+        reply_to: partnerContact?.email || ADVISOR_EMAIL,
+        subject: clientSubject,
+        html: emailHtmlClient,
+        attachments,
+      },
+      { label: "client", throttleMs: 0 },
+    );
 
     if (!clientSend.ok) throw new Error(`Client send failed: ${clientSend.text}`);
 
-    // Logic for Partner and Admin subjects
-    const newLeadLabel = (({
-      he: "ליד חדש",
-      en: "New Lead",
-      fr: "Nouveau prospect"
-    }) as Record<string, string>)[data.language] || "New Lead";
+    const newLeadLabel =
+      (
+        {
+          he: "ליד חדש",
+          en: "New Lead",
+          fr: "Nouveau prospect",
+        } as Record<string, string>
+      )[data.language] || "New Lead";
 
-    // 2. Send to Partner (Separate Send - If Partner Exists)
+    // 2. Send to Partner
     let partnerSendOk = true;
     if (effectivePartnerId && partnerContact?.email) {
       const partnerSubject = `${newLeadLabel}: ${data.recipientName}`;
-      const partnerSend = await sendResendEmail({
-        from: "Property Budget Pro <noreply@eshel-f.com>",
-        to: [partnerContact.email],
-        subject: partnerSubject,
-        html: emailHtmlAdvisor,
-        attachments,
-      }, { label: "partner" });
+      const partnerSend = await sendResendEmail(
+        {
+          from: "Property Budget Pro <noreply@eshel-f.com>",
+          to: [partnerContact.email],
+          subject: partnerSubject,
+          html: emailHtmlAdvisor,
+          attachments,
+        },
+        { label: "partner" },
+      );
       partnerSendOk = partnerSend.ok;
-      console.log(`[${requestId}] Partner email sent to ${partnerContact.email}. Status: ${partnerSendOk ? 'Success' : 'Failed'}`);
+      console.log(
+        `[${requestId}] Partner email sent to ${partnerContact.email}. Status: ${partnerSendOk ? "Success" : "Failed"}`,
+      );
     }
 
-    // 3. Send to Admin (Separate Send - Always)
-    const adminLeadSubject = `${newLeadLabel} - Real Estate Simulator` +
+    // 3. Send to Admin
+    const adminLeadSubject =
+      `${newLeadLabel} - Real Estate Simulator` +
       (partnerContact?.name ? ` [Partner: ${partnerContact.name}]` : "") +
       `: ${data.recipientName}`;
 
-    const adminSend = await sendResendEmail({
-      from: "Property Budget Pro <noreply@eshel-f.com>",
-      to: [ADVISOR_EMAIL],
-      subject: adminLeadSubject,
-      html: emailHtmlAdvisor,
-      attachments,
-    }, { label: "admin" });
+    const adminSend = await sendResendEmail(
+      {
+        from: "Property Budget Pro <noreply@eshel-f.com>",
+        to: [ADVISOR_EMAIL],
+        subject: adminLeadSubject,
+        html: emailHtmlAdvisor,
+        attachments,
+      },
+      { label: "admin" },
+    );
 
     return new Response(
       JSON.stringify({
@@ -563,17 +697,16 @@ const handler = async (req: Request): Promise<Response> => {
         deliveredToClient: true,
         deliveredToPartner: partnerSendOk,
         deliveredToAdmin: adminSend.ok,
-        version: { functionVersion: FUNCTION_VERSION, clientBuildSha, mismatch: versionMismatch }
+        version: { functionVersion: FUNCTION_VERSION, clientBuildSha, mismatch: versionMismatch },
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
-
   } catch (error: any) {
     console.error(`[send-report-email] Error:`, error.message);
-    return new Response(
-      JSON.stringify({ error: "An error occurred while sending the report. Please try again." }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
-    );
+    return new Response(JSON.stringify({ error: "An error occurred while sending the report. Please try again." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 
