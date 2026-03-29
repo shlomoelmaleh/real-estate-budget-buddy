@@ -513,16 +513,16 @@ const handler = async (req: Request): Promise<Response> => {
       partner_id: effectivePartnerId,
     });
 
-    if (insertError) console.error(`[${requestId}] Database insert failed:`, insertError.message);
-
-    // ─── Google Sheets: append lead for alloj ────────────────────────────────
-    if (effectivePartnerId === ALLOJ_PARTNER_ID && secureResultsILS) {
+    // ─── Google Sheets: append lead for alloj ────
+    if (effectivePartnerId === ALLOJ_PARTNER_ID) {
+      const budgetForSheet = secureResultsILS?.maxPropertyValue ?? data.results.maxPropertyValue;
+      const equityForSheet = engineInputs.equity || parseFloat(data.inputs.equity || "0");
       await appendToAllojSheet(
         data.recipientName,
         data.recipientPhone,
         data.recipientEmail,
-        secureResultsILS.maxPropertyValue, // always ILS
-        engineInputs.equity, // always ILS
+        budgetForSheet,
+        equityForSheet,
       );
     }
     // ─────────────────────────────────────────────────────────────────────────
