@@ -148,6 +148,22 @@ export function Step0({ onNext }: { onNext: () => void }) {
             </p>
           </div>
 
+          {/* Primary Action Button - Moved Up */}
+          <div className="pt-2">
+            <Button
+              onClick={onNext}
+              className="w-full py-8 text-xl rounded-xl shadow-[0_10px_20px_rgba(var(--primary),0.3)] hover:shadow-[0_15px_25px_rgba(var(--primary),0.4)] hover:scale-[1.01] transition-all bg-primary hover:bg-primary-dark text-white font-bold group border-t border-white/20"
+            >
+              {t.welcomeBtn}
+              <ChevronRight
+                className={cn(
+                  "w-6 h-6 transition-transform",
+                  isHe ? "mr-2 rotate-180 group-hover:-translate-x-1" : "ml-2 group-hover:translate-x-1",
+                )}
+              />
+            </Button>
+          </div>
+
           {/* Balanced Station Grid (Responsive Column Shift) with Numbers */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
@@ -214,35 +230,20 @@ export function Step0({ onNext }: { onNext: () => void }) {
             ))}
           </div>
 
-          {/* Primary Action Button */}
-          <div className="pt-2">
-            <Button
-              onClick={onNext}
-              className="w-full py-8 text-xl rounded-xl shadow-[0_10px_20px_rgba(var(--primary),0.3)] hover:shadow-[0_15px_25px_rgba(var(--primary),0.4)] hover:scale-[1.01] transition-all bg-primary hover:bg-primary-dark text-white font-bold group border-t border-white/20"
-            >
-              {t.welcomeBtn}
-              <ChevronRight
-                className={cn(
-                  "w-6 h-6 transition-transform",
-                  isHe ? "mr-2 rotate-180 group-hover:-translate-x-1" : "ml-2 group-hover:translate-x-1",
-                )}
-              />
-            </Button>
-
-            <div
-              className={cn(
-                "flex items-center gap-8 mt-6 justify-center lg:justify-start opacity-70",
-                isHe && "flex-row-reverse",
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-bold uppercase tracking-wider">{t.trustTime}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-bold uppercase tracking-wider">{t.trustSecurity}</span>
-              </div>
+          {/* Trust Indicators */}
+          <div
+            className={cn(
+              "flex items-center gap-8 mt-2 justify-center lg:justify-start opacity-70",
+              isHe && "flex-row-reverse",
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-bold uppercase tracking-wider">{t.trustTime}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-slate-400" />
+              <span className="text-xs font-bold uppercase tracking-wider">{t.trustSecurity}</span>
             </div>
           </div>
         </div>
