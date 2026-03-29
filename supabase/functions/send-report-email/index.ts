@@ -112,7 +112,7 @@ async function appendToAllojSheet(
     const dateStr = new Date().toLocaleString("fr-FR", { timeZone: "Europe/Paris" });
 
     // Format numbers (French locale: spaces as thousands separator)
-    const formatILS = (n: number) => new Intl.NumberFormat("fr-FR").format(Math.round(n));
+    const formatForSheet = (n: number) => new Intl.NumberFormat("en-US").format(Math.round(n));
 
     // Append row: תאריך | שם | טלפון | אימייל | תקציב מרבי ₪ | הון עצמי ₪
     const appendRes = await fetch(
@@ -124,7 +124,7 @@ async function appendToAllojSheet(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          values: [[dateStr, clientName, `'${phone}`, email, formatILS(maxBudgetILS), formatILS(equityILS)]],
+          values: [[dateStr, clientName, `'${phone}`, email, formatForSheet(maxBudgetILS), formatForSheet(equityILS)]],
         }),
       },
     );
@@ -516,7 +516,7 @@ const handler = async (req: Request): Promise<Response> => {
     // ─── Google Sheets: append lead for alloj ────
     if (effectivePartnerId === ALLOJ_PARTNER_ID) {
       const budgetForSheet = secureResultsILS?.maxPropertyValue ?? data.results.maxPropertyValue;
-      const equityForSheet = parsedInputs.equity;
+      const equityForSheet = parseFloat((data.inputs.equity || "0").replace(/[\s,]/g, ""));
       await appendToAllojSheet(
         data.recipientName,
         data.recipientPhone,
