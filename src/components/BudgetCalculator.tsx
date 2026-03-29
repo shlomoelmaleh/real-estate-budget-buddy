@@ -39,14 +39,6 @@ export function BudgetCalculator() {
   const navigate = useNavigate();
   const confirmationRef = useRef<HTMLDivElement>(null);
 
-  if (isPartnerLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   // Form management
   const {
     control,
@@ -136,6 +128,14 @@ export function BudgetCalculator() {
   };
 
   const isRTL = language === 'he';
+
+  if (isPartnerLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // --- RENDER HELPERS ---
 
