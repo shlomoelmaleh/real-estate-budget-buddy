@@ -516,7 +516,7 @@ const handler = async (req: Request): Promise<Response> => {
     // ─── Google Sheets: append lead for alloj ────
     if (effectivePartnerId === ALLOJ_PARTNER_ID) {
       const budgetForSheet = secureResultsILS?.maxPropertyValue ?? data.results.maxPropertyValue;
-      const equityForSheet = parseFloat((data.inputs.equity || "0").replace(/[\s,]/g, ""));
+      const equityForSheet = engineInputs.equity; // already in ILS (converted) — same source as maxBudgetILS
       await appendToAllojSheet(
         data.recipientName,
         data.recipientPhone,
