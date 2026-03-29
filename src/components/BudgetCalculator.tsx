@@ -35,9 +35,17 @@ import { useBudgetWizard } from '@/hooks/useBudgetWizard';
 
 export function BudgetCalculator() {
   const { t, language } = useLanguage();
-  const { partner, isAdmin } = usePartner();
+  const { partner, isAdmin, isLoading: isPartnerLoading } = usePartner();
   const navigate = useNavigate();
   const confirmationRef = useRef<HTMLDivElement>(null);
+
+  if (isPartnerLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // Form management
   const {
