@@ -752,7 +752,7 @@ export const translations: Record<Language, Translations> = {
     startBtn: "Start My Journey",
     partnerLogin: "Partner Login",
     managePartnerSettings: "Manage Partner Settings",
-    welcomeTitle: "The Journey to Your Home Starts Here",
+    welcomeTitle: "The journey to your piece of Israel begins here",
     welcomeSub: "Discover your true potential and receive a personalized roadmap to your dream home",
     welcomeBtn: "Calculate My Budget",
     videoCaption: "Watch: How we map your path to a new home together (1:10)",
