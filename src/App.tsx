@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { LanguageProvider, useOptionalLanguage } from "@/contexts/LanguageContext";
 import { PartnerProvider, usePartner } from "@/contexts/PartnerContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { SupportedCurrency } from "@/lib/currencyUtils";
@@ -39,13 +39,13 @@ function CurrencyProviderWithPartner({ children }: { children: React.ReactNode }
 
 function PartnerLanguageApplier({ children }: { children: React.ReactNode }) {
   const { partner, isLoading } = usePartner();
-  const { setLanguage } = useLanguage();
+  const langCtx = useOptionalLanguage();
 
   useEffect(() => {
-    if (!isLoading && partner) {
+    if (!isLoading && partner && langCtx) {
       const defaultLang = (partner as any)?.default_language;
       if (defaultLang && ['he', 'en', 'fr'].includes(defaultLang)) {
-        setLanguage(defaultLang);
+        langCtx.setLanguage(defaultLang);
       }
     }
   }, [partner, isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
