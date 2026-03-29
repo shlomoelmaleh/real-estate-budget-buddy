@@ -43,9 +43,17 @@ function getSloganFontStyleClass(style: SloganFontStyle | null | undefined): str
 
 export function Step0({ onNext }: { onNext: () => void }) {
   const { t, language } = useLanguage();
-  const { partner, isOwner, isAdmin } = usePartner();
+  const { partner, isOwner, isAdmin, isLoading } = usePartner();
   const displayLogo = partner?.logo_url || logoEshel;
   const isHe = language === "he";
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full">
