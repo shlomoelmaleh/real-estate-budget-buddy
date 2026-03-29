@@ -124,7 +124,7 @@ async function appendToAllojSheet(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          values: [[dateStr, clientName, phone, email, formatILS(maxBudgetILS), formatILS(equityILS)]],
+          values: [[dateStr, clientName, `'${phone}`, email, formatILS(maxBudgetILS), formatILS(equityILS)]],
         }),
       },
     );
