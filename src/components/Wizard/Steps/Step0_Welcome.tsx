@@ -101,7 +101,7 @@ export function Step0({ onNext }: { onNext: () => void }) {
       >
         {/* Media Frame (40%) - Brand First */}
         <div className="lg:basis-[40%] flex-shrink-0 flex flex-col justify-center">
-          <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-amber-400/40 shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white group cursor-pointer">
+          <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-amber-400/40 shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white group cursor-default">
             {/* Logo Background */}
             <div className="absolute inset-0 bg-slate-50 flex items-center justify-center p-8">
               <img
@@ -116,12 +116,14 @@ export function Step0({ onNext }: { onNext: () => void }) {
               />
             </div>
 
-            {/* Play Button - Corner Position */}
+            {/* Play Button - Corner Position (Hidden until video is ready) */}
+            {/* 
             <div className={cn("absolute bottom-4", isHe ? "left-4" : "right-4")}>
               <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-2xl border-2 border-amber-400/50 animate-pulse">
                 <Play className="w-6 h-6 md:w-7 md:h-7 text-primary fill-primary ml-1" />
               </div>
             </div>
+            */}
           </div>
           <p className="mt-4 text-center text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
             {t.videoCaption}
