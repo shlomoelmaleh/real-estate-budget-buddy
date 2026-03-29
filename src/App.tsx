@@ -39,13 +39,13 @@ function CurrencyProviderWithPartner({ children }: { children: React.ReactNode }
 
 function PartnerLanguageApplier({ children }: { children: React.ReactNode }) {
   const { partner, isLoading } = usePartner();
-  const { setLanguage } = useLanguage();
+  const langCtx = useOptionalLanguage();
 
   useEffect(() => {
-    if (!isLoading && partner) {
+    if (!isLoading && partner && langCtx) {
       const defaultLang = (partner as any)?.default_language;
       if (defaultLang && ['he', 'en', 'fr'].includes(defaultLang)) {
-        setLanguage(defaultLang);
+        langCtx.setLanguage(defaultLang);
       }
     }
   }, [partner, isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
