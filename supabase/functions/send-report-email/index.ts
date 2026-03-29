@@ -37,7 +37,7 @@ type PartnerContactOverride = {
 // ─── Google Sheets Integration ────────────────────────────────────────────────
 const ALLOJ_PARTNER_ID = "fabb0c33-5a46-4ae3-98d9-c15fa4f9d7dc";
 const ALLOJ_SHEET_ID = "1ChGR6kN6mbVsm8IuaK_0eJbfnKDwB1HTI1L7ZP7mtHY";
-const ALLOJ_SHEET_RANGE = "Sheet1!A:F";
+const ALLOJ_SHEET_RANGE = "Feuille 1!A:F";
 
 async function appendToAllojSheet(
   clientName: string,
