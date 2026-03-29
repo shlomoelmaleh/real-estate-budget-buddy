@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
+import { LanguageProvider, useOptionalLanguage } from "@/contexts/LanguageContext";
 import { PartnerProvider, usePartner } from "@/contexts/PartnerContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { SupportedCurrency } from "@/lib/currencyUtils";
