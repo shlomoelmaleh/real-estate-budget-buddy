@@ -398,7 +398,7 @@ const handler = async (req: Request): Promise<Response> => {
       rentalYield: parseFloat(data.inputs.rentalYield || "0"),
       rentRecognition: parseFloat(data.inputs.rentRecognition || "0"),
       budgetCap: data.inputs.budgetCap ? parseFloat(data.inputs.budgetCap) : null,
-      maxLoanTerm: data.inputs.maxLoanTerm ? parseInt(data.inputs.maxLoanTerm) : null,
+      maxLoanTerm: (data.inputs as any).maxLoanTerm ? parseInt((data.inputs as any).maxLoanTerm) : null,
       isFirstProperty: data.inputs.isFirstProperty,
       isIsraeliTaxResident: data.inputs.isIsraeliTaxResident,
       expectedRent: data.inputs.expectedRent ? parseFloat(data.inputs.expectedRent) : null,
