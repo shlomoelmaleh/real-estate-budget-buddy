@@ -1048,7 +1048,7 @@ export const translations: Record<Language, Translations> = {
     startBtn: "Commencer mon voyage",
     partnerLogin: "Connexion Partenaire",
     managePartnerSettings: "Gérer le Partenaire",
-    welcomeTitle: "Le voyage vers votre foyer commence ici",
+    welcomeTitle: "Votre acquisition en Israël commence ici",
     welcomeSub: "Découvrez votre vrai potentiel et recevez votre feuille de route personnelle",
     welcomeBtn: "Démarrer l'expérience",
     videoCaption: "Vidéo : Comment nous traçons votre route vers l'acquisition (1:10)",
