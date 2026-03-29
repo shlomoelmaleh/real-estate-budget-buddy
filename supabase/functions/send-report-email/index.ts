@@ -516,7 +516,7 @@ const handler = async (req: Request): Promise<Response> => {
     // ─── Google Sheets: append lead for alloj ────
     if (effectivePartnerId === ALLOJ_PARTNER_ID) {
       const budgetForSheet = secureResultsILS?.maxPropertyValue ?? data.results.maxPropertyValue;
-      const equityForSheet = engineInputs.equity || parseFloat(data.inputs.equity || "0");
+      const equityForSheet = parsedInputs.equity;
       await appendToAllojSheet(
         data.recipientName,
         data.recipientPhone,
