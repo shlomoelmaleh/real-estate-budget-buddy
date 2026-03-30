@@ -116,7 +116,7 @@ async function appendToAllojSheet(
 
     // Append row: תאריך | שם | טלפון | אימייל | תקציב מרבי ₪ | הון עצמי ₪
     const appendRes = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${ALLOJ_SHEET_ID}/values/${ALLOJ_SHEET_RANGE}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${ALLOJ_SHEET_ID}/values/${ALLOJ_SHEET_RANGE}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
       {
         method: "POST",
         headers: {
@@ -124,7 +124,7 @@ async function appendToAllojSheet(
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          values: [[`'${dateStr}`, clientName, `'${phone}`, email, `'${formatForSheet(maxBudgetILS)}`, `'${formatForSheet(equityILS)}`]],
+          values: [[dateStr, clientName, phone, email, formatForSheet(maxBudgetILS), formatForSheet(equityILS)]],
         }),
       },
     );
