@@ -180,7 +180,9 @@ export function PartnerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (isUrlBound.current || isLoadedRef.current) { setIsLoading(false); return; }
+      // If URL has ?ref= or ?partnerId=, effect 1 handles everything — do NOT touch isLoading here
+      if (isUrlBound.current) return;
+      if (isLoadedRef.current) { setIsLoading(false); return; }
       const stored = safeJsonParse<PartnerBinding>(localStorage.getItem(STORAGE_KEY));
       if (!stored || !stored.partnerId || !stored.expiresAt || stored.expiresAt < Date.now()) {
         // Only load default if NO partner is bound
