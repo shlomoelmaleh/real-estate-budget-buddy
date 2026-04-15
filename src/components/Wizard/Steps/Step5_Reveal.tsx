@@ -554,8 +554,10 @@ export function Step5({
                     <p className="text-xs text-center text-slate-400 mt-2 leading-relaxed max-w-sm mx-auto">
                         <CheckCircle2 className="w-3 h-3 inline-block mr-1 opacity-70" />
                         {language === 'he'
-                            ? `התיק ייבדק בידי מומחה מבית ${partner?.name || 'אשל פיננסים'} כדי לוודא תאימות לכללי בנק ישראל 2025.`
-                            : `✓ Review by ${partner?.name || 'Eshel Finances'} experts | Validated against 2025 Israeli Bank Regulations`}
+                            ? `✓ התיק ייבדק בידי מומחה מבית ${partner?.name || 'אשל פיננסים'} כדי לוודא תאימות לכללי בנק ישראל 2026.`
+                            : language === 'fr'
+                            ? `✓ Votre dossier sera examiné par un expert de ${partner?.name || 'Eshel Finances'} pour vérifier sa conformité aux réglementations bancaires israéliennes 2026.`
+                            : `✓ Your file will be reviewed by a ${partner?.name || 'Eshel Finances'} expert to ensure compliance with 2026 Israeli banking regulations.`}
                     </p>
 
                     {/* DEV MODE: Validation Hook */}
