@@ -25,13 +25,14 @@ export default function Privacy() {
     >
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 p-8 md:p-12 space-y-8">
 
-        {/* Back link */}
-        <a
-          href="/"
-          className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-2"
+        {/* Close button — page opens in a new tab so closing is more appropriate than navigating back */}
+        <button
+          onClick={() => window.close()}
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors mb-2"
         >
-          {language === "he" ? "← חזרה לכלי" : language === "fr" ? "← Retour" : "← Back"}
-        </a>
+          <span className="text-lg leading-none">✕</span>
+          <span>{language === "he" ? "סגור" : language === "fr" ? "Fermer" : "Close"}</span>
+        </button>
 
         {language === "he" && (
           <>

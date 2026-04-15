@@ -547,7 +547,7 @@ export function Step5({
                                     {t.consentAdvisor}
                                     {' '}
                                     <a
-                                        href={t.privacyPolicyLink}
+                                        href={`${t.privacyPolicyLink}${partner?.slug ? `&ref=${partner.slug}` : ''}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-primary underline underline-offset-2 hover:text-primary/80"
