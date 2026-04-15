@@ -30,6 +30,7 @@ export const DEFAULT_CONFIG: PartnerConfig = {
     enable_what_if_calculator: true,
     show_amortization_table: false,     // off by default to keep output lean
     max_amortization_months: 360,
+    show_marketing_consent: false,
 };
 
 // ─── Scenario type ────────────────────────────────────────────────────────────

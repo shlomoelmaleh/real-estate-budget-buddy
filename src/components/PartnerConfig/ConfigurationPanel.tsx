@@ -180,6 +180,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                     enable_what_if_calculator: data.enable_what_if_calculator ?? DEFAULT_PARTNER_CONFIG.enable_what_if_calculator,
                     show_amortization_table: data.show_amortization_table ?? DEFAULT_PARTNER_CONFIG.show_amortization_table,
                     max_amortization_months: data.max_amortization_months ?? DEFAULT_PARTNER_CONFIG.max_amortization_months,
+                    show_marketing_consent: (data as any).show_marketing_consent ?? DEFAULT_PARTNER_CONFIG.show_marketing_consent,
                 };
 
                 setConfig(mappedConfig);
@@ -242,6 +243,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
             enable_what_if_calculator: config.enable_what_if_calculator,
             show_amortization_table: config.show_amortization_table,
             max_amortization_months: config.max_amortization_months,
+            show_marketing_consent: config.show_marketing_consent,
         };
 
         const result = calculateMaxBudget(mockInputs, partnerConfig);
@@ -275,6 +277,7 @@ export function ConfigurationPanel({ isAdminMode = false }: { isAdminMode?: bool
                 enable_what_if_calculator: config.enable_what_if_calculator,
                 show_amortization_table: config.show_amortization_table,
                 max_amortization_months: config.max_amortization_months,
+                show_marketing_consent: config.show_marketing_consent,
             };
 
             // Validate config fields
