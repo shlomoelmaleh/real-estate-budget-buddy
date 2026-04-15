@@ -39,7 +39,9 @@ function CurrencyProviderWithPartner({ children }: { children: React.ReactNode }
 }
 
 function PartnerLanguageApplier({ children }: { children: React.ReactNode }) {
-  const { partner, isLoading } = usePartner();
+  const partnerCtx = useOptionalPartner();
+  const partner = partnerCtx?.partner ?? null;
+  const isLoading = partnerCtx?.isLoading ?? true;
   const langCtx = useOptionalLanguage();
 
   useEffect(() => {
