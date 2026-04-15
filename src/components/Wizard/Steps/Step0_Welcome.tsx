@@ -121,6 +121,22 @@ export function Step0({ onNext }: { onNext: () => void }) {
             {t.videoCaption}
           </p>
         </div>
+        {/* CTA Button — mobile only, placed directly below logo for above-the-fold visibility */}
+        <div className="block lg:hidden w-full">
+          <Button
+            onClick={onNext}
+            className="w-full py-8 text-xl rounded-xl shadow-[0_10px_20px_rgba(var(--primary),0.3)] hover:shadow-[0_15px_25px_rgba(var(--primary),0.4)] hover:scale-[1.01] transition-all bg-primary hover:bg-primary-dark text-white font-bold group border-t border-white/20"
+          >
+            {t.welcomeBtn}
+            <ChevronRight
+              className={cn(
+                "w-6 h-6 transition-transform",
+                isHe ? "mr-2 rotate-180 group-hover:-translate-x-1" : "ml-2 group-hover:translate-x-1",
+              )}
+            />
+          </Button>
+        </div>
+
         {/* Action Column (60%) */}
         <div
           className={cn(
@@ -150,8 +166,8 @@ export function Step0({ onNext }: { onNext: () => void }) {
             </p>
           </div>
 
-          {/* Primary Action Button - Moved Up */}
-          <div className="pt-2">
+          {/* Primary Action Button - desktop only (mobile version is above the logo) */}
+          <div className="hidden lg:block pt-2">
             <Button
               onClick={onNext}
               className="w-full py-8 text-xl rounded-xl shadow-[0_10px_20px_rgba(var(--primary),0.3)] hover:shadow-[0_15px_25px_rgba(var(--primary),0.4)] hover:scale-[1.01] transition-all bg-primary hover:bg-primary-dark text-white font-bold group border-t border-white/20"
