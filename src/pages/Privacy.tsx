@@ -8,7 +8,11 @@ const LAST_UPDATED_FR = "Avril 2026";
 export default function Privacy() {
   const langCtx = useOptionalLanguage();
   const partnerCtx = useOptionalPartner();
-  const language = langCtx?.language ?? "he";
+
+  // URL param takes priority (supports direct link from new tab with ?lang=fr etc.)
+  const urlLang = new URLSearchParams(window.location.search).get("lang");
+  const validLang = (urlLang === "he" || urlLang === "en" || urlLang === "fr") ? urlLang : null;
+  const language = validLang ?? langCtx?.language ?? "he";
   const partnerName = partnerCtx?.partner?.name ?? "אשל פיננסים";
   const partnerEmail = partnerCtx?.partner?.email ?? "shlomo.elmaleh@gmail.com";
 
