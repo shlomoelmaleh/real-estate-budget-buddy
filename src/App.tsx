@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider, useOptionalLanguage } from "@/contexts/LanguageContext";
-import { PartnerProvider, usePartner } from "@/contexts/PartnerContext";
+import { PartnerProvider, usePartner, useOptionalPartner } from "@/contexts/PartnerContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { SupportedCurrency } from "@/lib/currencyUtils";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
@@ -39,7 +39,9 @@ function CurrencyProviderWithPartner({ children }: { children: React.ReactNode }
 }
 
 function PartnerLanguageApplier({ children }: { children: React.ReactNode }) {
-  const { partner, isLoading } = usePartner();
+  const partnerCtx = useOptionalPartner();
+  const partner = partnerCtx?.partner ?? null;
+  const isLoading = partnerCtx?.isLoading ?? true;
   const langCtx = useOptionalLanguage();
 
   useEffect(() => {
