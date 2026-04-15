@@ -26,6 +26,7 @@ export interface PartnerConfig {
     enable_what_if_calculator: boolean;
     show_amortization_table: boolean;
     max_amortization_months: number;            // 12 - 360
+    show_marketing_consent: boolean;            // Show marketing opt-in checkbox in lead form
 }
 
 export const PartnerConfigSchema = z.object({
@@ -54,6 +55,7 @@ export const PartnerConfigSchema = z.object({
     enable_what_if_calculator: z.boolean(),
     show_amortization_table: z.boolean(),
     max_amortization_months: z.number().int().min(12).max(360),
+    show_marketing_consent: z.boolean(),
 });
 
 export const DEFAULT_PARTNER_CONFIG: PartnerConfig = {
@@ -75,6 +77,7 @@ export const DEFAULT_PARTNER_CONFIG: PartnerConfig = {
     enable_what_if_calculator: true,
     show_amortization_table: true,
     max_amortization_months: 360,
+    show_marketing_consent: false,
 };
 
 export function validatePartnerConfig(config: unknown): PartnerConfig {

@@ -308,6 +308,12 @@ export interface Translations {
   contactRep: string;
   errorAgeTooHigh: (max: number) => string;
   errorAgeTooLow: (min: number) => string;
+  // Consent & Privacy
+  consentAdvisor: string;
+  consentMarketing: string;
+  privacyPolicyLink: string;
+  privacyPolicyLinkLabel: string;
+  consentRequired: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -606,6 +612,11 @@ export const translations: Record<Language, Translations> = {
     targetPropertyPriceLabel: "מחיר הנכס המבוקש",
     estimatedBudgetLabel: "התקציב המשוער שלך",
     differenceLabel: "הפרש",
+    consentAdvisor: "אני מסכים/ה שהפרטים שלי יועברו ליועץ מומחה לצורך בדיקת התיק.",
+    consentMarketing: "אני מסכים/ה לקבל עדכונים ומידע שיווקי בדוא\"ל.",
+    privacyPolicyLink: "/privacy",
+    privacyPolicyLinkLabel: "מדיניות הפרטיות",
+    consentRequired: "יש לאשר את תנאי השיתוף לפני שליחת הטופס",
   },
   en: {
     dir: 'ltr',
@@ -902,6 +913,11 @@ export const translations: Record<Language, Translations> = {
     targetPropertyPriceLabel: "Target Property Price",
     estimatedBudgetLabel: "Your Estimated Budget",
     differenceLabel: "Difference",
+    consentAdvisor: "I agree that my details will be shared with a professional advisor for file review.",
+    consentMarketing: "I agree to receive updates and marketing information by email.",
+    privacyPolicyLink: "/privacy",
+    privacyPolicyLinkLabel: "Privacy Policy",
+    consentRequired: "You must agree to the sharing terms before submitting",
   },
   fr: {
     dir: 'ltr',
@@ -1198,5 +1214,10 @@ export const translations: Record<Language, Translations> = {
     targetPropertyPriceLabel: "Prix du bien visé",
     estimatedBudgetLabel: "Votre budget estimé",
     differenceLabel: "Différence",
+    consentAdvisor: "J'accepte que mes coordonnées soient transmises à un conseiller expert pour l'examen du dossier.",
+    consentMarketing: "J'accepte de recevoir des mises à jour et des informations marketing par e-mail.",
+    privacyPolicyLink: "/privacy",
+    privacyPolicyLinkLabel: "Politique de confidentialité",
+    consentRequired: "Vous devez accepter les conditions de partage avant de soumettre le formulaire",
   }
 };

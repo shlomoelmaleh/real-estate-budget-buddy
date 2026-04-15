@@ -17,6 +17,7 @@ import { LoginRedirect } from "./components/auth/LoginRedirect";
 
 // Lazy-loaded routes (not needed on initial page load)
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Privacy = lazy(() => import("./pages/Privacy"));
 const Login = lazy(() => import("./pages/Login"));
 const AdminPartners = lazy(() => import("./pages/admin/AdminPartners"));
 const AdminMyConfig = lazy(() => import("./pages/admin/AdminMyConfig"));
@@ -103,6 +104,7 @@ const App = () => (
                       </PartnerRoute>
                     }
                   />
+                  <Route path="/privacy" element={<Privacy />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

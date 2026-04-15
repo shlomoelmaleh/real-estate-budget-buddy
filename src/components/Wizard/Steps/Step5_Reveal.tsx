@@ -37,6 +37,8 @@ export function Step5({
     const fullName = watch ? watch('fullName') : '';
     const firstName = fullName?.split(' ')[0] || '';
     const [showDossier, setShowDossier] = useState(false);
+    const [consentAdvisor, setConsentAdvisor] = useState(false);
+    const [consentMarketing, setConsentMarketing] = useState(false);
 
     // Feasibility Logic
     const targetPriceRaw = watch ? watch('targetPropertyPrice') : '';
@@ -528,15 +530,61 @@ export function Step5({
                             />
                         </div>
 
-                        {/* 3. Send Button */}
+                        {/* 3. Consent Checkboxes */}
+                        <div className="flex flex-col gap-3 w-full">
+                            {/* Advisor Consent - always required */}
+                            <label className={cn(
+                                "flex items-start gap-3 cursor-pointer group",
+                                language === 'he' ? "flex-row-reverse text-right" : "flex-row text-left"
+                            )}>
+                                <input
+                                    type="checkbox"
+                                    checked={consentAdvisor}
+                                    onChange={e => setConsentAdvisor(e.target.checked)}
+                                    className="mt-0.5 w-4 h-4 shrink-0 accent-primary cursor-pointer"
+                                />
+                                <span className="text-xs text-slate-600 leading-relaxed">
+                                    {t.consentAdvisor}
+                                    {' '}
+                                    <a
+                                        href={t.privacyPolicyLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary underline underline-offset-2 hover:text-primary/80"
+                                    >
+                                        {t.privacyPolicyLinkLabel}
+                                    </a>
+                                </span>
+                            </label>
+
+                            {/* Marketing Consent - shown only when partner enables it */}
+                            {config.show_marketing_consent && (
+                                <label className={cn(
+                                    "flex items-start gap-3 cursor-pointer",
+                                    language === 'he' ? "flex-row-reverse text-right" : "flex-row text-left"
+                                )}>
+                                    <input
+                                        type="checkbox"
+                                        checked={consentMarketing}
+                                        onChange={e => setConsentMarketing(e.target.checked)}
+                                        className="mt-0.5 w-4 h-4 shrink-0 accent-primary cursor-pointer"
+                                    />
+                                    <span className="text-xs text-slate-600 leading-relaxed">
+                                        {t.consentMarketing}
+                                    </span>
+                                </label>
+                            )}
+                        </div>
+
+                        {/* 4. Send Button */}
                         <Button
                             type="button"
                             onClick={onSendReport}
-                            disabled={isSending}
+                            disabled={isSending || !consentAdvisor}
                             className={cn(
                                 "w-full min-h-[4rem] py-4 h-auto text-sm sm:text-base md:text-lg font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center px-4 whitespace-normal",
                                 "bg-gradient-to-r from-primary to-primary-dark hover:scale-[1.01]",
-                                // hasCounted && "animate-pulse shadow-primary/30" // Removed blinking animation
+                                !consentAdvisor && "opacity-50 cursor-not-allowed hover:scale-100",
                             )}
                         >
                             {isSending ? (
@@ -548,6 +596,13 @@ export function Step5({
                                 {t.leadCaptureBtn}
                             </span>
                         </Button>
+
+                        {/* Consent validation hint */}
+                        {!consentAdvisor && (
+                            <p className="text-xs text-center text-amber-600/80 -mt-4">
+                                {t.consentRequired}
+                            </p>
+                        )}
                     </div>
 
                     {/* Expert Commitment - Trust Signal */}
