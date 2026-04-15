@@ -181,6 +181,7 @@ export type Database = {
           rent_warning_low_multiplier: number | null
           rental_yield_default: number | null
           show_amortization_table: boolean | null
+          show_marketing_consent: boolean
           slogan: string | null
           slogan_font_family: string | null
           slogan_font_size: string | null
@@ -220,6 +221,7 @@ export type Database = {
           rent_warning_low_multiplier?: number | null
           rental_yield_default?: number | null
           show_amortization_table?: boolean | null
+          show_marketing_consent?: boolean
           slogan?: string | null
           slogan_font_family?: string | null
           slogan_font_size?: string | null
@@ -259,6 +261,7 @@ export type Database = {
           rent_warning_low_multiplier?: number | null
           rental_yield_default?: number | null
           show_amortization_table?: boolean | null
+          show_marketing_consent?: boolean
           slogan?: string | null
           slogan_font_family?: string | null
           slogan_font_size?: string | null
